@@ -848,6 +848,19 @@ body.three-d .fog3d { display: block; position: fixed; z-index: 2; left: 0; righ
   .sheet.open { transform: none; }
 }
 
+
+/* ---- WebGL 3D view ---- */
+.view3d { position: fixed; inset: 0; z-index: 18; background: #0b1526; touch-action: none; }
+.view3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#gl3dLabels { cursor: grab; }
+#gl3dLabels:active { cursor: grabbing; }
+body.gl3d .fog3d { display: none; }
+.h3-ctl { grid-template-columns: 48px 48px 1fr 72px; }
+.h3-cams { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 3px; border-radius: 14px; background: rgba(12, 12, 14, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.h3-ctl .h3-cams button { height: 42px; border-radius: 11px; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; font-size: 13px; }
+.h3-ctl .h3-cams button[aria-pressed="true"] { background: #fff; color: #111; }
+@media (min-width: 900px) { .h3-bot { left: auto; width: 520px; right: 16px; } .h3-top { right: auto; width: 520px; } }
+
 </style>
 </head>
 <body>
@@ -1098,11 +1111,12 @@ body.three-d .fog3d { display: block; position: fixed; z-index: 2; left: 0; righ
   <div class="sky-top"><div class="sky-t"><b>Sky view</b><span id="skySub">Point your phone at the sky</span></div><button class="xs" id="skyX" aria-label="Close sky view"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
   <div class="sky-hint" id="skyHint"></div>
 </div>
+<div class="view3d" id="view3d" hidden><canvas id="gl3d"></canvas><canvas id="gl3dLabels" aria-label="3D view of live aircraft"></canvas></div>
 <div class="hud3d" id="hud3d" hidden>
   <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
   <div class="h3-bot">
     <div class="h3-stats"><div><small>Altitude</small><b id="h3Alt">—</b></div><div><small>Speed</small><b id="h3Spd">—</b></div><div><small>Heading</small><b id="h3Hdg">—</b></div><div><small>Climb</small><b id="h3Vs">—</b></div></div>
-    <div class="h3-ctl"><button id="h3Out" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button><button id="h3In" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button><button id="h3Tilt" aria-label="Change tilt"><svg class="i" viewBox="0 0 24 24"><path d="M4 18L12 6l8 12z"/></svg></button><button class="exit" id="h3Exit">Exit 3D</button></div>
+    <div class="h3-ctl"><button id="h3Out" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button><button id="h3In" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button><div class="h3-cams" role="group" aria-label="Camera"><button data-cam="chase" aria-pressed="true">Chase</button><button data-cam="orbit" aria-pressed="false">Orbit</button><button data-cam="cockpit" aria-pressed="false">Cockpit</button></div><button class="exit" id="h3Exit">Exit</button></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -2327,6 +2341,7 @@ function frame(now) {
     setView(lonToU(o.lon), latToV(o.lat) + followOff / V.ws, V.z);
   }
   if (threeD) apply3D();
+  if (GL.on) return;
   const moving = !!(gesture && gesture.type !== "maybe") || inertia || anim || follow;
   const pxs = 0.14 * pxPerNm();
   let iv = moving ? 0 : clamp(1000 / (pxs * 5 + 0.0001), 16, 1000);
@@ -3954,25 +3969,29 @@ const skelCards = (n) => Array.from({ length: n }, () => `<div class="ncard sk">
 
 /* ---- 3D follow view ---- */
 let threeD = false, rot3 = 0, tilt3 = 58;
-function enter3D() {
-  const a = selected; if (!a) return;
+async function enter3D() {
+  const a = selected; if (!a || threeD) return;
   threeD = true; rot3 = a.track || 0;
   document.body.classList.add("three-d"); $("#hud3d").hidden = false;
   if (openSheet) showSheet(null);
   showPeek(false); syncExplore(); syncAltLegend();
   setFollow(true); followOff = followTarget();
-  if (V.z < 9.5) setView(V.u, V.v, 10.2);
-  render3D(); dirty = true;
+  render3D();
+  const gl = !GL.failed && await enterGL();
+  if (!threeD) { exitGL(); return; }
+  document.body.classList.toggle("gl3d", gl);
+  if (!gl) { if (V.z < 9.5) setView(V.u, V.v, 10.2); toast("Full 3D needs the online app. Showing a tilted map instead."); }
+  dirty = true;
 }
 function exit3D() {
   if (!threeD) return;
-  threeD = false; document.body.classList.remove("three-d"); $("#hud3d").hidden = true;
+  threeD = false; exitGL(); document.body.classList.remove("three-d", "gl3d"); $("#hud3d").hidden = true;
   const st = $("#stage"); st.style.transform = ""; st.style.transformOrigin = "";
   if (selected) { showPeek(true); centreOn(selected); }
   syncExplore(); syncAltLegend(); dirty = true;
 }
 function apply3D() {
-  if (!threeD) return;
+  if (!threeD || GL.on) return;
   if (!selected || !acMap.has(selected.hex)) { exit3D(); return; }
   rot3 = (rot3 + wrap180((selected.track || 0) - rot3) * 0.08 + 360) % 360;
   const ox = V.cx, oy = V.cy - followOff, st = $("#stage");
@@ -3987,18 +4006,276 @@ function render3D() {
   $("#h3Alt").innerHTML = a.ground ? "Ground" : `${fmtInt(a.alt)}<small>ft</small>`;
   $("#h3Spd").innerHTML = `${fmtInt(a.gs)}<small>kt</small>`;
   $("#h3Hdg").textContent = a.track == null ? "—" : String(Math.round(a.track)).padStart(3, "0") + "°";
-  $("#h3Vs").innerHTML = a.vs == null || a.ground ? "—" : `${a.vs > 0 ? "+" : ""}${fmtInt(a.vs)}<small>fpm</small>`;
+  $("#h3Vs").innerHTML = a.vs == null || a.ground ? "—" : Math.abs(a.vs) >= 1000 ? `${a.vs > 0 ? "+" : "−"}${(Math.abs(a.vs) / 1000).toFixed(1)}k<small>fpm</small>` : `${a.vs > 0 ? "+" : ""}${fmtInt(a.vs)}<small>fpm</small>`;
 }
 $("#pk3D").addEventListener("click", enter3D);
 $("#h3X").addEventListener("click", exit3D);
 $("#h3Exit").addEventListener("click", exit3D);
-$("#h3In").addEventListener("click", () => { setView(V.u, V.v, clamp(V.z + 0.6, minZoom, MAXZ)); dirty = true; });
-$("#h3Out").addEventListener("click", () => { setView(V.u, V.v, clamp(V.z - 0.6, minZoom, MAXZ)); dirty = true; });
-$("#h3Tilt").addEventListener("click", () => { tilt3 = tilt3 === 58 ? 70 : tilt3 === 70 ? 45 : 58; });
+$("#h3In").addEventListener("click", () => { if (GL.on) GL.dist = clamp(GL.dist / 1.5, 1.2, 320); else setView(V.u, V.v, clamp(V.z + 0.6, minZoom, MAXZ)); dirty = true; });
+$("#h3Out").addEventListener("click", () => { if (GL.on) GL.dist = clamp(GL.dist * 1.5, 1.2, 320); else setView(V.u, V.v, clamp(V.z - 0.6, minZoom, MAXZ)); dirty = true; });
 setInterval(render3D, 1000);
 
 /* ---- Installable app ---- */
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost") && !/claude|anthropic/.test(location.host)) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* ================= Real 3D view (WebGL via three.js, loaded on demand) =================
+   - Coordinates: a local east-north-up plane around a moving origin. 1 unit = 1 km; height is
+     exaggerated (×4) so climbs and descents read clearly. The origin re-centres as the plane flies.
+   - Smoothing: every aircraft keeps its own render state. Positions come from dead reckoning
+     (speed and track) blended into each new report; altitude follows climb rate; heading, bank
+     and altitude are eased every frame, so nothing jumps when a 5-second update arrives.
+   - Speed: all aircraft are one instanced mesh (a single draw call), altitude stalks are one line
+     batch, and only the nearest ~36 get labels, so hundreds of aircraft stay smooth on phones. */
+const GL = { on: false, THREE: null, failed: false, mode: "chase", yaw: 0, pitch: 0.32, dist: 9, cam: null, look: null, rs: new Map(), O: null, last: 0, raf: 0, labels: [], drag: null, pinch: null, z0: 7 };
+const KM_LAT = 110.574, KM_LON = 111.32, EXAG = 4, GR = 420, MAXI = 2500;
+const THREE_URLS = ["https://unpkg.com/three@0.170.0/build/three.module.min.js", "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"];
+async function loadThree() {
+  if (GL.THREE) return GL.THREE;
+  for (const u of THREE_URLS) { try { GL.THREE = await import(u); return GL.THREE; } catch (e) {} }
+  return null;
+}
+function glOrigin(lat, lon) { GL.O = { lat, lon, cos: Math.cos(lat * D2R) }; }
+function enu(lat, lon, altFt, out) {
+  const O = GL.O;
+  out.x = wrap180(lon - O.lon) * KM_LON * O.cos;
+  out.z = -(lat - O.lat) * KM_LAT;
+  out.y = Math.max(0, altFt || 0) * 0.0003048 * EXAG + 0.02;
+  return out;
+}
+/* Plane silhouette from the app's own icon path, extruded into a thin 3D shape */
+function planeGeometry(T) {
+  const pts = [], re = /([MLCZ])([^MLCZ]*)/g; let m;
+  while ((m = re.exec(PLANE_D))) {
+    const n = (m[2].match(/-?\d*\.?\d+/g) || []).map(Number);
+    if (m[1] === "M" || m[1] === "L") pts.push([n[0], n[1]]);
+    else if (m[1] === "C") { for (let k = 0; k + 5 < n.length + 1; k += 6) pts.push([n[k + 4], n[k + 5]]); }
+  }
+  const sh = new T.Shape(); pts.forEach(([x, y], i) => { const X = (x - 32) / 64, Y = -(y - 32) / 64; if (i) sh.lineTo(X, Y); else sh.moveTo(X, Y); });
+  const g = new T.ExtrudeGeometry(sh, { depth: 0.07, bevelEnabled: false });
+  g.translate(0, 0, -0.035); g.rotateX(-Math.PI / 2); g.computeVertexNormals();
+  return g;
+}
+function groundCanvas() {
+  const N = 2048, c = GL.gc || (GL.gc = document.createElement("canvas")); c.width = c.height = N;
+  const g = c.getContext("2d"), O = GL.O, px = N / (2 * GR), dark = C.dark;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.fillStyle = dark ? "#0a0e13" : "#dfe6ec"; g.fillRect(0, 0, N, N);
+  const u0 = lonToU(O.lon), v0 = latToV(O.lat), kx = 360 * O.cos * KM_LON, ky = 360 * O.cos * KM_LAT;
+  for (const off of [-1, 0, 1]) {
+    g.setTransform(kx * px, 0, 0, ky * px, ((off - u0) * kx + GR) * px, (GR - v0 * ky) * px);
+    g.fillStyle = dark ? "#1b1d21" : "#f6f6f4"; g.fill(LAND, "evenodd");
+    g.lineWidth = 2.2 / (kx * px); g.strokeStyle = dark ? "#4a4f57" : "#9aa3ad"; g.stroke(COAST);
+    g.lineWidth = 1.2 / (kx * px); g.strokeStyle = dark ? "#2e3238" : "#c4c9cf"; g.stroke(BORDER);
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  // 50 km grid
+  g.strokeStyle = dark ? "rgba(255,255,255,.045)" : "rgba(0,0,0,.05)"; g.lineWidth = 1;
+  for (let k = -GR; k <= GR; k += 50) { const p = (k + GR) * px; g.beginPath(); g.moveTo(p, 0); g.lineTo(p, N); g.moveTo(0, p); g.lineTo(N, p); g.stroke(); }
+  // airports and runway bars
+  g.font = `700 10px ${getComputedStyle(document.body).fontFamily}`; g.textAlign = "left"; g.textBaseline = "middle";
+  const o = { x: 0, y: 0, z: 0 };
+  for (const ap of AIRPORTS) {
+    enu(ap[4], ap[5], 0, o); if (Math.abs(o.x) > GR || Math.abs(o.z) > GR) continue;
+    const x = (o.x + GR) * px, y = (o.z + GR) * px;
+    const rw = RUNWAYS[ap[0]];
+    if (rw) for (const r of rw.split(";")) { const h = +r.split("/")[2] * D2R, L = 1.6 * px; g.strokeStyle = dark ? "#cfd4da" : "#5c636b"; g.lineWidth = 3; g.beginPath(); g.moveTo(x - Math.sin(h) * L, y + Math.cos(h) * L); g.lineTo(x + Math.sin(h) * L, y - Math.cos(h) * L); g.stroke(); }
+    else { g.fillStyle = dark ? "#8b9198" : "#6d747c"; g.fillRect(x - 2, y - 2, 4, 4); }
+    if (ap[6]) { g.fillStyle = dark ? "rgba(255,255,255,.75)" : "rgba(0,0,0,.7)"; g.fillText(ap[1] || ap[0], x + 8, y); }
+  }
+  return c;
+}
+function glBuild(T) {
+  const host = $("#view3d");
+  const renderer = new T.WebGLRenderer({ canvas: $("#gl3d"), antialias: true, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  const scene = new T.Scene();
+  const sky = C.dark ? 0x0b1526 : 0xbcd3e8;
+  scene.background = new T.Color(sky); scene.fog = new T.Fog(sky, 160, GR * 0.98);
+  const camera = new T.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 2000);
+  scene.add(new T.HemisphereLight(0xffffff, 0x445566, 1.1));
+  const sun = new T.DirectionalLight(0xffffff, 1.4); sun.position.set(-0.5, 1, 0.3); scene.add(sun);
+  // ground
+  const tex = new T.CanvasTexture(groundCanvas()); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const ground = new T.Mesh(new T.PlaneGeometry(GR * 2, GR * 2), new T.MeshBasicMaterial({ map: tex }));
+  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  // aircraft: one instanced mesh for everyone, one mesh for the selected plane
+  const geo = planeGeometry(T);
+  const mat = new T.MeshLambertMaterial({ color: 0xffffff });
+  const fleet = new T.InstancedMesh(geo, mat, MAXI); fleet.instanceMatrix.setUsage(T.DynamicDrawUsage); fleet.frustumCulled = false; fleet.count = 0; scene.add(fleet);
+  fleet.setColorAt(0, new T.Color(1, 1, 1)); fleet.instanceColor.setUsage(T.DynamicDrawUsage);
+  const sel = new T.Mesh(geo, new T.MeshLambertMaterial({ color: 0xff5a4a, emissive: 0x551000 })); scene.add(sel);
+  // altitude stalks (plane to ground), one batch
+  const stalkPos = new Float32Array(MAXI * 6), stalkGeo = new T.BufferGeometry();
+  stalkGeo.setAttribute("position", new T.BufferAttribute(stalkPos, 3).setUsage(T.DynamicDrawUsage));
+  const stalks = new T.LineSegments(stalkGeo, new T.LineBasicMaterial({ color: C.dark ? 0x8899aa : 0x445566, transparent: true, opacity: 0.22 })); stalks.frustumCulled = false; scene.add(stalks);
+  // selected plane: trail and ground shadow line
+  const trailGeo = new T.BufferGeometry(); trailGeo.setAttribute("position", new T.BufferAttribute(new Float32Array(1600 * 3), 3).setUsage(T.DynamicDrawUsage));
+  const trail = new T.Line(trailGeo, new T.LineBasicMaterial({ color: 0xffc21a, transparent: true, opacity: 0.85 })); trail.frustumCulled = false; scene.add(trail);
+  GL.r = { renderer, scene, camera, ground, tex, fleet, sel, stalks, stalkPos, trail, trailGeo, dummy: new T.Object3D(), col: new T.Color(), v: new T.Vector3(), host };
+  GL.cam = new T.Vector3(); GL.look = new T.Vector3();
+}
+function glRecentre(lat, lon) {
+  glOrigin(lat, lon);
+  const r = GL.r; if (!r) return;
+  groundCanvas(); r.tex.needsUpdate = true; GL.rs.clear();
+}
+const PLANE_COLORS = new Map();
+function planeColor(a) {
+  const k = a.emerg ? "e" : a.ground ? "g" : a.mil ? "m" : S.altColor ? altStyle(a.alt) : "a";
+  let c = PLANE_COLORS.get(k);
+  if (!c) { const hex = k === "e" ? "#ff5a43" : k === "g" ? "#9a9a9a" : k === "m" ? "#c9cd86" : k === "a" ? "#ffcc33" : ALT_BANDS[+k.slice(3)][1]; c = new GL.THREE.Color(hex); PLANE_COLORS.set(k, c); }
+  return c;
+}
+/* Smoothed render state for one aircraft at time `now` */
+const _o = { lat: 0, lon: 0 }, _p = { x: 0, y: 0, z: 0 };
+function glState(a, now, dt) {
+  let s = GL.rs.get(a.hex);
+  displayPos(a, now, _o);
+  const age = Math.min(30, Math.max(0, (now - a.t0) / 1000));
+  const altT = a.ground ? 0 : (a.alt || 0) + (a.vs || 0) * age / 60;
+  enu(_o.lat, _o.lon, altT, _p);
+  const hdg = a.track == null ? (s ? s.h : 0) : a.track;
+  if (!s) { s = { x: _p.x, y: _p.y, z: _p.z, h: hdg, roll: 0, seen: now }; GL.rs.set(a.hex, s); }
+  const k = Math.min(1, dt * 4), kh = Math.min(1, dt * 2.2);
+  s.x += (_p.x - s.x) * k; s.z += (_p.z - s.z) * k; s.y += (_p.y - s.y) * Math.min(1, dt * 2);
+  const dh = wrap180(hdg - s.h); s.h = (s.h + dh * kh + 360) % 360;
+  s.roll += (clamp(dh * 0.035, -0.55, 0.55) - s.roll) * Math.min(1, dt * 3);
+  s.pitch = a.ground ? 0 : clamp((a.vs || 0) / 9000, -0.22, 0.22);
+  s.seen = now;
+  return s;
+}
+function glFrame(t) {
+  if (!GL.on) return;
+  GL.raf = requestAnimationFrame(glFrame);
+  const r = GL.r, T = GL.THREE, now = performance.now();
+  const dt = GL.last ? Math.min(0.1, (now - GL.last) / 1000) : 0.016; GL.last = now;
+  const a0 = selected;
+  if (!a0 || !acMap.has(a0.hex)) { exit3D(); return; }
+  // keep the origin near the selected plane
+  displayPos(a0, now, _o);
+  if (distNm(GL.O.lat, GL.O.lon, _o.lat, _o.lon) > 80) glRecentre(_o.lat, _o.lon);
+  const S0 = glState(a0, now, dt);
+  // aircraft
+  const cam = r.camera, cp = cam.position, d = r.dummy, list = [];
+  let n = 0;
+  for (const a of acMap.values()) {
+    if (a === a0 || !passes(a)) continue;
+    const s = glState(a, now, dt);
+    if (Math.abs(s.x) > GR || Math.abs(s.z) > GR) continue;
+    if (n >= MAXI) break;
+    const dist = Math.hypot(s.x - cp.x, s.y - cp.y, s.z - cp.z), sc = clamp(0.28 + dist * 0.019, 0.3, 9);
+    d.position.set(s.x, s.y, s.z); d.rotation.set(s.pitch, -s.h * D2R, -s.roll, "YXZ"); d.scale.setScalar(sc); d.updateMatrix();
+    r.fleet.setMatrixAt(n, d.matrix); r.fleet.setColorAt(n, planeColor(a));
+    const sp = r.stalkPos, j = n * 6; sp[j] = sp[j + 3] = s.x; sp[j + 1] = s.y; sp[j + 4] = 0.01; sp[j + 2] = sp[j + 5] = s.z;
+    list.push({ a, s, dist }); n++;
+  }
+  r.fleet.count = n; r.fleet.instanceMatrix.needsUpdate = true; if (r.fleet.instanceColor) r.fleet.instanceColor.needsUpdate = true;
+  r.stalks.geometry.setDrawRange(0, n * 2); r.stalks.geometry.attributes.position.needsUpdate = true;
+  // selected plane
+  const selScale = GL.mode === "cockpit" ? 0.001 : clamp(GL.dist * 0.075, 0.25, 14);
+  r.sel.position.set(S0.x, S0.y, S0.z); r.sel.rotation.set(S0.pitch, -S0.h * D2R, -S0.roll, "YXZ"); r.sel.scale.setScalar(selScale);
+  // trail every ~0.5 s
+  if (!GL.trailAt || now - GL.trailAt > 500) {
+    GL.trailAt = now;
+    const arr = r.trailGeo.attributes.position.array, tr = (a0.trail || []).slice(-1500); let m = 0; const o = { x: 0, y: 0, z: 0 };
+    for (const p of tr) { enu(p.lat, p.lon, p.alt, o); arr[m * 3] = o.x; arr[m * 3 + 1] = o.y; arr[m * 3 + 2] = o.z; m++; }
+    arr[m * 3] = S0.x; arr[m * 3 + 1] = S0.y; arr[m * 3 + 2] = S0.z; m++;
+    r.trailGeo.setDrawRange(0, m); r.trailGeo.attributes.position.needsUpdate = true;
+  }
+  // camera
+  const hr = S0.h * D2R, fx = Math.sin(hr), fz = -Math.cos(hr);
+  let want, look;
+  if (GL.mode === "cockpit") {
+    want = new T.Vector3(S0.x + fx * 0.05, S0.y + 0.03, S0.z + fz * 0.05);
+    const yaw = hr + GL.yaw, pitch = -0.08 - GL.pitch * 0.3;
+    look = new T.Vector3(want.x + Math.sin(yaw) * Math.cos(pitch), want.y + Math.sin(pitch), want.z - Math.cos(yaw) * Math.cos(pitch));
+    cam.fov = 70;
+  } else {
+    const yaw = (GL.mode === "chase" ? hr : 0) + GL.yaw, pitch = clamp(GL.pitch, -0.05, 1.45);
+    want = new T.Vector3(S0.x - Math.sin(yaw) * Math.cos(pitch) * GL.dist, S0.y + Math.sin(pitch) * GL.dist, S0.z + Math.cos(yaw) * Math.cos(pitch) * GL.dist);
+    if (want.y < 0.15) want.y = 0.15;
+    look = new T.Vector3(S0.x, S0.y, S0.z); cam.fov = 55;
+  }
+  if (!GL.camInit) { GL.cam.copy(want); GL.look.copy(look); GL.camInit = true; }
+  const kc = GL.mode === "cockpit" ? 1 : Math.min(1, dt * 5);
+  GL.cam.lerp(want, kc); GL.look.lerp(look, Math.min(1, dt * 8));
+  cam.position.copy(GL.cam); cam.lookAt(GL.look); cam.updateProjectionMatrix();
+  r.renderer.render(r.scene, cam);
+  glLabels(list, a0, S0);
+  // drop states for planes that left
+  if (!GL.gcAt || now - GL.gcAt > 5000) { GL.gcAt = now; for (const [k, s] of GL.rs) if (now - s.seen > 4000) GL.rs.delete(k); }
+}
+function glLabels(list, a0, S0) {
+  const cv = $("#gl3dLabels"), w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const cam = GL.r.camera, v = GL.r.v, font = getComputedStyle(document.body).fontFamily;
+  GL.labels = []; const boxes = [];
+  const put = (a, s, strong) => {
+    v.set(s.x, s.y, s.z).project(cam);
+    if (v.z > 1 || v.z < -1) return;
+    const x = (v.x * 0.5 + 0.5) * w, y = (-v.y * 0.5 + 0.5) * h;
+    if (x < -40 || x > w + 40 || y < -40 || y > h + 40) return;
+    GL.labels.push({ a, x, y });
+    const t = callOf(a), t2 = a.ground ? "GND" : altTag(a);
+    g.font = `700 12px ${font}`; const bw = Math.max(g.measureText(t).width, g.measureText(t2).width) + 14, bh = 30, bx = x - bw / 2, by = y - 44;
+    if (!strong && boxes.some((b) => bx < b.x + b.w && bx + bw > b.x && by < b.y + b.h && by + bh > b.y)) return;
+    boxes.push({ x: bx, y: by, w: bw, h: bh });
+    g.fillStyle = strong ? "rgba(229,55,42,.92)" : "rgba(12,12,14,.72)"; g.beginPath(); if (g.roundRect) g.roundRect(bx, by, bw, bh, 8); else g.rect(bx, by, bw, bh); g.fill();
+    g.fillStyle = strong ? "#fff" : "#ffd23c"; g.textAlign = "center"; g.textBaseline = "top"; g.fillText(t, x, by + 4);
+    g.font = `500 10.5px ${font}`; g.fillStyle = "#fff"; g.fillText(t2, x, by + 17);
+  };
+  if (GL.mode !== "cockpit") put(a0, S0, true);
+  list.sort((p, q) => p.dist - q.dist);
+  for (const it of list.slice(0, 36)) put(it.a, it.s, false);
+}
+async function enterGL() {
+  const T = await loadThree();
+  if (!T) return false;
+  try {
+    const a = selected; displayPos(a, performance.now(), _o); glOrigin(_o.lat, _o.lon);
+    if (!GL.r) glBuild(T); else { glRecentre(_o.lat, _o.lon); GL.r.renderer.setSize(innerWidth, innerHeight, false); }
+    $("#view3d").hidden = false; GL.on = true; GL.camInit = false; GL.last = 0; GL.yaw = 0; GL.pitch = 0.32; GL.dist = 9;
+    GL.z0 = V.z; setView(V.u, V.v, 7.2); // wider live-data area around the plane
+    setMode3D(GL.mode); GL.raf = requestAnimationFrame(glFrame);
+    return true;
+  } catch (e) { GL.failed = true; return false; }
+}
+function exitGL() {
+  if (!GL.on) return;
+  GL.on = false; cancelAnimationFrame(GL.raf); $("#view3d").hidden = true;
+  setView(V.u, V.v, Math.max(GL.z0, 8));
+}
+function setMode3D(m) {
+  GL.mode = m; GL.yaw = 0; GL.pitch = m === "orbit" ? 0.55 : 0.32; GL.dist = m === "orbit" ? 18 : 9;
+  for (const b of document.querySelectorAll("[data-cam]")) b.setAttribute("aria-pressed", String(b.dataset.cam === m));
+}
+addEventListener("resize", () => { if (GL.on && GL.r) { GL.r.renderer.setSize(innerWidth, innerHeight, false); GL.r.camera.aspect = innerWidth / innerHeight; GL.r.camera.updateProjectionMatrix(); } });
+/* Camera controls: drag to look around, pinch or scroll to zoom, tap a plane to switch to it */
+(() => {
+  const el = $("#gl3dLabels"), pts = new Map();
+  el.addEventListener("pointerdown", (e) => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); GL.drag = { x: e.clientX, y: e.clientY, yaw: GL.yaw, pitch: GL.pitch, moved: false }; if (pts.size === 2) { const [p, q] = [...pts.values()]; GL.pinch = { d: Math.hypot(p.x - q.x, p.y - q.y), dist: GL.dist }; } });
+  el.addEventListener("pointermove", (e) => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2 && GL.pinch) { const [p, q] = [...pts.values()]; GL.dist = clamp(GL.pinch.dist * GL.pinch.d / Math.max(10, Math.hypot(p.x - q.x, p.y - q.y)), 1.2, 320); if (GL.drag) GL.drag.moved = true; return; }
+    const d = GL.drag; if (!d) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y; if (Math.hypot(dx, dy) > 6) d.moved = true;
+    if (!d.moved) return;
+    GL.yaw = d.yaw - dx * 0.006; GL.pitch = clamp(d.pitch + dy * 0.005, -0.4, 1.45);
+  });
+  const up = (e) => {
+    const d = GL.drag; pts.delete(e.pointerId); if (pts.size < 2) GL.pinch = null;
+    if (!d || pts.size) return; GL.drag = null;
+    if (d.moved) return;
+    let best = null, bd = 34;
+    for (const L of GL.labels) { const dd = Math.hypot(L.x - e.clientX, L.y - e.clientY - 20); if (dd < bd) { bd = dd; best = L; } }
+    if (best && best.a !== selected) { selected = best.a; selectedLost = false; lookup(best.a); fetchPhoto(best.a); fetchTrack(best.a); GL.camInit = false; render3D(); }
+  };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  el.addEventListener("wheel", (e) => { e.preventDefault(); GL.dist = clamp(GL.dist * Math.exp(e.deltaY * 0.0015), 1.2, 320); }, { passive: false });
+  for (const b of document.querySelectorAll("[data-cam]")) b.addEventListener("click", () => setMode3D(b.dataset.cam));
+})();
 
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
