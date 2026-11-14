@@ -1433,7 +1433,7 @@ const tiles = new Map();
 let tileLoads = 0, tileErrs = 0, tilesBroken = false, tilesPending = 0;
 const STYLES = {
   vector: { label: "Map", vector: true, dark: "https://tiles.openfreemap.org/styles/dark", light: "https://tiles.openfreemap.org/styles/positron" },
-  streets: { label: "Streets (colour)", vector: true, dark: "https://tiles.openfreemap.org/styles/liberty", light: "https://tiles.openfreemap.org/styles/liberty" },
+  streets: { label: "Streets (colour)", vector: true, dark: "https://tiles.openfreemap.org/styles/liberty", light: "https://tiles.openfreemap.org/styles/liberty?tint=light" },
   dark: { label: "CARTO (key)", dark: "dark_all", light: "light_all" },
   outline: { label: "Built-in", dark: null, light: null },
 };
@@ -1496,9 +1496,22 @@ const MAP_LIGHT = {
   boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" }, boundary_disputed: { "line-color": "#7f906f" },
   water_name_point_label: { "text-color": "#123f73" }, water_name_line_label: { "text-color": "#123f73" }, waterway_line_label: { "text-color": "#1f5a96" },
 };
+/* Streets (colour) in light mode: keep its roads, swap in green land and blue water */
+const STREETS_LIGHT = {
+  background: { "background-color": "#cfe6a5" },
+  natural_earth: { "raster-opacity": 0.22 },
+  park: { "fill-color": "#bddc95" }, park_outline: { "line-color": "rgba(189,220,149,0.6)" },
+  landcover_wood: { "fill-color": "rgba(150,200,110,0.55)" }, landcover_grass: { "fill-color": "#bfdd97" },
+  landuse_residential: { "fill-color": "#dbe4c4" },
+  water: { "fill-color": "#4ea7ea" }, waterway_river: { "line-color": "#4ea7ea" }, waterway_other: { "line-color": "#4ea7ea" }, waterway_tunnel: { "line-color": "#4ea7ea" },
+  aeroway_fill: { "fill-color": "#e6ebd8" },
+  boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" },
+};
 function tintBasemap() {
-  if (!ml || mlStyleUrl !== STYLES.vector.light) return;
-  for (const [id, props] of Object.entries(MAP_LIGHT)) {
+  if (!ml || !S.paper) return;
+  const set = mlStyleUrl === STYLES.vector.light ? MAP_LIGHT : mlStyleUrl === STYLES.streets.light ? STREETS_LIGHT : null;
+  if (!set) return;
+  for (const [id, props] of Object.entries(set)) {
     if (!ml.getLayer(id)) continue;
     for (const [k, v] of Object.entries(props)) { try { ml.setPaintProperty(id, k, v); } catch (e) {} }
   }
