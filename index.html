@@ -25,6 +25,9 @@
   --line: rgba(255, 255, 255, 0.09);
   --land: #161616;
   --sea: #070707;
+  --ring: #1b1b1d;
+  --accent-t: var(--accent);
+  --gut: 16px;
   --panel: rgba(22, 22, 24, 0.86);
   --card: rgba(255, 255, 255, 0.055);
   --card-2: rgba(255, 255, 255, 0.1);
@@ -46,6 +49,8 @@
   --line: rgba(0, 0, 0, 0.08);
   --land: #cfe6a5;
   --sea: #4ea7ea;
+  --ring: #f7f7f6;
+  --accent-t: #b07a00;
   --panel: rgba(250, 250, 249, 0.9);
   --card: rgba(0, 0, 0, 0.035);
   --card-2: rgba(0, 0, 0, 0.065);
@@ -445,11 +450,11 @@ select.sel { height: 40px; padding: 0 10px; border: 1px solid var(--line); borde
 .sf-h .nm span { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sf-h .del { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: var(--accent); }
 .sf-h .del svg { width: 19px; height: 19px; fill: currentColor; }
-.chip { flex: none; height: 24px; padding: 0 9px; border-radius: 8px; font: 800 10.5px/24px var(--font-ui); letter-spacing: .06em; text-transform: uppercase; background: var(--card-2); color: var(--ink-2); }
-.chip.air { background: #1f9d55; color: #fff; }
-.chip.gnd { background: #6b6b70; color: #fff; }
-.chip.alert { background: var(--alert); color: #fff; }
-.chip.done { background: #0a84ff; color: #fff; }
+.sfc { flex: none; height: 24px; padding: 0 9px; border-radius: 8px; font: 800 10.5px/24px var(--font-ui); letter-spacing: .06em; text-transform: uppercase; background: var(--card-2); color: var(--ink-2); }
+.sfc.air { background: #1f9d55; color: #fff; }
+.sfc.gnd { background: #6b6b70; color: #fff; }
+.sfc.alert { background: var(--alert); color: #fff; }
+.sfc.done { background: #0a84ff; color: #fff; }
 .sf-t { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .sf-t > div { border-radius: 14px; background: var(--card-2); padding: 9px 11px; display: grid; gap: 3px; }
 .sf-t small { font: 700 10px/1 var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
@@ -839,12 +844,12 @@ body.three-d .fog3d { display: block; position: fixed; z-index: 2; left: 0; righ
   .pk-photo .art .pl { width: 92px; height: 92px; top: 48%; }
   .pk-photo .art .wm { font-size: 84px; }
   .pk-photo .cr { font-size: 11px; }
-  .pk-main { grid-area: main; padding: 16px 18px 12px; }
+  .pk-main { grid-area: main; padding: 16px var(--gut) 12px; }
   .pk-top b { font-size: 28px; }
-  .pk-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 4px 12px 12px; flex: none; }
+  .pk-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 4px var(--gut) var(--gut); flex: none; }
   .pk-grid .pk-route { grid-column: 1 / -1; padding: 14px 16px 12px; }
   .pk-grid .pk-side { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; padding: 12px 16px; }
-  .pk-cell { white-space: normal; line-height: 1.3; }
+  .pk-cell { font-size: 15px; line-height: 1.3; }
   .peek .abar { margin-top: auto; padding-bottom: 0; }
   .sheet { top: calc(env(safe-area-inset-top) + 16px); bottom: 16px; right: 16px; width: calc(var(--dock) - 16px); border-radius: 26px; border: 1px solid var(--line); padding-top: 0; transform: translateX(calc(100% + 32px)); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); }
   .sheet.open { transform: none; }
@@ -863,6 +868,79 @@ body.gl3d .fog3d { display: none; }
 .h3-ctl .h3-cams button[aria-pressed="true"] { background: #fff; color: #111; }
 @media (min-width: 900px) { .h3-bot { left: auto; width: 520px; right: 16px; } .h3-top { right: auto; width: 520px; } }
 
+
+/* ================= Polish: one spacing scale, centred pills and badges ================= */
+/* Gutters: every sheet and section lines up on the same 16px edge */
+.sec > header, .near-h { padding-left: var(--gut); padding-right: var(--gut); }
+.rail { padding-left: var(--gut); padding-right: var(--gut); scroll-padding: 0 var(--gut); }
+.live, .ngrid, #exSearch { padding-left: var(--gut); padding-right: var(--gut); }
+.foot { padding: 16px var(--gut) 0; }
+.empty-card { width: calc(100% - var(--gut) * 2); }
+.sheet-head { padding: 14px var(--gut) 12px; }
+.sheet-body { padding-left: var(--gut); padding-right: var(--gut); }
+.ex-top { padding-left: var(--gut); padding-right: var(--gut); }
+.vpad { padding-left: var(--gut); padding-right: var(--gut); }
+.vhead { padding-left: calc(var(--gut) - 6px); padding-right: calc(var(--gut) - 6px); }
+/* Quick tiles: first and last icon sit exactly on the gutter, equal space between */
+.quick { grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 0; padding: 8px var(--gut) 2px; }
+.ex-top { padding-bottom: 6px; }
+.qt { min-width: 54px; }
+/* Card insides: 14px everywhere */
+.card, .stat, .sf { padding: 14px; }
+.arow { padding: 10px 14px; }
+.res { padding: 10px 0; }
+#exSearch h4 { margin: 16px 0 6px; }
+#exSearch .empty { padding: 14px 0; }
+
+/* Shared pill rules: flex-centred, no line-height tricks, tabular numbers */
+.badge, .seg2 button small, .pk-top .tg, .media .tag, .ncard .alt, .sfc, .fc, .flag, .chips2 span, .res-hero .go, .amap .go {
+  display: inline-flex; align-items: center; justify-content: center; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; box-sizing: border-box;
+}
+/* Letter-spaced pills: the last letter's tracking would add space on the right, so take it back */
+.sfc { padding: 0 calc(9px - .06em) 0 9px; line-height: 1; }
+.fc { padding: 0 calc(8px - .06em) 0 8px; }
+.flag { height: 20px; padding: 0 calc(7px - .04em) 0 7px; vertical-align: 5px; }
+
+/* Notification badges on the quick tiles */
+.badge { top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font: 700 11px/1 var(--font-ui); letter-spacing: 0; border: 2px solid var(--ring); text-align: center; }
+
+/* Counts in segmented tabs */
+.seg2 button small { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 11.5px; }
+
+/* Aircraft type / IATA tags in the flight card */
+.pk-top .tg { height: 24px; padding: 0 8px; border-radius: 7px; font-size: 12.5px; }
+
+/* Tags on photos */
+.media .tag { height: 24px; padding: 0 9px; gap: 3px; font-size: 11.5px; }
+.ncard .alt { height: 22px; padding: 0 8px; gap: 2px; font-size: 10.5px; left: 8px; top: 8px; }
+.media .tag.up::before, .ncard .alt.up::before { content: "↑"; }
+.media .tag.down::before, .ncard .alt.down::before { content: "↓"; }
+.ncard .dist { top: 11px; right: 10px; }
+
+.chips2 span { height: 28px; padding: 0 10px; gap: 5px; font-size: 12.5px; }
+.chips2 span b { margin-right: 0; }
+.res-hero .go, .amap .go { line-height: 1; }
+
+/* Map status chips (top left): compact, readable, equal padding both sides */
+.chips .chip { height: 30px; padding: 0 12px; gap: 7px; border-radius: 999px; font: 700 11.5px/1 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); background: var(--panel); }
+.chips .chip > span:last-of-type { margin-right: -.04em; }
+.chips .chip .dot { width: 7px; height: 7px; }
+.chips .chip.alert { background: var(--alert); color: #fff; }
+.chips .chip.filter { background: var(--accent); color: #111; }
+.chips .chip.hint { height: auto; padding: 8px 12px; font-weight: 500; text-transform: none; letter-spacing: 0; line-height: 1.35; color: var(--ink-2); }
+
+/* Live-now tiles: labels stay on one line so all four tiles match */
+.astats div { padding: 10px 4px; display: grid; gap: 4px; align-content: center; }
+.astats span { font-size: 9.5px; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Action bars: every icon the same size, labels on one baseline */
+.abar #btnSave svg, .abar #pkSave svg { width: 25px; height: 25px; }
+.abar #btnSave[aria-pressed="true"], .abar #pkSave[aria-pressed="true"] { background: none; border: 0; color: var(--accent); }
+.abar button span { line-height: 1.15; }
+
+/* Accent used as text (links, active labels): darker in light mode so it stays readable */
+.cancel, .vhead .back, .near-h .more, .more-btn, .abar button[aria-pressed="true"], .arow .cd, .chips2 span b, .res-hero .tx small { color: var(--accent-t); }
+.res-hero .tx small { color: #ffd23c; }
 </style>
 </head>
 <body>
@@ -3372,7 +3450,7 @@ function sfCard(f) {
     total = distNm(r.olat, r.olon, r.dlat, r.dlon) / 440 + 0.4;
   }
   const landed = live && a.ground && pct != null && pct > 0.85;
-  const chip = !live ? `<span class="chip">Not live</span>` : a.emerg ? `<span class="chip alert">${emergName(a.emerg)}</span>` : landed ? `<span class="chip done">Landed</span>` : a.ground ? `<span class="chip gnd">On ground</span>` : `<span class="chip air">In the air</span>`;
+  const chip = !live ? `<span class="sfc">Not live</span>` : a.emerg ? `<span class="sfc alert">${emergName(a.emerg)}</span>` : landed ? `<span class="sfc done">Landed</span>` : a.ground ? `<span class="sfc gnd">On ground</span>` : `<span class="sfc air">In the air</span>`;
   const off = f.offAt || (a && a._fullTrack && a.trail && a.trail.length ? a.trail[0].t : null);
   const left = !live ? ["Last seen", hhmm(f.lastSeen)] : a.ground && !landed ? ["Status", (a.gs || 0) > 3 ? "Taxiing" : "At the gate"] : ["Took off", off ? hhmm(off) : "—"];
   const right = landed ? ["Landed", st.landAt ? hhmm(st.landAt) : "Just now"] : eta ? ["Arrives", "~" + hhmm(eta)] : ["Arrives", st.eta && !live ? "~" + hhmm(st.eta) : "—"];
