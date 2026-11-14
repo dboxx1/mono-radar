@@ -4400,7 +4400,7 @@ async function wikiThumb(key, title) {
   if (wikiCache.has(key)) return wikiCache.get(key);
   const p = (async () => {
     try {
-      if (title && title.search) {
+      if (title && typeof title === "object" && title.search) {
         const j = await getJSON(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&gsrsearch=${encodeURIComponent(title.search)}&prop=pageimages&piprop=thumbnail&pithumbsize=320`, 8000);
         const pg = j && j.query && j.query.pages && Object.values(j.query.pages)[0];
         const src = pg && pg.thumbnail && pg.thumbnail.source;
@@ -4409,7 +4409,7 @@ async function wikiThumb(key, title) {
       const j = await getJSON(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, "_"))}`, 8000);
       const src = j && j.type !== "disambiguation" && j.thumbnail && j.thumbnail.source;
       if (!src) return null;
-      return { src: sizeUp(src, 480), big: sizeUp(src, 960), page: j.content_urls && j.content_urls.mobile && j.content_urls.mobile.page, title: j.title };
+      return { src: sizeUp(src, 500), big: sizeUp(src, 960), page: j.content_urls && j.content_urls.mobile && j.content_urls.mobile.page, title: j.title };
     } catch (e) { return null; }
   })();
   wikiCache.set(key, p);
