@@ -1231,6 +1231,8 @@ if (!Array.isArray(S.saved.airports)) S.saved.airports = [];
 S.log = Array.isArray(S.log) ? S.log : [];
 if (!S.styleV) { S.style = "vector"; S.styleV = 2; }
 if (!S.lonFix) { S.lat = DEFAULTS.lat; S.lon = DEFAULTS.lon; S.zoom = DEFAULTS.zoom; S.lonFix = 1; }
+// a broken saved view (not a number) falls back to the default view
+if (![S.lat, S.lon, S.zoom].every(Number.isFinite)) { S.lat = DEFAULTS.lat; S.lon = DEFAULTS.lon; S.zoom = DEFAULTS.zoom; }
 let saveTimer;
 function savePrefs() {
   clearTimeout(saveTimer);
@@ -1248,6 +1250,7 @@ const V = { u: lonToU(S.lon), v: latToV(S.lat), z: S.zoom, ws: 256, cx: 0, cy: 0
 let W = 0, H = 0, DPR = 1, mapW = 0, minZoom = 1;
 const MAXZ = 17;
 function setView(u, v, z) {
+  if (!Number.isFinite(u) || !Number.isFinite(v) || !Number.isFinite(z)) return;
   V.z = clamp(z, minZoom, MAXZ); V.ws = 256 * Math.pow(2, V.z);
   V.u = ((u % 1) + 1) % 1;
   const half = H / 2 / V.ws;
@@ -2506,6 +2509,7 @@ function zoomAt(z2, px, py) {
   setView(u - (px - V.cx) / ws2, v - (py - V.cy) / ws2, z2);
 }
 function flyTo(lat, lon, z, ms = 700, offY = 0) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
   const zt = clamp(z ?? V.z, minZoom, MAXZ), tv = latToV(lat) + offY / (256 * Math.pow(2, zt));
   if (reduceMotion) { setView(lonToU(lon), tv, zt); viewSettled(); return; }
   let du = lonToU(lon) - V.u; du -= Math.round(du);
