@@ -1442,7 +1442,7 @@ function drawNight(g) {
   if (key !== nightKey || nowMs - nightAt > 30000) {
     nightKey = key; nightAt = nowMs;
     if (night.width !== nx || night.height !== ny) { night.width = nx; night.height = ny; }
-    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 36, tint = C.dark ? [0, 0, 0] : [10, 28, 70];
+    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 28, tint = C.dark ? [0, 0, 0] : [10, 28, 70];
     for (let j = 0; j < ny; j++) {
       const lat = toLatLon(0, V.v + ((j - 0.5) * cell - V.cy) / V.ws).lat * D2R, sl = Math.sin(lat), cl = Math.cos(lat);
       for (let i = 0; i < nx; i++) {
@@ -1735,7 +1735,7 @@ for (const [k, d] of Object.entries(SHAPE_DEFS)) {
   for (const part of ["wings", "tail", "eng", "body"]) if (s[part]) s.union.addPath(s[part]);
   SHAPES[k] = s;
 }
-const SHAPE_SIZE = { jet: 28, heavy: 35, quad: 37, biz: 22, turboprop: 25, light: 19, glider: 23, fighter: 22, heli: 24, vehicle: 11 };
+const SHAPE_SIZE = { jet: 25, heavy: 31, quad: 33, biz: 20, turboprop: 22, light: 17, glider: 21, fighter: 20, heli: 22, vehicle: 10 };
 const T_QUAD = new Set("A388 A343 A346 A342 A345 A340 B741 B742 B743 B744 B748 B74S B74R IL96 A124 C17 K35R E3TF E3CF B52 A400 C5M AN22 B703 DC8".split(" "));
 const T_HEAVY = new Set("A332 A333 A338 A339 A359 A35K A306 A30B A310 A3ST B762 B763 B764 B772 B773 B77L B77W B778 B779 B788 B789 B78X MD11 DC10 L101 KC10 K46 B752 B753 IL76 A330 A350".split(" "));
 const T_BIZ = new Set("C25A C25B C25C C25M C500 C501 C510 C525 C526 C550 C551 C55B C560 C56X C650 C680 C68A C700 C750 CL30 CL35 CL60 GL5T GL7T GLEX GLF4 GLF5 GLF6 G150 G280 GALX E35L E50P E55P E545 E550 FA10 FA20 FA50 FA7X FA8X FA6X F2TH F900 H25B H25C LJ31 LJ35 LJ40 LJ45 LJ55 LJ60 LJ70 LJ75 PC24 PRM1 HDJT BE40 SF50 EA50 ASTR WW24".split(" "));
@@ -1777,8 +1777,8 @@ function tones(style) {
   if (style === "sel") return { body: d ? "#ff6a5c" : "#f0503f", edgeTone: d ? "#d93425" : "#c42a1d", wing: d ? "#f2402f" : "#dc3b2c", eng: "#5e140c", edge: d ? "#ffffff" : "#1a1a1a", prop: "#ff6a5c", glow: d ? "rgba(255,74,61,.95)" : "rgba(229,55,42,.75)" };
   if (style === "emerg") return { body: "#ff6a5c", edgeTone: "#d93425", wing: "#f2402f", eng: "#5e140c", edge: d ? "rgba(0,0,0,.92)" : "#1a1a1a", prop: "#ff6a5c" };
   if (style === "mil") return d ? { body: "#cdd08a", edgeTone: "#a2a65e", wing: "#aeb26a", eng: "#4f5226", prop: "#cdd08a" } : { body: "#8f9440", edgeTone: "#6d7230", wing: "#7c8136", eng: "#3c3f18", prop: "#6d7230" };
-  return d ? { body: "#ffde1f", edgeTone: "#f2bd00", wing: "#ffcf0f", eng: "#3a2c00", edge: "rgba(0,0,0,.95)", prop: "#ffde1f" }
-           : { body: "#ffd814", edgeTone: "#efb700", wing: "#ffc800", eng: "#3a2c00", edge: "rgba(0,0,0,.9)", prop: "#7a5c00" };
+  return d ? { body: "#ffd83a", edgeTone: "#f3c21a", wing: "#ffd02a", eng: "#e3ad00", edge: "rgba(0,0,0,.9)", prop: "#ffd83a" }
+           : { body: "#ffd632", edgeTone: "#f1bd12", wing: "#ffcd22", eng: "#e0a800", edge: "rgba(45,35,0,.85)", prop: "#8a6a00" };
 }
 const TONE_CACHE = new Map(), GRADS = new Map();
 function tonesC(style) { const k = style + (C.dark ? 1 : 0); let t = TONE_CACHE.get(k); if (!t) { t = tones(style); TONE_CACHE.set(k, t); } return t; }
@@ -1793,7 +1793,7 @@ function planeMatrix(g, x, y, px, rot) {
   g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, (x - 32 * (c - s)) * DPR, (y - 32 * (s + c)) * DPR);
 }
 function outlinePlane(g, sh, T, px) {
-  g.lineJoin = "round"; g.strokeStyle = T.edge || "rgba(0,0,0,.9)"; g.lineWidth = 1.7 * 64 / px; g.stroke(sh.union);
+  g.lineJoin = "round"; g.strokeStyle = T.edge || "rgba(0,0,0,.9)"; g.lineWidth = 1.15 * 64 / px; g.stroke(sh.union);
 }
 function drawPlane(g, shape, style, px, x, y, rot) {
   const sh = SHAPES[shape], T = tonesC(style);
@@ -1834,7 +1834,7 @@ function shadowSprite(shape, px) {
   const pad = 6, full = px + pad * 2, c = document.createElement("canvas"); c.width = c.height = Math.ceil(full * DPR);
   const g = c.getContext("2d"), k = (px / 64) * DPR, off = 4000;
   g.setTransform(k, 0, 0, k, pad * DPR - off, pad * DPR);
-  g.shadowColor = C.dark ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.2)"; g.shadowBlur = 1.2 * DPR; g.shadowOffsetX = off;
+  g.shadowColor = C.dark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.24)"; g.shadowBlur = 2.4 * DPR; g.shadowOffsetX = off;
   g.fillStyle = "#000"; g.fill(SHAPES[shape].union);
   sp = { c, full };
   sprites.set(key, sp);
@@ -2425,9 +2425,8 @@ function draw(now) {
     for (const a of visible) {
       if (a.ground) continue;
       const px = Math.round(sizeFor(a._shape) * (a === selected ? 1.25 : 1)), rot = (a.track || 0) * D2R;
-      const off = 3.5 + clamp((a.alt || 0) / 38000, 0, 1) * px * 0.4;
-      if (vector) { planeMatrix(g, a._x + off, a._y + off * 1.15, px, rot); g.fill(SHAPES[a._shape].union); }
-      else { const sp = shadowSprite(a._shape, px), c = Math.cos(rot), s = Math.sin(rot); g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, (a._x + off) * DPR, (a._y + off * 1.15) * DPR); g.drawImage(sp.c, -sp.full / 2, -sp.full / 2, sp.full, sp.full); }
+      const off = 2 + clamp((a.alt || 0) / 38000, 0, 1) * px * 0.22;
+      { const sp = shadowSprite(a._shape, px), c = Math.cos(rot), s = Math.sin(rot); g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, (a._x + off) * DPR, (a._y + off * 1.15) * DPR); g.drawImage(sp.c, -sp.full / 2, -sp.full / 2, sp.full, sp.full); }
     }
   }
   for (const a of visible) {
