@@ -1956,7 +1956,7 @@ function customUrl(la, lo, r) {
 const APP_HOST = "https://mono-radar-six.vercel.app"; // your Vercel domain
 const HOSTED = /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.host);
 const FEED_HOSTS = [["https://api.adsb.lol/", "adsblol"], ["https://api.airplanes.live/", "airplanes"], ["https://opendata.adsb.fi/api/", "adsbfi"], ["https://opensky-network.org/api/", "opensky"], ["https://globe.adsb.lol/data/traces/", "trace_adsblol"], ["https://globe.airplanes.live/data/traces/", "trace_airplanes"], ["https://globe.adsb.fi/data/traces/", "trace_adsbfi"]];
-const TRACE_HOSTS = ["https://globe.adsb.lol/data/traces/", "https://globe.adsb.fi/data/traces/", "https://globe.airplanes.live/data/traces/"];
+const TRACE_HOSTS = ["https://globe.airplanes.live/data/traces/", "https://globe.adsb.lol/data/traces/", "https://globe.adsb.fi/data/traces/"];
 function viaProxy(url) {
   if (!HOSTED && location.protocol !== "capacitor:") return url;
   for (const [h, id] of FEED_HOSTS) if (url.startsWith(h)) return `${HOSTED ? "" : APP_HOST}/api/feed?src=${id}&q=${encodeURIComponent(url.slice(h.length))}`;
@@ -2922,8 +2922,15 @@ async function fetchTrack(a) {
   if (/^[0-9a-f]{6}$/.test(h)) {
     for (const host of TRACE_HOSTS) {
       try {
-        const pts = traceLeg(await getJSON(`${host}${h.slice(-2)}/trace_full_${h}.json`, 10000));
+        const base = `${host}${h.slice(-2)}/trace_`;
+        const [full, recent] = await Promise.all([getJSON(`${base}full_${h}.json`, 10000), getJSON(`${base}recent_${h}.json`, 8000).catch(() => null)]);
+        let pts = traceLeg(full);
         if (!pts) continue;
+        // the full-day file lags a few minutes; the recent file fills in the latest positions
+        if (recent && Array.isArray(recent.trace)) {
+          const tEnd = pts[pts.length - 1].t, r0 = recent.timestamp * 1000;
+          for (const q of recent.trace) { const t = r0 + q[0] * 1000; if (t > tEnd && q[1] != null) pts.push({ lat: q[1], lon: q[2], alt: q[3] === "ground" ? 0 : typeof q[3] === "number" ? q[3] : null, t }); }
+        }
         const last = pts[pts.length - 1].t;
         a.trail = pts.concat(a.trail.filter((q) => q.t > last)).slice(-3000); a._fullTrack = true; a._tn = -1; dirty = true;
         if (selected === a) renderDetail();
