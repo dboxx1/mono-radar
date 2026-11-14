@@ -941,6 +941,9 @@ body.gl3d .fog3d { display: none; }
 /* Accent used as text (links, active labels): darker in light mode so it stays readable */
 .cancel, .vhead .back, .near-h .more, .more-btn, .abar button[aria-pressed="true"], .arow .cd, .chips2 span b, .res-hero .tx small { color: var(--accent-t); }
 .res-hero .tx small { color: #ffd23c; }
+
+/* Filled icon set (Phosphor, MIT): every outline icon swapped for its solid version */
+svg.i .f { fill: currentColor; stroke: none; }
 </style>
 </head>
 <body>
@@ -952,45 +955,45 @@ body.gl3d .fog3d { display: none; }
   <div class="chips" id="chips">
     <button class="chip" id="feedChip" data-mode="connecting" aria-label="Live feed status, opens settings"><span class="dot"></span><span id="feedText">Connecting</span></button>
     <button class="chip alert" id="emergChip" hidden><span class="dot"></span><span id="emergText"></span></button>
-    <button class="chip filter" id="filterChip" hidden aria-label="Clear filters"><span id="filterText">Filtered</span><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+    <button class="chip filter" id="filterChip" hidden aria-label="Clear filters"><span id="filterText">Filtered</span><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
     <span class="chip hint" id="hintChip" hidden></span>
   </div>
   <div class="ctrls">
     <div class="ctrl-group glass">
-      <button class="ctrl" data-tab="mapstyle" aria-label="Map layers"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></button>
-      <button class="ctrl" id="btnLocate" aria-label="Centre on my location"><svg class="i" viewBox="0 0 24 24"><path d="M20 4L4 11l7 2 2 7z"/></svg></button>
+      <button class="ctrl" data-tab="mapstyle" aria-label="Map layers"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M220,169.09l-92,53.65L36,169.09A8,8,0,0,0,28,182.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,169.09Z"/><path d="M220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09Z"/><path d="M28,86.91l96,56a8,8,0,0,0,8.06,0l96-56a8,8,0,0,0,0-13.82l-96-56a8,8,0,0,0-8.06,0l-96,56a8,8,0,0,0,0,13.82Z"/></g></svg></button>
+      <button class="ctrl" id="btnLocate" aria-label="Centre on my location"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875) rotate(90 128 128)"><path d="M248,121.58a15.76,15.76,0,0,1-11.29,15l-.2.06-78,21.84-21.84,78-.06.2a15.77,15.77,0,0,1-15,11.29h-.3a15.77,15.77,0,0,1-15.07-10.67L41,61.41a1,1,0,0,1-.05-.16A16,16,0,0,1,61.25,40.9l.16.05,175.92,65.26A15.78,15.78,0,0,1,248,121.58Z"/></g></svg></button>
     </div>
-    <div class="ctrl-group glass zoom"><button class="ctrl" id="zIn" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button><button class="ctrl" id="zOut" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button></div>
+    <div class="ctrl-group glass zoom"><button class="ctrl" id="zIn" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></g></svg></button><button class="ctrl" id="zOut" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z"/></g></svg></button></div>
   </div>
 </header>
 
 <div class="notice glass" id="notice" hidden role="status">
-  <span class="ni"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+  <span class="ni"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg></span>
   <span><b>Simulated traffic</b><span id="noticeText">This viewer blocks live data. Open the hosted app for real flights.</span></span>
   <button class="btn" id="btnRetry">Retry</button>
-  <button class="xs" id="noticeX" aria-label="Dismiss"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+  <button class="xs" id="noticeX" aria-label="Dismiss"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
 </div>
 
 <section class="explore glass" id="explore" data-state="peek" aria-label="Explore">
   <div class="ex-handle" id="exHandle" role="button" aria-label="Expand or collapse"><span class="grab"></span></div>
   <div class="ex-top" id="exTop">
     <label class="searchbox" for="q">
-      <svg class="i" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+      <svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></g></svg>
       <input id="q" type="search" placeholder="Search flights, airports, airlines" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
-      <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+      <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
     </label>
     <button class="cancel" id="qCancel" hidden>Cancel</button>
-    <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c1.2-3.6 4.2-5.6 7.5-5.6s6.3 2 7.5 5.6"/></svg></button>
+    <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></g></svg></button>
   </div>
   <div class="ex-body" id="exBody">
     <div id="exHome">
       <div class="quick" id="quick">
-        <button class="qt" data-tab="filters" style="--g1:#a78bfa;--g2:#6d28d9"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg><span class="badge" id="filterBadge" hidden>0</span></span>Filters</button>
-        <button class="qt" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M7 16a4 4 0 010-8 5 5 0 019.6-1.4A3.5 3.5 0 1117.5 16z"/><path d="M9 19l-.6 1.6M13 19l-.6 1.6M17 19l-.6 1.6"/></svg></span>Weather</button>
-        <button class="qt" id="qMil" aria-pressed="false" style="--g1:#a3b34a;--g2:#4d5a16"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M12 2l1.6 6 6.4 6.5v2.5l-6.4-2-.6 4 2.5 2v1.5L12 21l-3.5 1.5V21l2.5-2-.6-4-6.4 2v-2.5L10.4 8z"/></svg></span>Military</button>
-        <button class="qt" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><span class="badge" id="emergBadge" hidden>0</span></span>Alerts</button>
-        <button class="qt" id="qSaved" style="--g1:#ff7ab6;--g2:#c81e63"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span class="badge ok" id="savedBadge" hidden>0</span></span>Saved</button>
-        <button class="qt" data-tab="mapstyle" style="--g1:#8e8e93;--g2:#3a3a3c"><span class="qi"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></span>Layers</button>
+        <button class="qt" data-tab="filters" style="--g1:#a78bfa;--g2:#6d28d9"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></g></svg><span class="badge" id="filterBadge" hidden>0</span></span>Filters</button>
+        <button class="qt" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg></span>Weather</button>
+        <button class="qt" id="qMil" aria-pressed="false" style="--g1:#a3b34a;--g2:#4d5a16"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z"/></g></svg></span>Military</button>
+        <button class="qt" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg><span class="badge" id="emergBadge" hidden>0</span></span>Alerts</button>
+        <button class="qt" id="qSaved" style="--g1:#ff7ab6;--g2:#c81e63"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg><span class="badge ok" id="savedBadge" hidden>0</span></span>Saved</button>
+        <button class="qt" data-tab="mapstyle" style="--g1:#8e8e93;--g2:#3a3a3c"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M220,169.09l-92,53.65L36,169.09A8,8,0,0,0,28,182.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,169.09Z"/><path d="M220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09Z"/><path d="M28,86.91l96,56a8,8,0,0,0,8.06,0l96-56a8,8,0,0,0,0-13.82l-96-56a8,8,0,0,0-8.06,0l-96,56a8,8,0,0,0,0,13.82Z"/></g></svg></span>Layers</button>
       </div>
       <div class="overhead" id="overhead"></div>
       <div class="near-h">
@@ -998,9 +1001,9 @@ body.gl3d .fog3d { display: none; }
         <button class="more" data-tab="traffic">See all</button>
       </div>
       <div class="seg2 htabs" role="tablist" id="homeTabs">
-        <button data-htab="flights" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><path d="M12 2.5l1.5 6 6.5 6.3v2.3l-6.5-2-.5 4 2.4 1.8v1.6L12 21.2l-3.4 1.3v-1.6l2.4-1.8-.5-4-6.5 2v-2.3l6.5-6.3z"/></svg>Flights <small id="cntF">0</small></button>
-        <button data-htab="airports" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M4 21h16M6 21V10l6-4 6 4v11M10 21v-5h4v5"/></svg>Airports <small id="cntA">0</small></button>
-        <button data-htab="live" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V11M10 19V5M16 19v-6M22 19H2"/></svg>Live</button>
+        <button data-htab="flights" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M240,136v32a8,8,0,0,1-8,8,7.61,7.61,0,0,1-1.57-.16L156,161v23.73l17.66,17.65A8,8,0,0,1,176,208v24a8,8,0,0,1-11,7.43l-37-14.81L91,239.43A8,8,0,0,1,80,232V208a8,8,0,0,1,2.34-5.66L100,184.69V161L25.57,175.84A7.61,7.61,0,0,1,24,176a8,8,0,0,1-8-8V136a8,8,0,0,1,4.42-7.16L100,89.06V44a28,28,0,0,1,56,0V89.06l79.58,39.78A8,8,0,0,1,240,136Z"/></g></svg>Flights <small id="cntF">0</small></button>
+        <button data-htab="airports" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g></svg>Airports <small id="cntA">0</small></button>
+        <button data-htab="live" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16h8V136a8,8,0,0,1,8-8H72a8,8,0,0,1,8,8v64H96V88a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8V200h16V40a8,8,0,0,1,8-8h40a8,8,0,0,1,8,8V200h8A8,8,0,0,1,232,208Z"/></g></svg>Live</button>
       </div>
       <div class="hpane" id="paneFlights"><div class="ngrid" id="railFlights"></div><button class="more-btn" id="moreNear">Show more</button></div>
       <div class="hpane" id="paneAirports" hidden><div class="alist" id="railAirports"></div><p class="foot">Tap an airport for its live arrivals and departures board.</p></div>
@@ -1025,7 +1028,7 @@ body.gl3d .fog3d { display: none; }
       <span class="pk-sub" id="pkSub"></span>
     </button>
     <div class="pk-photo" id="pkThumb"></div>
-    <button class="xs" id="pkX" aria-label="Close"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+    <button class="xs" id="pkX" aria-label="Close"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="pk-grid">
     <div class="pk-route" id="pkRoute"></div>
@@ -1034,12 +1037,12 @@ body.gl3d .fog3d { display: none; }
     <div class="pk-cell" id="pkReg"></div>
   </div>
   <nav class="abar" aria-label="Flight actions">
-    <button id="pk3D"><svg class="i" viewBox="0 0 24 24"><path d="M12 2.8l8 4.4v9.6l-8 4.4-8-4.4V7.2z"/><path d="M4 7.2l8 4.4 8-4.4M12 11.6v9.6"/></svg><span>3D view</span></button>
-    <button id="pkRouteBtn" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.2"/><circle cx="18.5" cy="18" r="2.2"/><path d="M7.4 7.3c2.4 2 .6 5.4 4.6 6.2s5 2.2 5.2 2.6"/></svg><span>Route</span></button>
-    <button id="pkMore" class="main"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l7-7 7 7M5 18.5l7-7 7 7"/></svg><span>More info</span></button>
-    <button id="pkFollow" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>Follow</span></button>
-    <button id="pkSave" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span>Save</span></button>
-    <button id="pkShare"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 8L12 3.5 16.5 8"/><path d="M5 12.5V20h14v-7.5"/></svg><span>Share</span></button>
+    <button id="pk3D"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"/></g></svg><span>3D view</span></button>
+    <button id="pkRouteBtn" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z"/></g></svg><span>Route</span></button>
+    <button id="pkMore" class="main"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M213.66,194.34A8,8,0,0,1,208,208H48a8,8,0,0,1-5.66-13.66L108.69,128H48a8,8,0,0,1-5.66-13.66l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,208,128H147.31Z"/></g></svg><span>More info</span></button>
+    <button id="pkFollow" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,120h-8.34A96.14,96.14,0,0,0,136,32.34V24a8,8,0,0,0-16,0v8.34A96.14,96.14,0,0,0,32.34,120H24a8,8,0,0,0,0,16h8.34A96.14,96.14,0,0,0,120,223.66V232a8,8,0,0,0,16,0v-8.34A96.14,96.14,0,0,0,223.66,136H232a8,8,0,0,0,0-16Zm-32,16h7.6A80.15,80.15,0,0,1,136,207.6V200a8,8,0,0,0-16,0v7.6A80.15,80.15,0,0,1,48.4,136H56a8,8,0,0,0,0-16H48.4A80.15,80.15,0,0,1,120,48.4V56a8,8,0,0,0,16,0V48.4A80.15,80.15,0,0,1,207.6,120H200a8,8,0,0,0,0,16Zm-32-8a40,40,0,1,1-40-40A40,40,0,0,1,168,128Z"/></g></svg><span>Follow</span></button>
+    <button id="pkSave" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg><span>Save</span></button>
+    <button id="pkShare"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M216,112v96a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V112A16,16,0,0,1,56,96h64v48a8,8,0,0,0,16,0V96h64A16,16,0,0,1,216,112ZM136,43.31l26.34,26.35a8,8,0,0,0,11.32-11.32l-40-40a8,8,0,0,0-11.32,0l-40,40A8,8,0,0,0,93.66,69.66L120,43.31V96h16Z"/></g></svg><span>Share</span></button>
   </nav>
 </div>
 
@@ -1052,7 +1055,7 @@ body.gl3d .fog3d { display: none; }
     <span class="hero-cap" id="dPhotoCap"></span>
     <div class="hero-text"><div class="kicker" id="dKicker">Flight</div><h2 id="dCall">—</h2><div class="meta" id="dMeta"></div></div>
     <span class="grab"></span>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="seg2 dtabs" id="dTabs" role="tablist"><button data-dtab="flight" aria-pressed="true">Flight</button><button data-dtab="aircraft" aria-pressed="false">Aircraft</button><button data-dtab="updates" aria-pressed="false">Updates <small id="dUpdN" hidden>0</small></button></div>
   <div class="sheet-body" id="dBody">
@@ -1071,11 +1074,11 @@ body.gl3d .fog3d { display: none; }
     </div>
   </div>
   <nav class="abar dbar" aria-label="Flight actions">
-    <button id="dRouteBtn" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.2"/><circle cx="18.5" cy="18" r="2.2"/><path d="M7.4 7.3c2.4 2 .6 5.4 4.6 6.2s5 2.2 5.2 2.6"/></svg><span>Route</span></button>
-    <button id="btnFollow" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>Follow</span></button>
-    <button id="btnSave" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span>Save</span></button>
-    <button id="btnLog"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/></svg><span>Log flight</span></button>
-    <button id="dShare"><svg class="i" viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 8L12 3.5 16.5 8"/><path d="M5 12.5V20h14v-7.5"/></svg><span>Share</span></button>
+    <button id="dRouteBtn" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,200a28,28,0,0,1-54.83,8H72a48,48,0,0,1,0-96h96a24,24,0,0,0,0-48H72a8,8,0,0,1,0-16h96a40,40,0,0,1,0,80H72a32,32,0,0,0,0,64H173.17A28,28,0,0,1,228,200Z"/></g></svg><span>Route</span></button>
+    <button id="btnFollow" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,120h-8.34A96.14,96.14,0,0,0,136,32.34V24a8,8,0,0,0-16,0v8.34A96.14,96.14,0,0,0,32.34,120H24a8,8,0,0,0,0,16h8.34A96.14,96.14,0,0,0,120,223.66V232a8,8,0,0,0,16,0v-8.34A96.14,96.14,0,0,0,223.66,136H232a8,8,0,0,0,0-16Zm-32,16h7.6A80.15,80.15,0,0,1,136,207.6V200a8,8,0,0,0-16,0v7.6A80.15,80.15,0,0,1,48.4,136H56a8,8,0,0,0,0-16H48.4A80.15,80.15,0,0,1,120,48.4V56a8,8,0,0,0,16,0V48.4A80.15,80.15,0,0,1,207.6,120H200a8,8,0,0,0,0,16Zm-32-8a40,40,0,1,1-40-40A40,40,0,0,1,168,128Z"/></g></svg><span>Follow</span></button>
+    <button id="btnSave" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg><span>Save</span></button>
+    <button id="btnLog"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM80,208H48V48H80Zm96-56H112a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H112a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z"/></g></svg><span>Log flight</span></button>
+    <button id="dShare"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M216,112v96a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V112A16,16,0,0,1,56,96h64v48a8,8,0,0,0,16,0V96h64A16,16,0,0,1,216,112ZM136,43.31l26.34,26.35a8,8,0,0,0,11.32-11.32l-40-40a8,8,0,0,0-11.32,0l-40,40A8,8,0,0,0,93.66,69.66L120,43.31V96h16Z"/></g></svg><span>Share</span></button>
   </nav>
 </aside>
 
@@ -1088,7 +1091,7 @@ body.gl3d .fog3d { display: none; }
     <span class="hero-cap" id="aPhotoCap"></span>
     <div class="hero-text"><div class="kicker" id="aKicker">Airport</div><h2 id="aName">—</h2><div class="meta" id="aMeta"></div></div>
     <span class="grab"></span>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body" id="aBody"></div>
 </aside>
@@ -1098,7 +1101,7 @@ body.gl3d .fog3d { display: none; }
   <span class="grab"></span>
   <div class="sheet-head">
     <div><div class="kicker" id="fKicker">Show</div><h2>Filters</h2></div>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body">
     <div><h3>Aircraft</h3><div class="catgrid" id="catgrid"></div></div>
@@ -1120,7 +1123,7 @@ body.gl3d .fog3d { display: none; }
   <span class="grab"></span>
   <div class="sheet-head">
     <div><div class="kicker" id="tKicker">In view</div><h2>Traffic</h2></div>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body">
     <div class="card" style="padding:6px 14px"><table class="ac"><thead><tr><th>FLIGHT</th><th>TYPE</th><th class="num">ALT FT</th><th class="num">KT</th><th class="num">NM</th></tr></thead><tbody id="tBody"></tbody></table></div>
@@ -1132,7 +1135,7 @@ body.gl3d .fog3d { display: none; }
   <span class="grab"></span>
   <div class="sheet-head">
     <div><div class="kicker">Appearance</div><h2>Map &amp; layers</h2></div>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body">
     <div>
@@ -1162,7 +1165,7 @@ body.gl3d .fog3d { display: none; }
   <span class="grab"></span>
   <div class="sheet-head">
     <div><div class="kicker">Live data</div><h2>Data sources</h2></div>
-    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body">
     <div><h3>Aircraft feed</h3><div class="opts" id="feeds"></div>
@@ -1188,15 +1191,15 @@ body.gl3d .fog3d { display: none; }
 <div class="sky" id="sky" hidden role="dialog" aria-label="Sky view">
   <video id="skyCam" playsinline muted autoplay></video>
   <canvas id="skyCv" aria-label="Planes in the sky around you"></canvas>
-  <div class="sky-top"><div class="sky-t"><b>Sky view</b><span id="skySub">Point your phone at the sky</span></div><button class="xs" id="skyX" aria-label="Close sky view"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
+  <div class="sky-top"><div class="sky-t"><b>Sky view</b><span id="skySub">Point your phone at the sky</span></div><button class="xs" id="skyX" aria-label="Close sky view"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
   <div class="sky-hint" id="skyHint"></div>
 </div>
 <div class="view3d" id="view3d" hidden><canvas id="gl3d"></canvas><canvas id="gl3dLabels" aria-label="3D view of live aircraft"></canvas></div>
 <div class="hud3d" id="hud3d" hidden>
-  <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>
+  <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
   <div class="h3-bot">
     <div class="h3-stats"><div><small>Altitude</small><b id="h3Alt">—</b></div><div><small>Speed</small><b id="h3Spd">—</b></div><div><small>Heading</small><b id="h3Hdg">—</b></div><div><small>Climb</small><b id="h3Vs">—</b></div></div>
-    <div class="h3-ctl"><button id="h3Out" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button><button id="h3In" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button><div class="h3-cams" role="group" aria-label="Camera"><button data-cam="chase" aria-pressed="true">Chase</button><button data-cam="orbit" aria-pressed="false">Orbit</button><button data-cam="cockpit" aria-pressed="false">Cockpit</button></div><button class="exit" id="h3Exit">Exit</button></div>
+    <div class="h3-ctl"><button id="h3Out" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z"/></g></svg></button><button id="h3In" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></g></svg></button><div class="h3-cams" role="group" aria-label="Camera"><button data-cam="chase" aria-pressed="true">Chase</button><button data-cam="orbit" aria-pressed="false">Orbit</button><button data-cam="cockpit" aria-pressed="false">Cockpit</button></div><button class="exit" id="h3Exit">Exit</button></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -3062,10 +3065,10 @@ $("#aBody").addEventListener("click", (e) => {
 const qEl = $("#q"), resEl = $("#exSearch");
 const ICON = {
   plane: `<svg viewBox="0 0 64 64" fill="currentColor"><path d="${PLANE_D}"/></svg>`,
-  apt: `<svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 12h6"/></svg>`,
-  airline: `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>`,
-  pin: `<svg class="i" viewBox="0 0 24 24"><path d="M12 21s-6-6.3-6-11a6 6 0 1112 0c0 4.7-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></svg>`,
-  globe: `<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>`,
+  apt: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g></svg>`,
+  airline: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></g></svg>`,
+  pin: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></g></svg>`,
+  globe: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.62,87.62,0,0,1-6.4,32.94l-44.7-27.49a15.92,15.92,0,0,0-6.24-2.23l-22.82-3.08a16.11,16.11,0,0,0-16,7.86h-8.72l-3.8-7.86a15.91,15.91,0,0,0-11-8.67l-8-1.73L96.14,104h16.71a16.06,16.06,0,0,0,7.73-2l12.25-6.76a16.62,16.62,0,0,0,3-2.14l26.91-24.34A15.93,15.93,0,0,0,166,49.1l-.36-.65A88.11,88.11,0,0,1,216,128ZM40,128a87.53,87.53,0,0,1,8.54-37.8l11.34,30.27a16,16,0,0,0,11.62,10l21.43,4.61L96.74,143a16.09,16.09,0,0,0,14.4,9h1.48l-7.23,16.23a16,16,0,0,0,2.86,17.37l.14.14L128,205.94l-1.94,10A88.11,88.11,0,0,1,40,128Z"/></g></svg>`,
 };
 function searchMode(on) { $("#qCancel").hidden = !on; $("#btnMe").hidden = on; $("#exHome").hidden = on; resEl.hidden = !on; if (on) setEx("full"); }
 function openSearchUI() { if (exView !== "home") showView("home", true); searchMode(true); renderResults(qEl.value); }
@@ -3342,19 +3345,19 @@ setTimeout(pollEmerg, 6000); setInterval(pollEmerg, 120000);
 const AP_IATA = new Map(AIRPORTS.filter((x) => x[1]).map((x) => [x[1], x]));
 const apFind = (code) => { const c = String(code || "").trim().toUpperCase(); return c ? AP_IATA.get(c) || AP_ICAO.get(c) || null : null; };
 const isSaved = (a) => !!(a && S.saved.flights[a.hex]);
-const STAR_SVG = (on) => `<svg class="i" viewBox="0 0 24 24"${on ? ' style="fill:currentColor"' : ""}><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>`;
+const STAR_SVG = (on) => `<svg class="i" viewBox="0 0 24 24"${on ? ' style="fill:currentColor"' : ""}><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg>`;
 const ico = (d) => `<svg class="i" viewBox="0 0 24 24">${d}</svg>`;
 const EVI = {
-  takeoff: ico('<path d="M3 20h18"/><path d="M4.5 14.5l3.2.8 8.6-5.7c1.2-.8 2.8-.7 3.2.1.3.7-.3 1.5-1.3 2.1L9 17l-4-.6z"/>'),
-  land: ico('<path d="M3 20h18"/><path d="M5 9.5l2.6-.6 7.4 4.6 3.7.9c1 .3 1.6 1 1.3 1.6-.3.7-1.6.9-2.8.6L5.6 13z"/>'),
-  climb: ico('<path d="M12 19V5M6 11l6-6 6 6"/>'),
-  cruise: ico('<path d="M4 12h16M14 6l6 6-6 6"/>'),
-  desc: ico('<path d="M12 5v14M6 13l6 6 6-6"/>'),
-  clock: ico('<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 1.8"/>'),
-  alert: ico('<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
-  signal: ico('<circle cx="12" cy="13" r="1.6"/><path d="M8 10a5.5 5.5 0 018 0M5.2 7.3a9.5 9.5 0 0113.6 0"/>'),
-  eye: ico('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>'),
-  swap: ico('<path d="M7 7h11l-3-3M17 17H6l3 3"/>'),
+  takeoff: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g>'),
+  land: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M256,216a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16H248A8,8,0,0,1,256,216Zm-24-24a8,8,0,0,0,8-8V148.32a40.13,40.13,0,0,0-29.28-38.54l-60.84-17-22.5-53.63a8,8,0,0,0-4.85-4.5l-5.47-1.82A16,16,0,0,0,96,48V77.39L66.13,68.88,55.52,39.51a8,8,0,0,0-5-4.87l-5.47-1.82A16,16,0,0,0,24,48v55.72a40.12,40.12,0,0,0,29.21,38.52L229.84,191.7A8,8,0,0,0,232,192Z"/></g>'),
+  climb: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M207.39,115.06A8,8,0,0,1,200,120H136v96a8,8,0,0,1-16,0V120H56a8,8,0,0,1-5.66-13.66l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,207.39,115.06Z"/></g>'),
+  cruise: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M221.66,133.66l-72,72A8,8,0,0,1,136,200V136H40a8,8,0,0,1,0-16h96V56a8,8,0,0,1,13.66-5.66l72,72A8,8,0,0,1,221.66,133.66Z"/></g>'),
+  desc: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72A8,8,0,0,1,56,136h64V40a8,8,0,0,1,16,0v96h64a8,8,0,0,1,5.66,13.66Z"/></g>'),
+  clock: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></g>'),
+  alert: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g>'),
+  signal: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,128a40,40,0,1,1-40-40A40,40,0,0,1,168,128Zm40,0a79.74,79.74,0,0,0-20.37-53.33,8,8,0,1,0-11.92,10.67,64,64,0,0,1,0,85.33,8,8,0,0,0,11.92,10.67A79.79,79.79,0,0,0,208,128ZM80.29,85.34A8,8,0,1,0,68.37,74.67a79.94,79.94,0,0,0,0,106.67,8,8,0,0,0,11.92-10.67,63.95,63.95,0,0,1,0-85.33Zm158.28-4A119.48,119.48,0,0,0,213.71,44a8,8,0,1,0-11.42,11.2,103.9,103.9,0,0,1,0,145.56A8,8,0,1,0,213.71,212,120.12,120.12,0,0,0,238.57,81.29ZM32.17,168.48A103.9,103.9,0,0,1,53.71,55.22,8,8,0,1,0,42.29,44a119.87,119.87,0,0,0,0,168,8,8,0,1,0,11.42-11.2A103.61,103.61,0,0,1,32.17,168.48Z"/></g>'),
+  eye: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g>'),
+  swap: ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M42.34,85.66a8,8,0,0,1,0-11.32l32-32A8,8,0,0,1,88,48V72H208a8,8,0,0,1,0,16H88v24a8,8,0,0,1-13.66,5.66Zm171.32,84.68-32-32A8,8,0,0,0,168,144v24H48a8,8,0,0,0,0,16H168v24a8,8,0,0,0,13.66,5.66l32-32A8,8,0,0,0,213.66,170.34Z"/></g>'),
 };
 const PIN = '<svg viewBox="0 0 24 24"><path d="M12 2.5a7 7 0 00-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 00-7-7zm0 9.6a2.6 2.6 0 110-5.2 2.6 2.6 0 010 5.2z"/></svg>';
 const fmtMi = (nm) => { const m = nm * 1.15078; return (m < 10 ? m.toFixed(1) : Math.round(m).toLocaleString("en-GB")) + " mi"; };
@@ -3467,7 +3470,7 @@ function showView(v, quiet) {
   if (quiet) return;
   if (v === "home") { setEx("peek"); renderExplore(true); } else setEx("full");
 }
-const vhead = (title, sub) => `<div class="vhead"><button class="back" data-view="home"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Explore</button>${sub || ""}</div><h2 class="vtitle">${title}</h2>`;
+const vhead = (title, sub) => `<div class="vhead"><button class="back" data-view="home"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></g></svg>Explore</button>${sub || ""}</div><h2 class="vtitle">${title}</h2>`;
 let savedKey = "";
 function sfCard(f) {
   const a = acMap.get(f.hex), live = !!(a && performance.now() - a.seen < 60000);
@@ -3542,13 +3545,13 @@ function logStats() {
 const logDate = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return d; } };
 function lfRow(l) {
   const o = apFind(l.from), d = apFind(l.to), nm = o && d ? distNm(o[4], o[5], d[4], d[5]) : 0;
-  return `<div class="lf"><b>${esc(l.from)}<i>✈</i>${esc(l.to)}</b><button class="del" data-dellog="${esc(l.id)}" aria-label="Delete this flight">${ico('<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>')}</button><span>${esc([logDate(l.date), l.flight, nm ? fmtMi(nm) : ""].filter(Boolean).join(" · "))}</span></div>`;
+  return `<div class="lf"><b>${esc(l.from)}<i>✈</i>${esc(l.to)}</b><button class="del" data-dellog="${esc(l.id)}" aria-label="Delete this flight">${ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"/></g>')}</button><span>${esc([logDate(l.date), l.flight, nm ? fmtMi(nm) : ""].filter(Boolean).join(" · "))}</span></div>`;
 }
 function renderProfile() {
   const s = logStats();
   const today = new Date().toISOString().slice(0, 10);
   const nSaved = Object.keys(S.saved.flights).length + S.saved.airports.length;
-  const row = (attr, g1, g2, path, label, right) => `<button class="row" ${attr}><span class="ri" style="--g1:${g1};--g2:${g2}"><svg class="i" viewBox="0 0 24 24">${path}</svg></span>${label}<span class="rs">${right || ""}<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>`;
+  const row = (attr, g1, g2, path, label, right) => `<button class="row" ${attr}><span class="ri" style="--g1:${g1};--g2:${g2}"><svg class="i" viewBox="0 0 24 24">${path}</svg></span>${label}<span class="rs">${right || ""}<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></g></svg></span></button>`;
   const log = S.log.slice().sort((p, q) => (q.date || "").localeCompare(p.date || "") || q.id - p.id);
   $("#exProfile").innerHTML = vhead("Profile") + `<div class="vpad">
     <div class="pcard"><h3>My flights</h3>
@@ -3569,11 +3572,11 @@ function renderProfile() {
     ${alertsHtml()}
     <div class="vsub">App</div>
     <div class="group" style="margin:0">
-      ${row('data-view="saved"', "#ff7ab6", "#c81e63", '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>', "Saved", nSaved ? String(nSaved) : "")}
-      ${row('data-ptab="mapstyle"', "#8e8e93", "#3a3a3c", '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>', "Map &amp; layers")}
-      ${row('data-ptab="filters"', "#a78bfa", "#6d28d9", '<path d="M4 5h16l-6 8v6l-4-2v-4z"/>', "Filters")}
-      ${row('data-ptab="traffic"', "#ffd25a", "#ff8a00", '<path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.8"/>', "Traffic list")}
-      ${row('data-ptab="settings"', "#34c759", "#0f7a32", '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>', "Settings &amp; data sources")}
+      ${row('data-view="saved"', "#ff7ab6", "#c81e63", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g>', "Saved", nSaved ? String(nSaved) : "")}
+      ${row('data-ptab="mapstyle"', "#8e8e93", "#3a3a3c", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM96,176a8,8,0,0,0-1.94.24L40,189.75V62.25L95.07,48.48l.93.46Zm120,17.75-55.07,13.77-.93-.46V80a8,8,0,0,0,1.94-.23L216,66.25Z"/></g>', "Map &amp; layers")}
+      ${row('data-ptab="filters"', "#a78bfa", "#6d28d9", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></g>', "Filters")}
+      ${row('data-ptab="traffic"', "#ffd25a", "#ff8a00", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM68,188a12,12,0,1,1,12-12A12,12,0,0,1,68,188Zm0-48a12,12,0,1,1,12-12A12,12,0,0,1,68,140Zm0-48A12,12,0,1,1,80,80,12,12,0,0,1,68,92Zm124,92H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Zm0-48H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Zm0-48H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Z"/></g>', "Traffic list")}
+      ${row('data-ptab="settings"', "#34c759", "#0f7a32", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></g>', "Settings &amp; data sources")}
     </div>
     <p class="note">Your flight log and saved flights stay on this device. No account needed.</p>
   </div>`;
@@ -3724,7 +3727,7 @@ function rowAirport(r) {
   const ap = r.ap, t = r.t, w = wikiDone.get("ap:" + ap[0]);
   return `<button class="arow" data-apt="${esc(ap[0])}"><span class="th" data-wk="ap:${esc(ap[0])}">${artAirport(ap)}${w ? `<img class="ph" src="${esc(w.src)}" alt="">` : ""}</span>
     <span class="nm"><b>${esc(ap[2])}</b><span><em class="cd">${esc(ap[1] || ap[0])}</em>${esc(ap[3] ? " · " + ap[3] : "")}</span><span class="cnt"><span><i class="g"></i>${t.arr.length} arriving</span><span><i class="o"></i>${t.dep.length} departing</span></span></span>
-    <span class="ds">${r.d < 0.9 ? "Here" : fmtMi(r.d)}<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>`;
+    <span class="ds">${r.d < 0.9 ? "Here" : fmtMi(r.d)}<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></g></svg></span></button>`;
 }
 
 /* ---- Nearby photo cards ---- */
@@ -3825,8 +3828,8 @@ function overheadList(maxNm = 30) {
   }
   return out.sort((p, q) => p.d - q.d);
 }
-const EYE_I = '<svg class="i" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-const UP_I = '<svg class="i" viewBox="0 0 24 24"><path d="M12 2.5l1.5 6 6.5 6.3v2.3l-6.5-2-.5 4 2.4 1.8v1.6L12 21.2l-3.4 1.3v-1.6l2.4-1.8-.5-4-6.5 2v-2.3l6.5-6.3z"/></svg>';
+const EYE_I = '<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></g></svg>';
+const UP_I = '<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M240,136v32a8,8,0,0,1-8,8,7.61,7.61,0,0,1-1.57-.16L156,161v23.73l17.66,17.65A8,8,0,0,1,176,208v24a8,8,0,0,1-11,7.43l-37-14.81L91,239.43A8,8,0,0,1,80,232V208a8,8,0,0,1,2.34-5.66L100,184.69V161L25.57,175.84A7.61,7.61,0,0,1,24,176a8,8,0,0,1-8-8V136a8,8,0,0,1,4.42-7.16L100,89.06V44a28,28,0,0,1,56,0V89.06l79.58,39.78A8,8,0,0,1,240,136Z"/></g></svg>';
 let ohKey = "";
 function renderOverhead() {
   const el = $("#overhead"); if (!el) return;
@@ -4015,7 +4018,7 @@ function withRecent(r, act) { const rec = recOf(r); return rec ? () => { addRece
 function addRecent(r) { S.recent = [r, ...S.recent.filter((x) => !(x.k === r.k && x.id === r.id))].slice(0, 8); savePrefs(); }
 function filterAirline(code) { const name = AIRLINES[code] || code; closeSearch(); S.filters.airline = code; compileFilters(); savePrefs(); toast(`Showing only ${name}. Reset in Filters.`); }
 function toggleFavAl(code) { const i = S.favAl.indexOf(code); if (i >= 0) S.favAl.splice(i, 1); else S.favAl.unshift(code); savePrefs(); toast(i >= 0 ? `Removed ${AIRLINES[code] || code} from favourites` : `${AIRLINES[code] || code} added to favourites`); }
-const CLOCK_I = '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 1.8"/></svg>';
+const CLOCK_I = '<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></g></svg>';
 function recentHtml(row) {
   let h = "";
   if (S.favAl.length) {
@@ -4672,11 +4675,11 @@ function renderLive() {
   const feedName = feed.mode === "live" ? feed.sources.map((s) => SOURCES[s].label).join(" + ") : feed.mode === "sim" ? "Simulated" : "Connecting";
   $("#liveSub").textContent = feedName;
   $("#liveStats").innerHTML = `
-    <div class="stat big"><div><span class="k">${ic("#34c759", "#0f7a32", '<circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0114 0M2 12a10 10 0 0120 0"/>')}Tracking now</span><span class="v">${acMap.size.toLocaleString("en-GB")}</span><span class="s">${air.toLocaleString("en-GB")} airborne · ${gnd.toLocaleString("en-GB")} on the ground</span></div></div>
-    <button class="stat" ${hi ? `data-hex="${esc(hi.hex)}"` : ""}><span class="k">${ic("#5ac8fa", "#0a64d6", '<path d="M12 19V5M6 11l6-6 6 6"/>')}Highest</span><span class="v">${hi ? altTag(hi) : "—"}</span><span class="s">${hi ? esc(callOf(hi)) : "—"}</span></button>
-    <button class="stat" ${fast ? `data-hex="${esc(fast.hex)}"` : ""}><span class="k">${ic("#ffd25a", "#ff8a00", '<path d="M13 3L4 14h7l-1 7 9-11h-7z"/>')}Fastest</span><span class="v">${fast ? fmtInt(fast.gs) + " kt" : "—"}</span><span class="s">${fast ? esc(callOf(fast)) : "—"}</span></button>
-    <div class="stat"><span class="k">${ic("#a78bfa", "#6d28d9", '<path d="M3 21h18M5 21V8l7-5 7 5v13"/>')}Top airline</span><span class="v">${ta ? ta[1] : "—"}</span><span class="s">${ta ? esc(ta[0]) : "—"}</span></div>
-    <div class="stat"><span class="k">${ic("#ff7a6b", "#d4182b", '<path d="M12 2l1.6 6 6.4 6.5v2.5l-6.4-2-.6 4 2.5 2v1.5L12 21l-3.5 1.5V21l2.5-2-.6-4-6.4 2v-2.5L10.4 8z"/>')}Top aircraft</span><span class="v">${tt ? esc(tt[0]) : "—"}</span><span class="s">${tt ? tt[1] + " flying now" : "—"}</span></div>`;
+    <div class="stat big"><div><span class="k">${ic("#34c759", "#0f7a32", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,128a40,40,0,1,1-40-40A40,40,0,0,1,168,128Zm40,0a79.74,79.74,0,0,0-20.37-53.33,8,8,0,1,0-11.92,10.67,64,64,0,0,1,0,85.33,8,8,0,0,0,11.92,10.67A79.79,79.79,0,0,0,208,128ZM80.29,85.34A8,8,0,1,0,68.37,74.67a79.94,79.94,0,0,0,0,106.67,8,8,0,0,0,11.92-10.67,63.95,63.95,0,0,1,0-85.33Zm158.28-4A119.48,119.48,0,0,0,213.71,44a8,8,0,1,0-11.42,11.2,103.9,103.9,0,0,1,0,145.56A8,8,0,1,0,213.71,212,120.12,120.12,0,0,0,238.57,81.29ZM32.17,168.48A103.9,103.9,0,0,1,53.71,55.22,8,8,0,1,0,42.29,44a119.87,119.87,0,0,0,0,168,8,8,0,1,0,11.42-11.2A103.61,103.61,0,0,1,32.17,168.48Z"/></g>')}Tracking now</span><span class="v">${acMap.size.toLocaleString("en-GB")}</span><span class="s">${air.toLocaleString("en-GB")} airborne · ${gnd.toLocaleString("en-GB")} on the ground</span></div></div>
+    <button class="stat" ${hi ? `data-hex="${esc(hi.hex)}"` : ""}><span class="k">${ic("#5ac8fa", "#0a64d6", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M207.39,115.06A8,8,0,0,1,200,120H136v96a8,8,0,0,1-16,0V120H56a8,8,0,0,1-5.66-13.66l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,207.39,115.06Z"/></g>')}Highest</span><span class="v">${hi ? altTag(hi) : "—"}</span><span class="s">${hi ? esc(callOf(hi)) : "—"}</span></button>
+    <button class="stat" ${fast ? `data-hex="${esc(fast.hex)}"` : ""}><span class="k">${ic("#ffd25a", "#ff8a00", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z"/></g>')}Fastest</span><span class="v">${fast ? fmtInt(fast.gs) + " kt" : "—"}</span><span class="s">${fast ? esc(callOf(fast)) : "—"}</span></button>
+    <div class="stat"><span class="k">${ic("#a78bfa", "#6d28d9", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M239.73,208H224V96a16,16,0,0,0-16-16H164a4,4,0,0,0-4,4V208H144V32.41a16.43,16.43,0,0,0-6.16-13,16,16,0,0,0-18.72-.69L39.12,72A16,16,0,0,0,32,85.34V208H16.27A8.18,8.18,0,0,0,8,215.47,8,8,0,0,0,16,224H240a8,8,0,0,0,8-8.53A8.18,8.18,0,0,0,239.73,208ZM76,184a8,8,0,0,1-8.53,8A8.18,8.18,0,0,1,60,183.72V168.27A8.19,8.19,0,0,1,67.47,160,8,8,0,0,1,76,168Zm0-56a8,8,0,0,1-8.53,8A8.19,8.19,0,0,1,60,127.72V112.27A8.19,8.19,0,0,1,67.47,104,8,8,0,0,1,76,112Zm40,56a8,8,0,0,1-8.53,8,8.18,8.18,0,0,1-7.47-8.26V168.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Zm0-56a8,8,0,0,1-8.53,8,8.19,8.19,0,0,1-7.47-8.26V112.27a8.19,8.19,0,0,1,7.47-8.26,8,8,0,0,1,8.53,8Z"/></g>')}Top airline</span><span class="v">${ta ? ta[1] : "—"}</span><span class="s">${ta ? esc(ta[0]) : "—"}</span></div>
+    <div class="stat"><span class="k">${ic("#ff7a6b", "#d4182b", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z"/></g>')}Top aircraft</span><span class="v">${tt ? esc(tt[0]) : "—"}</span><span class="s">${tt ? tt[1] + " flying now" : "—"}</span></div>`;
 }
 $("#exBody").addEventListener("click", (e) => {
   const f = e.target.closest("[data-hex]"); if (f && !f.closest("#exSearch")) { const a = acMap.get(f.dataset.hex); if (a) select(a, { fly: true }); return; }

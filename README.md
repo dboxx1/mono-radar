@@ -27,3 +27,5 @@ Aircraft: adsb.lol (ODbL), airplanes.live, adsb.fi, OpenSky Network. Routes: ads
 Photos: Planespotters.net, Airport-Data.com, Wikipedia. Weather: Open-Meteo (CC BY 4.0),
 NOAA Aviation Weather Center (METAR), RainViewer. Map: OpenFreeMap / OpenMapTiles / OpenStreetMap
 contributors, MapLibre. Airports and runways: OurAirports (public domain). Free for personal use.
+
+Icons: [Phosphor Icons](https://phosphoricons.com) (MIT).
