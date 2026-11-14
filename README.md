@@ -2,7 +2,6 @@
 
 A free live flight tracker that runs in the browser and installs to your home screen.
 
-**Live:** https://dboxx1.github.io/mono-radar/
 
 ## Features
 - Live aircraft from community ADS-B networks (adsb.lol, airplanes.live, adsb.fi, OpenSky)
@@ -12,11 +11,13 @@ A free live flight tracker that runs in the browser and installs to your home sc
 - Saved flights with live updates, a personal flight log with stats and a route map
 - Altitude colours, weather radar, day and night shading, vector maps (OpenFreeMap)
 
-## How it's hosted
-GitHub Pages, deployed by `.github/workflows/pages.yml` on every push and every 30 minutes
-(the scheduled run refreshes `metars.json` with official airport weather).
+## Hosting (Vercel)
+Import this repo in Vercel (Add New → Project → `dboxx1/mono-radar`). No build settings needed:
+it's a static site plus one serverless function, `api/metar.js`, which fetches official airport
+weather server-side and caches it for 10 minutes.
 
-One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+If your Vercel domain isn't `mono-radar.vercel.app`, update `METAR_HOST` in `index.html`
+(the native iPhone app uses it to reach the weather function).
 
 ## Install on iPhone
 Open the site in Safari → Share → **Add to Home Screen**.

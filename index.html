@@ -3855,21 +3855,17 @@ function runwaysHtml(ap) {
 }
 
 /* ---- Official METAR (from metars.json beside the app, refreshed by GitHub Actions; else direct) ---- */
-const metarCache = new Map(); let metarAll = null, metarAllAt = 0, metarAllTried = 0;
+const metarCache = new Map();
+const METAR_HOST = "https://mono-radar.vercel.app"; // change if your Vercel domain differs
 async function fetchMetar(ap) {
   const k = ap[0], c = metarCache.get(k); if (c && (c.pending || Date.now() - c.at < 600000)) return;
   metarCache.set(k, { pending: true });
   let raw = null;
+  // 1) the app's own Vercel function (server-side fetch, cached 10 min). The native app calls the hosted copy.
   try {
-    if ((!metarAll || Date.now() - metarAllAt > 900000) && Date.now() - metarAllTried > 300000) {
-      metarAllTried = Date.now();
-      const q = "metars.json?t=" + Math.floor(Date.now() / 600000);
-      let j = null;
-      try { j = await getJSON(q, 6000); } catch (e) {}
-      if (!(j && j.m) && !/github\.io$/.test(location.hostname)) { try { j = await getJSON("https://dboxx1.github.io/mono-radar/" + q, 6000); } catch (e) {} }
-      if (j && j.m) { metarAll = j; metarAllAt = Date.now(); }
-    }
-    if (metarAll && metarAll.m[k]) raw = metarAll.m[k];
+    const base = /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.host) ? "" : METAR_HOST;
+    const j = await getJSON(`${base}/api/metar?ids=${k}`, 7000);
+    if (j && j.m && j.m[k]) raw = j.m[k];
   } catch (e) {}
   if (!raw) {
     try {
