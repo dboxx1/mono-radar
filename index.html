@@ -995,6 +995,29 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
 .qt { gap: 4px; font-size: 10.5px; min-width: 46px; padding: 0; }
 .qi { width: 46px; height: 46px; border-radius: 15px; }
 .qi svg { width: 22px; height: 22px; }
+
+/* Bell */
+.ex-top .me.bell { position: relative; }
+.bell .badge { top: -4px; right: -4px; }
+.bell .badge.quiet { background: var(--ink-3); }
+.bell.ring svg { color: var(--alert); transform-origin: 50% 12%; animation: bellRing 2.2s ease-in-out infinite; }
+.bell.ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%; animation: bellPulse 2.2s ease-out infinite; pointer-events: none; }
+@keyframes bellRing { 0%, 60%, 100% { transform: rotate(0); } 8% { transform: rotate(16deg); } 16% { transform: rotate(-13deg); } 24% { transform: rotate(10deg); } 32% { transform: rotate(-7deg); } 40% { transform: rotate(4deg); } 48% { transform: rotate(-2deg); } }
+@keyframes bellPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 74, 61, .55); } 70% { box-shadow: 0 0 0 11px rgba(255, 74, 61, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 74, 61, 0); } }
+@media (prefers-reduced-motion: reduce) { .bell.ring svg, .bell.ring::after { animation: none; } }
+.ex-top { gap: 8px; }
+/* Alerts list */
+.al-list { gap: 10px; }
+.al-h { margin: 6px 0 0; font: 700 13px var(--font-ui); letter-spacing: .02em; color: var(--ink-2); text-transform: uppercase; }
+.al-hr { display: flex; align-items: center; justify-content: space-between; }
+.al-clear { color: var(--accent-t); font-weight: 600; font-size: 14px; padding: 6px 0; }
+.al-g { display: grid; }
+.al-row .ico { width: 44px !important; height: 44px !important; border-radius: 13px !important; }
+.al-row .ico svg { width: 21px; height: 21px; }
+.al-row.new b::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 7px; border-radius: 50%; background: var(--alert); vertical-align: 2px; }
+.al-row { grid-template-columns: 44px 1fr auto !important; }
+.al-foot { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); }
+.al-row .ico.k-emerg { color: var(--alert); } .al-row .ico.k-near { color: var(--accent-t); } .al-row .ico.k-feed { color: var(--ink-2); }
 </style>
 </head>
 <body>
@@ -1005,9 +1028,7 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
 <header class="top" id="top">
   <div class="chips" id="chips">
     <button class="chip" id="feedChip" data-mode="connecting" aria-label="Live feed status, opens settings"><span class="dot"></span><span id="feedText">Connecting</span></button>
-    <button class="chip alert" id="emergChip" hidden><span class="dot"></span><span id="emergText"></span></button>
     <button class="chip filter" id="filterChip" hidden aria-label="Clear filters"><span id="filterText">Filtered</span><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
-    <span class="chip hint" id="hintChip" hidden></span>
   </div>
   <div class="ctrls">
     <div class="ctrl-group glass">
@@ -1031,10 +1052,11 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
   <div class="ex-top" id="exTop">
     <label class="searchbox" for="q">
       <svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></g></svg>
-      <input id="q" type="search" placeholder="Search flights, airports, airlines" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
+      <input id="q" type="search" placeholder="Search flights & airports" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
       <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
     </label>
     <button class="cancel" id="qCancel" hidden>Cancel</button>
+    <button class="me bell" id="btnBell" aria-label="Alerts"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z"/></g></svg><span class="badge" id="bellBadge" hidden>0</span></button>
     <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></g></svg></button>
   </div>
   <div class="ex-body" id="exBody">
@@ -1068,6 +1090,7 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
     <div id="exSearch" hidden role="listbox" aria-label="Search results"></div>
     <div id="exSaved" hidden></div>
     <div id="exProfile" hidden></div>
+    <div id="exAlerts" hidden></div>
   </div>
 </section>
 <div class="attrib" id="attrib">Natural Earth</div>
@@ -1286,6 +1309,10 @@ S.saved = Object.assign({ flights: {}, airports: [] }, S.saved || {});
 if (!S.saved.flights || typeof S.saved.flights !== "object") S.saved.flights = {};
 if (!Array.isArray(S.saved.airports)) S.saved.airports = [];
 S.log = Array.isArray(S.log) ? S.log : [];
+// alerts feed (bell): declared early because the feed status can report before the alerts code runs
+let notes = Array.isArray(S.notes) ? S.notes.filter((n) => n && n.t && Date.now() - n.t < 24 * 3600e3) : [];
+let lastHint = "", lastMode = "";
+S.notesSeen = S.notesSeen || 0;
 if (!S.styleV) { S.style = "vector"; S.styleV = 2; }
 if (!S.lonFix) { S.lat = DEFAULTS.lat; S.lon = DEFAULTS.lon; S.zoom = DEFAULTS.zoom; S.lonFix = 1; }
 // a broken saved view (not a number) falls back to the default view
@@ -3124,7 +3151,7 @@ const ICON = {
   pin: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></g></svg>`,
   globe: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.62,87.62,0,0,1-6.4,32.94l-44.7-27.49a15.92,15.92,0,0,0-6.24-2.23l-22.82-3.08a16.11,16.11,0,0,0-16,7.86h-8.72l-3.8-7.86a15.91,15.91,0,0,0-11-8.67l-8-1.73L96.14,104h16.71a16.06,16.06,0,0,0,7.73-2l12.25-6.76a16.62,16.62,0,0,0,3-2.14l26.91-24.34A15.93,15.93,0,0,0,166,49.1l-.36-.65A88.11,88.11,0,0,1,216,128ZM40,128a87.53,87.53,0,0,1,8.54-37.8l11.34,30.27a16,16,0,0,0,11.62,10l21.43,4.61L96.74,143a16.09,16.09,0,0,0,14.4,9h1.48l-7.23,16.23a16,16,0,0,0,2.86,17.37l.14.14L128,205.94l-1.94,10A88.11,88.11,0,0,1,40,128Z"/></g></svg>`,
 };
-function searchMode(on) { $("#qCancel").hidden = !on; $("#btnMe").hidden = on; $("#exHome").hidden = on; resEl.hidden = !on; if (on) setEx("full"); }
+function searchMode(on) { $("#qCancel").hidden = !on; $("#btnMe").hidden = on; $("#btnBell").hidden = on; $("#exHome").hidden = on; resEl.hidden = !on; if (on) setEx("full"); }
 function openSearchUI() { if (exView !== "home") showView("home", true); searchMode(true); renderResults(qEl.value); }
 function closeSearch() { const was = !resEl.hidden; qEl.value = ""; $("#qClear").hidden = true; searchMode(false); qEl.blur(); if (was) setEx("peek"); }
 qEl.addEventListener("focus", openSearchUI);
@@ -3377,10 +3404,10 @@ async function pollEmerg() {
   renderEmerg();
 }
 function renderEmerg() {
-  const n = emergList.length, chip = $("#emergChip");
-  chip.hidden = !n;
-  if (n) $("#emergText").textContent = `${n} emergency squawk${n > 1 ? "s" : ""} worldwide`;
+  const n = emergList.length;
   $("#emergBadge").hidden = !n; $("#emergBadge").textContent = n;
+  for (const e of emergList) pushNote("emerg", `${e.flight || e.reg || e.hex.toUpperCase()} · ${emergName(e.squawk)}`, [`Squawk ${e.squawk}`, e.ground ? "On the ground" : e.alt != null ? fmtInt(e.alt) + " ft" : "", e.type].filter(Boolean).join(" · "), e.hex, true, "emerg|" + e.hex + "|" + e.squawk);
+  if (exView === "alerts") renderAlerts(true);
 }
 function showEmergencies() {
   resActions = [];
@@ -3391,8 +3418,7 @@ function showEmergencies() {
   }
   searchMode(true); resEl.innerHTML = html;
 }
-$("#emergChip").addEventListener("click", showEmergencies);
-$("#qEmerg").addEventListener("click", () => { if (!emergList.length) { toast(feed.mode === "live" ? "No emergency squawks anywhere right now." : "Emergency alerts need live data."); return; } showEmergencies(); });
+$("#qEmerg").addEventListener("click", () => showView("alerts"));
 setTimeout(pollEmerg, 6000); setInterval(pollEmerg, 120000);
 
 /* ---------------- Saved flights & airports, flight updates, my flights ---------------- */
@@ -3424,6 +3450,7 @@ function routeSnap(rt) {
 function addEv(hex, i, x, alert) {
   const f = S.saved.flights[hex]; if (!f) return;
   f.ev = f.ev || []; f.ev.unshift({ t: Date.now(), i, x, a: alert ? 1 : 0 }); if (f.ev.length > 40) f.ev.length = 40; savedDirty = true;
+  if (i !== "eye") pushNote("flight", f.flight || f.reg || hex.toUpperCase(), x, hex, !!alert || i === "land" || i === "takeoff", "flight|" + hex + "|" + x);
 }
 function note(msg) { toast(msg); }
 function saveFlight(a, on) {
@@ -3518,8 +3545,8 @@ function savedTick() {
 /* ---- Views inside the explore sheet ---- */
 function showView(v, quiet) {
   exView = v;
-  $("#exHome").hidden = v !== "home"; $("#exSaved").hidden = v !== "saved"; $("#exProfile").hidden = v !== "profile";
-  if (v === "saved") renderSaved(true); else if (v === "profile") renderProfile();
+  $("#exHome").hidden = v !== "home"; $("#exSaved").hidden = v !== "saved"; $("#exProfile").hidden = v !== "profile"; $("#exAlerts").hidden = v !== "alerts";
+  if (v === "saved") renderSaved(true); else if (v === "profile") renderProfile(); else if (v === "alerts") renderAlerts();
   $("#exBody").scrollTop = 0;
   if (quiet) return;
   if (v === "home") { setEx("peek"); renderExplore(true); } else setEx("full");
@@ -3925,6 +3952,7 @@ function checkAlerts() {
     const k = a.hex + "|" + why; if (alerted.has(k) && now - alerted.get(k) < 2 * 3600e3) continue;
     alerted.set(k, now);
     toast(`Near you: ${callOf(a)}, ${why}, ${fmtMi(r.d)} ${compass(r.brg)}. Tap to see it.`, () => select(a, { fly: true }));
+    pushNote("near", `${callOf(a)} near you`, `${why[0].toUpperCase() + why.slice(1)} · ${fmtMi(r.d)} ${compass(r.brg)}`, a.hex, true, "near|" + k);
     break;
   }
 }
@@ -4935,6 +4963,56 @@ addEventListener("resize", () => { if (GB.on && GB.r) { GB.r.renderer.setSize(in
   if (S.globe) setTimeout(() => enterGlobe(true), 400);
 })();
 
+
+/* ---------------- Alerts (bell) ----------------
+   One place for anything worth knowing: emergency squawks, interesting planes near you,
+   saved-flight updates and feed status. The bell flashes while something important is unread. */
+const NOTE_ICON = { emerg: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg>`, near: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M237.22,151.9l0-.1a1.42,1.42,0,0,0-.07-.22,48.46,48.46,0,0,0-2.31-5.3L193.27,51.8a8,8,0,0,0-1.67-2.44,32,32,0,0,0-45.26,0A8,8,0,0,0,144,55V80H112V55a8,8,0,0,0-2.34-5.66,32,32,0,0,0-45.26,0,8,8,0,0,0-1.67,2.44L21.2,146.28a48.46,48.46,0,0,0-2.31,5.3,1.72,1.72,0,0,0-.07.21s0,.08,0,.11a48,48,0,0,0,90.32,32.51,47.49,47.49,0,0,0,2.9-16.59V96h32v71.83a47.49,47.49,0,0,0,2.9,16.59,48,48,0,0,0,90.32-32.51Zm-143.15,27a32,32,0,0,1-60.2-21.71l1.81-4.13A32,32,0,0,1,96,167.88V168h0A32,32,0,0,1,94.07,178.94ZM203,198.07A32,32,0,0,1,160,168h0v-.11a32,32,0,0,1,60.32-14.78l1.81,4.13A32,32,0,0,1,203,198.07Z"/></g></svg>`, flight: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M224,216a8,8,0,0,1-8,8H72a8,8,0,1,1,0-16H216A8,8,0,0,1,224,216ZM208,96H147.32L101.66,50.34A8,8,0,0,0,96,48H88A16,16,0,0,0,72.83,69.06l9,26.94H59.32L37.66,74.34A8,8,0,0,0,32,72H24A16,16,0,0,0,8.69,92.6l14.07,46.89A39.75,39.75,0,0,0,61.07,168H240a8,8,0,0,0,8-8V136A40,40,0,0,0,208,96Z"/></g></svg>`, feed: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,128a40,40,0,1,1-40-40A40,40,0,0,1,168,128Zm40,0a79.74,79.74,0,0,0-20.37-53.33,8,8,0,1,0-11.92,10.67,64,64,0,0,1,0,85.33,8,8,0,0,0,11.92,10.67A79.79,79.79,0,0,0,208,128ZM80.29,85.34A8,8,0,1,0,68.37,74.67a79.94,79.94,0,0,0,0,106.67,8,8,0,0,0,11.92-10.67,63.95,63.95,0,0,1,0-85.33Zm158.28-4A119.48,119.48,0,0,0,213.71,44a8,8,0,1,0-11.42,11.2,103.9,103.9,0,0,1,0,145.56A8,8,0,1,0,213.71,212,120.12,120.12,0,0,0,238.57,81.29ZM32.17,168.48A103.9,103.9,0,0,1,53.71,55.22,8,8,0,1,0,42.29,44a119.87,119.87,0,0,0,0,168,8,8,0,1,0,11.42-11.2A103.61,103.61,0,0,1,32.17,168.48Z"/></g></svg>` };
+const NOTE_COL = { emerg: ["#ff7a6b", "#d4182b"], near: ["#6ff6ff", "#00a9c2"], flight: ["#5ac8fa", "#0a64d6"], feed: ["#8e8e93", "#48484a"] };
+function pushNote(k, title, sub, hex, important, key) {
+  if (notes.some((n) => n.key === key && Date.now() - n.t < 6 * 3600e3)) return;
+  notes.unshift({ k, title, sub: sub || "", hex: hex || null, imp: important ? 1 : 0, key, t: Date.now() });
+  if (notes.length > 60) notes.length = 60;
+  S.notes = notes.slice(0, 40); savePrefs(); updateBell();
+}
+function updateBell() {
+  const unread = notes.filter((n) => n.t > S.notesSeen), imp = unread.some((n) => n.imp);
+  const b = $("#btnBell"), badge = $("#bellBadge");
+  badge.hidden = !unread.length; badge.textContent = unread.length > 9 ? "9+" : unread.length;
+  badge.classList.toggle("quiet", !imp);
+  b.classList.toggle("ring", imp);
+  b.setAttribute("aria-label", unread.length ? `Alerts, ${unread.length} new` : "Alerts");
+}
+const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "now" : m < 60 ? m + " min" : Math.round(m / 60) + " h"; };
+let alertActs = [];
+function noteRow(n, live) {
+  const i = alertActs.push(n) - 1, [g1, g2] = NOTE_COL[n.k] || NOTE_COL.feed;
+  return `<button class="res al-row${n.t > S.notesSeen && !live ? " new" : ""}" data-note="${i}"><span class="ico k-${n.k}" style="--g1:${g1};--g2:${g2}">${NOTE_ICON[n.k] || NOTE_ICON.feed}</span><b>${esc(n.title)}</b><span class="r">${live ? "Live" : ago(n.t)}</span><span class="d">${esc(n.sub)}</span></button>`;
+}
+function renderAlerts(quiet) {
+  alertActs = [];
+  const live = emergList.map((e) => ({ k: "emerg", title: `${e.flight || e.reg || e.hex.toUpperCase()} · ${emergName(e.squawk)}`, sub: [`Squawk ${e.squawk}`, e.ground ? "On the ground" : e.alt != null ? fmtInt(e.alt) + " ft" : "", e.type].filter(Boolean).join(" · "), hex: e.hex, emerg: e, t: Date.now() }));
+  let h = vhead("Alerts") + `<div class="vpad al-list">`;
+  if (live.length) h += `<h4 class="al-h">Emergencies right now</h4><div class="al-g">${live.map((n) => noteRow(n, true)).join("")}</div>`;
+  if (notes.length) h += `<div class="al-hr"><h4 class="al-h">Recent</h4><button class="al-clear" id="alClear">Clear</button></div><div class="al-g">${notes.map((n) => noteRow(n)).join("")}</div>`;
+  if (!live.length && !notes.length) h += `<div class="empty-v"><b>All quiet</b>Emergency squawks, interesting planes near you, updates on your saved flights and feed messages show up here.</div>`;
+  h += `<p class="al-foot">Turn alerts for planes near you on or off in Profile.</p></div>`;
+  $("#exAlerts").innerHTML = h;
+  if (!quiet) { S.notesSeen = Date.now(); savePrefs(); updateBell(); }
+}
+$("#btnBell").addEventListener("click", () => showView("alerts"));
+$("#exAlerts").addEventListener("click", (e) => {
+  const v = e.target.closest("[data-view]"); if (v) { showView(v.dataset.view); return; }
+  if (e.target.closest("#alClear")) { notes = []; S.notes = []; savePrefs(); renderAlerts(); return; }
+  const r = e.target.closest("[data-note]"); if (!r) return;
+  const n = alertActs[+r.dataset.note]; if (!n || !n.hex) return;
+  let a = acMap.get(n.hex);
+  if (!a && n.emerg) { ingest([n.emerg], emergSrc); a = acMap.get(n.hex); }
+  if (!a) { const e2 = emergList.find((x) => x.hex === n.hex); if (e2) { ingest([e2], emergSrc); a = acMap.get(n.hex); } }
+  if (a) { showView("home", true); setEx("peek"); select(a, { fly: true }); } else toast("That aircraft isn't broadcasting right now.");
+});
+updateBell();
+
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
 let exState = "peek", exView = "home", savedTab = "flights", nearMore = false;
@@ -5170,8 +5248,12 @@ function hud() {
   else if (feed.mode === "sim") t = `Simulated · ${n}`;
   else if (feed.mode === "stale") t = `No signal · retrying`;
   $("#feedText").textContent = t;
-  const h = $("#hintChip"); const hint = feed.mode === "live" ? feed.hint : "";
-  h.hidden = !hint; h.textContent = hint;
+  const hint = feed.mode === "live" ? feed.hint : "";
+  if (hint && hint !== lastHint) pushNote("feed", hint, "Feed", null, false, "feed|" + hint);
+  lastHint = hint;
+  if (feed.mode === "stale" && lastMode !== "stale") pushNote("feed", "Lost contact with the live feeds", "Retrying automatically", null, false, "stale|" + Math.floor(Date.now() / 600000));
+  if (feed.mode === "live" && lastMode === "stale") pushNote("feed", "Live feeds are back", "Feed", null, false, "back|" + Math.floor(Date.now() / 600000));
+  lastMode = feed.mode;
 }
 let toastTimer;
 function toast(msg, act) {
