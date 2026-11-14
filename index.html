@@ -945,30 +945,38 @@ body.gl3d .fog3d { display: none; }
 /* Filled icon set: Phosphor Icons, MIT License, Copyright (c) 2023 Phosphor Icons. Every outline icon swapped for its solid version */
 svg.i .f { fill: currentColor; stroke: none; }
 
-/* Seating plan */
+/* Seating plan (landscape) */
+.dpane, #dSeats { min-width: 0; }
+#dSeats { display: grid; gap: 14px; }
 .seat-sum .ss-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .seat-sum small { display: block; font: 700 11px/1.3 var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; }
 .seat-sum .ss-top b { font: 700 17px/1.25 var(--font-ui); }
 .ss-n { text-align: right; } .ss-n b { display: block; font: 800 30px/1 var(--font-display) !important; font-variant-numeric: tabular-nums; }
 .ss-cls { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
 .ss-cls span { display: inline-flex; align-items: center; gap: 6px; } .ss-cls i { width: 10px; height: 10px; border-radius: 3px; } .ss-cls b { color: var(--ink); font-weight: 700; }
-.seatmap { display: grid; gap: 10px; justify-items: center; }
-.deck-n { justify-self: start; font: 700 11.5px var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
-.fuse { position: relative; display: grid; gap: 3px; justify-items: center; padding: 34px 14px 26px; border-radius: 160px 160px 44px 44px / 110px 110px 28px 28px; background: var(--card); border: 1px solid var(--line); }
-.cab-h { display: flex; align-items: center; gap: 7px; width: 100%; margin: 10px 0 3px; font: 700 12.5px var(--font-ui); color: var(--ink); }
-.cab-h:first-child { margin-top: 0; }
-.cab-h i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
-.cab-h span { margin-left: auto; color: var(--ink-2); font-weight: 600; font-size: 11.5px; }
-.srow { position: relative; display: flex; align-items: center; gap: 3px; }
-.srow b { width: 20px; margin-right: 4px; text-align: right; font: 600 10px/1 var(--font-ui); color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.sg { display: flex; gap: 3px; }
-.ai { width: 14px; flex: none; }
-.st { flex: none; width: var(--s); height: var(--h); border-radius: 6px 6px 3px 3px; background: var(--c); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
-.st.l { height: 14px; background: none; box-shadow: none; text-align: center; font: 700 9.5px/14px var(--font-ui); color: var(--ink-2); }
+.seatmap { margin: 0 calc(var(--gut) * -1); padding: 0 var(--gut) 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.seatmap::-webkit-scrollbar { display: none; }
+.sm-in { display: inline-grid; gap: 8px; justify-items: start; padding-right: var(--gut); }
+.deck-n { font: 700 11.5px var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+.fuse { position: relative; display: flex; align-items: flex-end; gap: 14px; padding: 16px 30px 16px 64px; border-radius: 150px 34px 34px 150px / 120px 28px 28px 120px; background: var(--card); border: 1px solid var(--line); }
+.cab-sec { display: grid; gap: 6px; }
+.cab-h { display: flex; align-items: center; gap: 6px; font: 700 12px var(--font-ui); color: var(--ink); white-space: nowrap; }
+.cab-h i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+.cab-h span { color: var(--ink-2); font-weight: 600; font-size: 11px; }
+.cab-cols { display: flex; align-items: stretch; gap: 3px; }
+.scol { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.scol b { height: 14px; font: 600 10px/14px var(--font-ui); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.sg { display: flex; flex-direction: column; gap: 3px; }
+.ai { height: 12px; flex: none; }
+.st { flex: none; width: var(--w); height: var(--s); border-radius: 3px 6px 6px 3px; background: var(--c); box-shadow: inset 3px 0 0 rgba(0, 0, 0, .2); }
+.scol.lett { margin-right: 3px; }
+.st.l { width: 14px; background: none; box-shadow: none; text-align: center; font: 700 9.5px/var(--s) var(--font-ui); line-height: var(--s); color: var(--ink-2); }
 .st.blk { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
-.srow.wing::before, .srow.wing::after { content: ""; position: absolute; top: -2px; bottom: -2px; width: 10px; background: rgba(127, 127, 127, .22); }
-.srow.wing::before { left: -28px; border-radius: 3px 0 0 3px; } .srow.wing::after { right: -24px; border-radius: 0 3px 3px 0; }
-.exit { display: flex; justify-content: space-between; width: 100%; margin: 3px 0; font: 800 8.5px/1 var(--font-ui); letter-spacing: .08em; color: var(--alert); }
+.scol.wing::before, .scol.wing::after { content: ""; position: absolute; left: -2px; right: -2px; height: 10px; background: rgba(127, 127, 127, .22); }
+.scol.wing::before { top: -26px; border-radius: 3px 3px 0 0; } .scol.wing::after { bottom: -26px; border-radius: 0 0 3px 3px; }
+.exit-v { display: flex; flex-direction: column; justify-content: space-between; align-items: center; margin: 0 3px; padding-top: 17px; font: 800 8px/1 var(--font-ui); letter-spacing: .06em; color: var(--alert); }
+.exit-v i { flex: 1; width: 0; border-left: 1.5px dashed var(--alert); opacity: .5; margin: 4px 0; }
+.sm-hint { font-size: 11.5px; color: var(--ink-3); margin: -4px 2px 0; }
 .seat-note { margin: 0 2px; font-size: 12px; line-height: 1.45; color: var(--ink-3); }
 </style>
 </head>
@@ -4584,24 +4592,25 @@ function seatPlanFor(a) {
   return p ? p : { none: t ? `No seating plan for the ${t} yet.` : "The aircraft type isn't known, so there's no seating plan." };
 }
 function seatCount(cab) { return cab.reduce((n, [c, rows, lay]) => n + rows * (lay === "3-3b" ? 4 : LETTERS[lay].flat().length), 0); }
-function seatDeckHtml(deck, rowStart, width) {
+/* Landscape seat map: nose on the left, seen from above, so seat A (left side of the aircraft) is at the bottom */
+function seatDeckHtml(deck, rowStart) {
   const totalRows = deck.cab.reduce((n, c) => n + c[1], 0), exitRows = new Set((deck.exits || []).map((f) => (f >= 1 ? totalRows : Math.round(f * (totalRows - 1)))));
   const wingFrom = Math.round(totalRows * 0.34), wingTo = Math.round(totalRows * 0.56);
+  const exitCol = '<div class="exit-v"><span>EXIT</span><i></i><span>EXIT</span></div>';
   let row = rowStart, idx = 0, h = "";
   for (const [cls, rows, lay] of deck.cab) {
-    const groups = LETTERS[lay], nSeats = groups.flat().length, aisles = groups.length - 1;
-        const avail = width - 26 - aisles * 14;
-    const s = Math.floor(Math.min({ F: 32, J: 28, W: 24, Y: 20 }[cls], avail / nSeats - 3));
-    const hgt = Math.round(s * (cls === "F" || cls === "J" ? 1.2 : 1.05));
-    h += `<div class="cab-h" style="--c:${CABIN[cls][1]}"><i></i>${CABIN[cls][0]}<span>${lay.replace("b", "")} · ${rows * (lay === "3-3b" ? 4 : nSeats)} seats</span></div>`;
-    h += `<div class="srow lett" style="--s:${s}px;--h:14px"><b></b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st l">${l}</span>`).join("")}</span>`).join('<span class="ai"></span>')}</div>`;
+    const groups = LETTERS[lay].map((g) => g.slice().reverse()).reverse(), nSeats = LETTERS[lay].flat().length;
+    const s = { F: 30, J: 27, W: 23, Y: 20 }[cls], len = Math.round(s * (cls === "F" || cls === "J" ? 1.25 : 1.05));
+    const col = (inner, extra = "") => `<div class="scol${extra}">${inner}</div>`;
+    let cols = col(`<b></b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st l">${l}</span>`).join("")}</span>`).join('<span class="ai"></span>')}`, " lett");
     for (let r = 0; r < rows; r++, row++, idx++) {
-      if (exitRows.has(idx)) h += `<div class="exit"><span>EXIT</span><span>EXIT</span></div>`;
+      if (exitRows.has(idx)) cols += exitCol;
       const wing = idx >= wingFrom && idx <= wingTo ? " wing" : "";
-      h += `<div class="srow${wing}" style="--s:${s}px;--h:${hgt}px;--c:${CABIN[cls][1]}"><b>${row}</b>${groups.map((g, gi) => `<span class="sg">${g.map((l, li) => `<span class="st${lay === "3-3b" && li === 1 ? " blk" : ""}" title="${row}${l}"></span>`).join("")}</span>`).join('<span class="ai"></span>')}</div>`;
+      cols += col(`<b>${row}</b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st${lay === "3-3b" && (l === "B" || l === "E") ? " blk" : ""}" title="${row}${l}"></span>`).join("")}</span>`).join('<span class="ai"></span>')}`, wing);
     }
+    if (idx === totalRows && exitRows.has(totalRows)) cols += exitCol;
+    h += `<div class="cab-sec" style="--s:${s}px;--w:${len}px;--c:${CABIN[cls][1]}"><div class="cab-h"><i></i>${CABIN[cls][0]}<span>${lay.replace("b", "")} · ${rows * (lay === "3-3b" ? 4 : nSeats)}</span></div><div class="cab-cols">${cols}</div></div>`;
   }
-  if (exitRows.has(totalRows)) h += `<div class="exit"><span>EXIT</span><span>EXIT</span></div>`;
   return { h, next: row };
 }
 function renderSeats(a) {
@@ -4614,15 +4623,14 @@ function renderSeats(a) {
   const decks = p.decks || [{ n: "", cab: p.cab, exits: p.exits }];
   const all = decks.flatMap((d) => d.cab), total = seatCount(all);
   const byCls = {}; for (const c of all) byCls[c[0]] = (byCls[c[0]] || 0) + seatCount([c]);
-  const width = Math.min(380, (el.clientWidth || 340) - 28);
   let row = 1, body = "";
   for (const d of decks) {
-    const r = seatDeckHtml(d, row, width); row = r.next;
+    const r = seatDeckHtml(d, row); row = r.next;
     body += `${d.n ? `<div class="deck-n">${esc(d.n)}</div>` : ""}<div class="fuse">${r.h}</div>`;
   }
   el.innerHTML = `<div class="card seat-sum"><div class="ss-top"><div><small>Typical layout</small><b>${esc(p.n)}</b></div><div class="ss-n"><b>${total}</b><small>seats</small></div></div>
     <div class="ss-cls">${Object.entries(byCls).map(([c, n]) => `<span><i style="background:${CABIN[c][1]}"></i>${CABIN[c][0]} <b>${n}</b></span>`).join("")}</div></div>
-    <div class="seatmap">${body}</div>
+    <div class="seatmap"><div class="sm-in">${body}</div></div><div class="sm-hint">Swipe sideways to see the whole cabin · front of the aircraft on the left</div>
     <p class="seat-note">A typical cabin for this aircraft type, not ${esc(airlineOf(a) || "this airline")}'s exact layout. Seat counts, cabins and row numbers vary between airlines and aircraft. Exits and wing position are approximate.</p>`;
 }
 
