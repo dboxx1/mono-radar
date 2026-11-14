@@ -1018,6 +1018,23 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
 .al-row { grid-template-columns: 44px 1fr auto !important; }
 .al-foot { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); }
 .al-row .ico.k-emerg { color: var(--alert); } .al-row .ico.k-near { color: var(--accent-t); } .al-row .ico.k-feed { color: var(--ink-2); }
+
+/* Smart chips row (collapsed sheet) */
+.quick.chips-row { display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding: 6px var(--gut) 4px; scroll-padding: 0 var(--gut); justify-content: flex-start; }
+.quick.chips-row::-webkit-scrollbar { display: none; }
+.chips-row .qt { flex: none; display: inline-flex; flex-direction: row; align-items: center; gap: 6px; min-width: 0; height: 36px; padding: 0 14px 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 600 13.5px/1 var(--font-ui); white-space: nowrap; transition: background .15s, color .15s, border-color .15s; }
+.chips-row .qt:active { transform: scale(.96); }
+.chips-row .qt .qi { width: auto; height: auto; padding: 0; border-radius: 0; background: none !important; box-shadow: none !important; color: inherit; transform: none !important; }
+.chips-row .qt .qi svg { width: 18px; height: 18px; }
+.chips-row .qt .badge { display: none !important; }
+.chips-row .qt .qn { font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 700; }
+.chips-row .qt .qn:empty { display: none; }
+.chips-row .qt.on { background: var(--accent); border-color: transparent; color: #04282c; }
+.chips-row .qt.on .qn { color: #04282c; opacity: .7; }
+.chips-row .qt.hot { background: rgba(255, 74, 61, .14); border-color: rgba(255, 74, 61, .38); color: var(--alert); }
+.chips-row .qt.hot .qi svg { animation: chipPulse 1.6s ease-in-out infinite; }
+@keyframes chipPulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .chips-row .qt.hot .qi svg { animation: none; } }
 </style>
 </head>
 <body>
@@ -1061,13 +1078,13 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
   </div>
   <div class="ex-body" id="exBody">
     <div id="exHome">
-      <div class="quick" id="quick">
-        <button class="qt" data-tab="filters" style="--g1:#a78bfa;--g2:#6d28d9"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></g></svg><span class="badge" id="filterBadge" hidden>0</span></span>Filters</button>
-        <button class="qt" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg></span>Weather</button>
-        <button class="qt" id="qMil" aria-pressed="false" style="--g1:#a3b34a;--g2:#4d5a16"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z"/></g></svg></span>Military</button>
-        <button class="qt" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg><span class="badge" id="emergBadge" hidden>0</span></span>Alerts</button>
-        <button class="qt" id="qSaved" style="--g1:#ff7ab6;--g2:#c81e63"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg><span class="badge ok" id="savedBadge" hidden>0</span></span>Saved</button>
-        <button class="qt" data-tab="mapstyle" style="--g1:#8e8e93;--g2:#3a3a3c"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M220,169.09l-92,53.65L36,169.09A8,8,0,0,0,28,182.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,169.09Z"/><path d="M220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09Z"/><path d="M28,86.91l96,56a8,8,0,0,0,8.06,0l96-56a8,8,0,0,0,0-13.82l-96-56a8,8,0,0,0-8.06,0l-96,56a8,8,0,0,0,0,13.82Z"/></g></svg></span>Layers</button>
+      <div class="quick chips-row" id="quick">
+        <button class="qt" data-chip="alerts" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg><span class="badge" id="emergBadge" hidden>0</span></span><span class="ql">Alerts</span><span class="qn"></span></button>
+        <button class="qt" data-chip="weather" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg></span><span class="ql">Weather</span><span class="qn"></span></button>
+        <button class="qt" data-chip="mil" id="qMil" aria-pressed="false" style="--g1:#a3b34a;--g2:#4d5a16"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z"/></g></svg></span><span class="ql">Military</span><span class="qn"></span></button>
+        <button class="qt" data-chip="saved" id="qSaved" style="--g1:#ff7ab6;--g2:#c81e63"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z"/></g></svg><span class="badge ok" id="savedBadge" hidden>0</span></span><span class="ql">Saved</span><span class="qn"></span></button>
+        <button class="qt" data-chip="filters" data-tab="filters" style="--g1:#a78bfa;--g2:#6d28d9"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M227.81,66.76l-.08.09L160,139.17v55.49A16,16,0,0,1,152.87,208l-32,21.34A16,16,0,0,1,96,216V139.17L28.27,66.85l-.08-.09A16,16,0,0,1,40,40H216a16,16,0,0,1,11.84,26.76Z"/></g></svg><span class="badge" id="filterBadge" hidden>0</span></span><span class="ql">Filters</span><span class="qn"></span></button>
+        <button class="qt" data-chip="layers" data-tab="mapstyle" style="--g1:#8e8e93;--g2:#3a3a3c"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M220,169.09l-92,53.65L36,169.09A8,8,0,0,0,28,182.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,169.09Z"/><path d="M220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09Z"/><path d="M28,86.91l96,56a8,8,0,0,0,8.06,0l96-56a8,8,0,0,0,0-13.82l-96-56a8,8,0,0,0-8.06,0l-96,56a8,8,0,0,0,0,13.82Z"/></g></svg></span><span class="ql">Layers</span><span class="qn"></span></button>
       </div>
       <div class="overhead" id="overhead"></div>
       <div class="near-h">
@@ -1992,7 +2009,7 @@ function compileFilters() {
   if (F.airline.length) n++;
   if (F.type.length) n++;
   F.count = n;
-  $("#filterBadge").hidden = !n; $("#filterBadge").textContent = n;
+  $("#filterBadge").hidden = !n; $("#filterBadge").textContent = n; if (typeof updateChips === "function") setTimeout(updateChips);
   const parts = [];
   if (F.airline.length) parts.push(F.airline.join(" "));
   if (F.type.length) parts.push(F.type.join(" "));
@@ -2704,7 +2721,7 @@ for (const b of document.querySelectorAll("[data-close]")) b.addEventListener("c
   deselect();
 });
 function setRadar(on) { S.radar = on; savePrefs(); $("#tabWeather").setAttribute("aria-pressed", String(on)); updateAttrib(); dirty = true; if (on) { radar.broken = false; radar.errs = 0; loadRadar(); } }
-$("#tabWeather").addEventListener("click", () => { setRadar(!S.radar); toast(S.radar ? "Weather radar on · last 10 minutes, from RainViewer" : "Weather radar off"); });
+$("#tabWeather").addEventListener("click", () => { setRadar(!S.radar); setTimeout(updateChips); toast(S.radar ? "Weather radar on · last 10 minutes, from RainViewer" : "Weather radar off"); });
 function openTab(id) {
   if (openSheet === id) { closeSheets(); return; }
   showPeek(false); selected = null; setFollow(false);
@@ -3405,7 +3422,7 @@ async function pollEmerg() {
 }
 function renderEmerg() {
   const n = emergList.length;
-  $("#emergBadge").hidden = !n; $("#emergBadge").textContent = n;
+  $("#emergBadge").hidden = !n; $("#emergBadge").textContent = n; updateChips();
   for (const e of emergList) pushNote("emerg", `${e.flight || e.reg || e.hex.toUpperCase()} · ${emergName(e.squawk)}`, [`Squawk ${e.squawk}`, e.ground ? "On the ground" : e.alt != null ? fmtInt(e.alt) + " ft" : "", e.type].filter(Boolean).join(" · "), e.hex, true, "emerg|" + e.hex + "|" + e.squawk);
   if (exView === "alerts") renderAlerts(true);
 }
@@ -3532,7 +3549,7 @@ function syncSaveBtns() {
 function savedBadge() {
   let n = 0; const now = performance.now();
   for (const hex in S.saved.flights) { const a = acMap.get(hex); if (a && !a.ground && now - a.seen < 60000) n++; }
-  const b = $("#savedBadge"); b.hidden = !n; b.textContent = n;
+  const b = $("#savedBadge"); b.hidden = !n; b.textContent = n; setTimeout(updateChips);
 }
 let savedTicks = 0;
 function savedTick() {
@@ -4904,7 +4921,7 @@ async function gbWorld() {
   const cut = performance.now() - 4 * 60000; for (const [k, w] of GB.world) if (w.seen < cut) GB.world.delete(k);
   GB.timers.push(setTimeout(gbWorld, 75000));
 }
-function gbButton() { const b = $("#btnGlobe"); b.setAttribute("aria-pressed", String(GB.on)); b.setAttribute("aria-label", GB.on ? "Flat map" : "Globe view"); }
+function gbButton() { setTimeout(updateChips); const b = $("#btnGlobe"); b.setAttribute("aria-pressed", String(GB.on)); b.setAttribute("aria-label", GB.on ? "Flat map" : "Globe view"); }
 async function enterGlobe(quiet) {
   if (GB.on) return;
   const T = await loadThree();
@@ -5013,6 +5030,28 @@ $("#exAlerts").addEventListener("click", (e) => {
 });
 updateBell();
 
+
+/* Smart chips: the quick buttons show what's going on, not just an icon */
+function updateChips() {
+  const set = (id, label, n, on, hot) => {
+    const b = document.querySelector(`[data-chip="${id}"]`); if (!b) return;
+    b.querySelector(".ql").textContent = label; b.querySelector(".qn").textContent = n ? String(n) : "";
+    b.classList.toggle("on", !!on); b.classList.toggle("hot", !!hot);
+  };
+  const em = emergList.length;
+  set("alerts", em ? (em > 1 ? "alerts" : "alert") : "Alerts", 0, false, em > 0);
+  if (em) document.querySelector('[data-chip="alerts"] .ql').textContent = `${em} ${em > 1 ? "alerts" : "alert"}`;
+  set("weather", S.radar ? "Radar on" : "Weather", 0, S.radar, false);
+  let mil = 0; for (const a of acMap.values()) if (a.mil) mil++;
+  set("mil", "Military", mil, milOnly(), false);
+  const sv = Object.keys(S.saved.flights).length + S.saved.airports.length;
+  set("saved", "Saved", sv, false, false);
+  const fn = +($("#filterBadge").hidden ? 0 : $("#filterBadge").textContent) || 0;
+  set("filters", "Filters", fn, fn > 0, false);
+  set("layers", typeof GB !== "undefined" && GB.on ? "Globe" : "Layers", 0, false, false);
+}
+setInterval(updateChips, 2000);
+
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
 let exState = "peek", exView = "home", savedTab = "flights", nearMore = false;
@@ -5020,7 +5059,7 @@ const safeBottom = (() => { const p = document.createElement("div"); p.style.css
 function exHeights() {
   const full = ex.getBoundingClientRect().height || H * 0.95;
   const q = $("#quick"), top = ex.getBoundingClientRect().top - (parseFloat(getComputedStyle(ex).getPropertyValue("--ty")) || 0);
-  const peek = q && !$("#exHome").hidden ? Math.max(140, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 6 + safeBottom()) : 180;
+  const peek = q && !$("#exHome").hidden ? Math.max(100, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 8 + safeBottom()) : 180;
   return { full, half: Math.min(full, Math.round(H * 0.58)), peek: Math.min(full, peek || 206) };
 }
 let exPeekH = 206;
@@ -5231,7 +5270,7 @@ $("#exBody").addEventListener("click", (e) => {
   const ap = e.target.closest("[data-apt]"); if (ap) { const x = AP_ICAO.get(ap.dataset.apt); if (x) { flyTo(x[4], x[5], Math.max(V.z, 9.5)); openAirport(x); } return; }
   const pl = e.target.closest("[data-place]"); if (pl) { const p = PLACES_X[+pl.dataset.place]; setEx("peek"); flyTo(p[1], p[2], p[3], 1100); toast(`Flying to ${p[0]}`); }
 });
-$("#qMil").addEventListener("click", () => {
+$("#qMil").addEventListener("click", () => { setTimeout(updateChips, 50);
   const on = !milOnly();
   S.filters.cats = on ? ["mil"] : DEF_FILTERS.cats.slice(); compileFilters(); savePrefs();
   $("#qMil").setAttribute("aria-pressed", String(on)); feed.coverage = null; refresh();
