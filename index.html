@@ -978,6 +978,23 @@ svg.i .f { fill: currentColor; stroke: none; }
 .exit-v i { flex: 1; width: 0; border-left: 1.5px dashed var(--alert); opacity: .5; margin: 4px 0; }
 .sm-hint { font-size: 11.5px; color: var(--ink-3); margin: -4px 2px 0; }
 .seat-note { margin: 0 2px; font-size: 12px; line-height: 1.45; color: var(--ink-3); }
+
+/* Globe view */
+.globe { position: fixed; inset: 0; z-index: 40; background: #03060c; touch-action: none; }
+.globe canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.gb-top { position: absolute; left: 12px; right: 12px; top: calc(env(safe-area-inset-top) + 12px); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; }
+.gb-top > * { pointer-events: auto; }
+.gb-btn { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 16px 0 10px; border-radius: 999px; background: rgba(20, 24, 32, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: #fff; font: 600 15px var(--font-ui); border: 1px solid rgba(255, 255, 255, .12); }
+.gb-btn svg { width: 20px; height: 20px; stroke-width: 2.2; }
+.gb-count { height: 32px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; background: rgba(20, 24, 32, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: #fff; font: 700 11.5px/1 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; border: 1px solid rgba(255, 255, 255, .12); }
+.gb-card { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 16px); max-width: 420px; margin: 0 auto; padding: 14px; border-radius: 22px; background: rgba(20, 24, 32, .82); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); color: #fff; display: grid; gap: 8px; border: 1px solid rgba(255, 255, 255, .12); }
+.gbc-t { display: flex; align-items: center; gap: 8px; }
+.gbc-t b { font: 800 24px/1 var(--font-display); color: #00f0ff; letter-spacing: .02em; }
+.gbc-t .tg { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 7px; background: #2c5a86; font: 700 12.5px/1 var(--font-ui); }
+.gbc-x { margin-left: auto; width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, .12); color: #fff; font: 400 22px/1 var(--font-ui); display: grid; place-items: center; }
+.gbc-s { font-size: 14px; color: rgba(255, 255, 255, .78); font-variant-numeric: tabular-nums; }
+.gb-note { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 4px); margin: 0; text-align: center; font-size: 10.5px; color: rgba(255, 255, 255, .45); pointer-events: none; }
+.gb-card:not([hidden]) ~ .gb-note { display: none; }
 </style>
 </head>
 <body>
@@ -995,6 +1012,7 @@ svg.i .f { fill: currentColor; stroke: none; }
   <div class="ctrls">
     <div class="ctrl-group glass">
       <button class="ctrl" data-tab="mapstyle" aria-label="Map layers"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M220,169.09l-92,53.65L36,169.09A8,8,0,0,0,28,182.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,169.09Z"/><path d="M220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09Z"/><path d="M28,86.91l96,56a8,8,0,0,0,8.06,0l96-56a8,8,0,0,0,0-13.82l-96-56a8,8,0,0,0-8.06,0l-96,56a8,8,0,0,0,0,13.82Z"/></g></svg></button>
+      <button class="ctrl" id="btnGlobe" aria-label="Globe view"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.62,87.62,0,0,1-6.4,32.94l-44.7-27.49a15.92,15.92,0,0,0-6.24-2.23l-22.82-3.08a16.11,16.11,0,0,0-16,7.86h-8.72l-3.8-7.86a15.91,15.91,0,0,0-11-8.67l-8-1.73L96.14,104h16.71a16.06,16.06,0,0,0,7.73-2l12.25-6.76a16.62,16.62,0,0,0,3-2.14l26.91-24.34A15.93,15.93,0,0,0,166,49.1l-.36-.65A88.11,88.11,0,0,1,216,128ZM40,128a87.53,87.53,0,0,1,8.54-37.8l11.34,30.27a16,16,0,0,0,11.62,10l21.43,4.61L96.74,143a16.09,16.09,0,0,0,14.4,9h1.48l-7.23,16.23a16,16,0,0,0,2.86,17.37l.14.14L128,205.94l-1.94,10A88.11,88.11,0,0,1,40,128Z"/></g></svg></button>
       <button class="ctrl" id="btnLocate" aria-label="Centre on my location"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875) rotate(90 128 128)"><path d="M248,121.58a15.76,15.76,0,0,1-11.29,15l-.2.06-78,21.84-21.84,78-.06.2a15.77,15.77,0,0,1-15,11.29h-.3a15.77,15.77,0,0,1-15.07-10.67L41,61.41a1,1,0,0,1-.05-.16A16,16,0,0,1,61.25,40.9l.16.05,175.92,65.26A15.78,15.78,0,0,1,248,121.58Z"/></g></svg></button>
     </div>
     <div class="ctrl-group glass zoom"><button class="ctrl" id="zIn" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></g></svg></button><button class="ctrl" id="zOut" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z"/></g></svg></button></div>
@@ -1228,6 +1246,11 @@ svg.i .f { fill: currentColor; stroke: none; }
   <canvas id="skyCv" aria-label="Planes in the sky around you"></canvas>
   <div class="sky-top"><div class="sky-t"><b>Sky view</b><span id="skySub">Point your phone at the sky</span></div><button class="xs" id="skyX" aria-label="Close sky view"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
   <div class="sky-hint" id="skyHint"></div>
+</div>
+<div class="globe" id="globeView" hidden><canvas id="gbCanvas"></canvas><canvas id="gbLabels" aria-label="Globe with live aircraft"></canvas>
+  <div class="gb-top"><button class="gb-btn" id="gbExit"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></g></svg>Map</button><span class="gb-count" id="gbCount"></span></div>
+  <div class="gb-card glass" id="gbCard" hidden></div>
+  <p class="gb-note">Live traffic near your map plus a sample around major hubs</p>
 </div>
 <div class="view3d" id="view3d" hidden><canvas id="gl3d"></canvas><canvas id="gl3dLabels" aria-label="3D view of live aircraft"></canvas></div>
 <div class="hud3d" id="hud3d" hidden>
@@ -2526,7 +2549,7 @@ function frame(now) {
     setView(lonToU(o.lon), latToV(o.lat) + followOff / V.ws, V.z);
   }
   if (threeD) apply3D();
-  if (GL.on) return;
+  if (GL.on || GB.on) return;
   const moving = !!(gesture && gesture.type !== "maybe") || inertia || anim || follow;
   const pxs = 0.14 * pxPerNm();
   let iv = moving ? 0 : clamp(1000 / (pxs * 5 + 0.0001), 16, 1000);
@@ -4633,6 +4656,242 @@ function renderSeats(a) {
     <div class="seatmap"><div class="sm-in">${body}</div></div><div class="sm-hint">Swipe sideways to see the whole cabin · front of the aircraft on the left</div>
     <p class="seat-note">A typical cabin for this aircraft type, not ${esc(airlineOf(a) || "this airline")}'s exact layout. Seat counts, cabins and row numbers vary between airlines and aircraft. Exits and wing position are approximate.</p>`;
 }
+
+/* ---------------- Globe view ----------------
+   A 3D Earth (three.js) with live aircraft. Shows everything loaded around the map plus a light
+   sample of traffic around the world's busiest hubs, refreshed while the globe is open. */
+const GB = { on: false, r: null, lat: 30, lon: 0, dist: 3, world: new Map(), timers: [], raf: 0, sel: null, drag: null, pinch: null, vel: null, theme: null, last: 0 };
+const GB_HUBS = [[51.47, -0.45], [50.03, 8.57], [40.64, -73.78], [33.94, -118.4], [41.98, -87.9], [25.25, 55.36], [1.36, 103.99], [35.55, 139.78], [22.31, 113.92], [28.56, 77.1], [-23.43, -46.47], [-33.94, 151.18]];
+const gbN = (lat, lon, r, o) => { const la = lat * D2R, lo = lon * D2R, c = Math.cos(la); o.set(c * Math.cos(lo) * r, Math.sin(la) * r, -c * Math.sin(lo) * r); return o; };
+function gbTexture(T) {
+  const W = GB.r0 && GB.r0 >= 8192 ? 8192 : 4096, H = W / 2, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"), dark = C.dark, s = GEO.s;
+  const col = dark ? { sea: "#0b1828", land: "#1f2d3b", coast: "#3f5a73", border: "#2b3d4f", grid: "rgba(120,170,220,.10)" } : { sea: "#4ea7ea", land: "#cfe6a5", coast: "#2f86cc", border: "#7f906f", grid: "rgba(255,255,255,.22)" };
+  g.fillStyle = col.sea; g.fillRect(0, 0, W, H);
+  const path = (list, closed) => {
+    const p = new Path2D();
+    for (const arr of list) {
+      let x = 0, y = 0, prev = 0;
+      for (let i = 0; i < arr.length; i += 2) {
+        x += arr[i]; y += arr[i + 1];
+        let lon = x / s; if (i) { while (lon - prev > 180) lon -= 360; while (lon - prev < -180) lon += 360; } prev = lon;
+        const px = ((lon + 180) / 360) * W, py = ((90 - y / s) / 180) * H;
+        if (i === 0) p.moveTo(px, py); else p.lineTo(px, py);
+      }
+      if (closed) p.closePath();
+    }
+    return p;
+  };
+  const land = path(GEO.land, true), coast = path(GEO.coast, false), border = path(GEO.border, false);
+  for (const off of [-W, 0, W]) {
+    g.setTransform(1, 0, 0, 1, off, 0);
+    g.fillStyle = col.land; g.fill(land, "evenodd");
+    g.lineJoin = "round"; g.strokeStyle = col.border; g.lineWidth = W / 3400; g.stroke(border);
+    g.strokeStyle = col.coast; g.lineWidth = W / 2600; g.stroke(coast);
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.strokeStyle = col.grid; g.lineWidth = 1.5;
+  for (let lo = -180; lo <= 180; lo += 30) { const x = ((lo + 180) / 360) * W; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  for (let la = -60; la <= 60; la += 30) { const y = ((90 - la) / 180) * H; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function gbPlaneGeo(T) {
+  const sh = new T.Shape(), pts = [[0, 1], [0.12, 0.62], [0.12, 0.22], [1, -0.2], [1, -0.36], [0.12, -0.14], [0.1, -0.62], [0.42, -0.86], [0.42, -1], [0, -0.92], [-0.42, -1], [-0.42, -0.86], [-0.1, -0.62], [-0.12, -0.14], [-1, -0.36], [-1, -0.2], [-0.12, 0.22], [-0.12, 0.62]];
+  pts.forEach(([x, y], i) => (i ? sh.lineTo(x, y) : sh.moveTo(x, y)));
+  return new T.ShapeGeometry(sh);
+}
+function gbBuild(T) {
+  const canvas = $("#gbCanvas");
+  const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.setSize(innerWidth, innerHeight, false);
+  GB.r0 = renderer.capabilities.maxTextureSize;
+  const scene = new T.Scene(); scene.background = new T.Color("#03060c");
+  const camera = new T.PerspectiveCamera(40, innerWidth / innerHeight, 0.01, 100);
+  const earthMat = new T.MeshPhongMaterial({ map: gbTexture(T), shininess: 6, specular: new T.Color(0x111a22) });
+  const earth = new T.Mesh(new T.SphereGeometry(1, 128, 96), earthMat); scene.add(earth);
+  // soft blue atmosphere rim
+  const atmo = new T.Mesh(new T.SphereGeometry(1.08, 64, 48), new T.ShaderMaterial({
+    side: T.BackSide, transparent: true, depthWrite: false, blending: T.AdditiveBlending,
+    uniforms: { c: { value: new T.Color("#3ab0ff") } },
+    vertexShader: "varying vec3 n; void main(){ n = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+    fragmentShader: "uniform vec3 c; varying vec3 n; void main(){ float i = pow(max(0.0, 0.72 - dot(n, vec3(0.0,0.0,1.0))), 3.0); gl_FragColor = vec4(c, 1.0) * i * 2.4; }",
+  }));
+  scene.add(atmo);
+  // a few stars
+  const sp = new Float32Array(1800 * 3); for (let i = 0; i < sp.length; i += 3) { const v = new T.Vector3().randomDirection().multiplyScalar(40 + Math.random() * 20); sp[i] = v.x; sp[i + 1] = v.y; sp[i + 2] = v.z; }
+  const sg = new T.BufferGeometry(); sg.setAttribute("position", new T.BufferAttribute(sp, 3));
+  scene.add(new T.Points(sg, new T.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.55 })));
+  const amb = new T.AmbientLight(0xffffff, 1.15), sun = new T.DirectionalLight(0xffffff, 1.6); scene.add(amb, sun);
+  const pgeo = gbPlaneGeo(T), MAX = 12000;
+  const fleet = new T.InstancedMesh(pgeo, new T.MeshBasicMaterial({ color: new T.Color(C.accent || "#00f0ff"), side: T.DoubleSide }), MAX);
+  fleet.instanceMatrix.setUsage(T.DynamicDrawUsage); fleet.frustumCulled = false; fleet.count = 0; scene.add(fleet);
+  const sel = new T.Mesh(pgeo, new T.MeshBasicMaterial({ color: new T.Color(C.alert || "#ff4a3d"), side: T.DoubleSide })); sel.visible = false; scene.add(sel);
+  GB.r = { T, renderer, scene, camera, earth, earthMat, atmo, amb, sun, fleet, sel, MAX, list: [], tmp: { p: new T.Vector3(), n: new T.Vector3(), u: new T.Vector3(), e: new T.Vector3(), no: new T.Vector3(), f: new T.Vector3(), x: new T.Vector3(), m: new T.Matrix4(), s: new T.Vector3(), q: new T.Vector3() } };
+  GB.theme = C.dark;
+}
+function gbFov() {
+  const r = GB.r, asp = innerWidth / innerHeight;
+  r.camera.aspect = asp; r.camera.fov = asp < 1 ? Math.min(78, 2 * Math.atan(Math.tan(20 * D2R) / asp) * R2D) : 40; r.camera.updateProjectionMatrix();
+  GB.k = 2 * Math.tan((r.camera.fov / 2) * D2R);
+}
+function gbPlaneMatrix(lat, lon, altFt, track, scale, out) {
+  const t = GB.r.tmp, la = lat * D2R, lo = lon * D2R, tr = (track || 0) * D2R;
+  const h = 1.003 + clamp(altFt || 0, 0, 45000) * 0.0000005;
+  gbN(lat, lon, 1, t.n);
+  t.e.set(-Math.sin(lo), 0, -Math.cos(lo));
+  t.no.set(-Math.sin(la) * Math.cos(lo), Math.cos(la), Math.sin(la) * Math.sin(lo));
+  t.f.copy(t.no).multiplyScalar(Math.cos(tr)).addScaledVector(t.e, Math.sin(tr));
+  t.x.crossVectors(t.f, t.n);
+  out.setPosition(0, 0, 0);
+  t.u.copy(t.n).multiplyScalar(scale);
+  out.makeBasis(t.x.multiplyScalar(scale), t.f.multiplyScalar(scale), t.u);
+  out.setPosition(t.n.x * h, t.n.y * h, t.n.z * h);
+  return out;
+}
+const _gbo = { lat: 0, lon: 0 };
+function gbFrame(now) {
+  if (!GB.on) return;
+  GB.raf = requestAnimationFrame(gbFrame);
+  const r = GB.r, T = r.T;
+  if (GB.theme !== C.dark) { r.earthMat.map = gbTexture(T); r.earthMat.needsUpdate = true; GB.theme = C.dark; }
+  if (!GB.drag && GB.vel) { GB.lon += GB.vel.x; GB.lat = clamp(GB.lat + GB.vel.y, -80, 80); GB.vel.x *= 0.93; GB.vel.y *= 0.93; if (Math.abs(GB.vel.x) + Math.abs(GB.vel.y) < 0.01) GB.vel = null; }
+  gbN(GB.lat, GB.lon, GB.dist, r.camera.position); r.camera.up.set(0, 1, 0); r.camera.lookAt(0, 0, 0);
+  const sp = sunPos(Date.now()); gbN(sp.dec * R2D, sp.lon, 10, r.sun.position);
+  r.amb.intensity = C.dark ? 0.95 : 1.25; r.sun.intensity = C.dark ? 1.5 : 1.3;
+  // planes: everything loaded around the map plus the world sample
+  const list = r.list; list.length = 0;
+  for (const a of acMap.values()) if (!a.ground && passes(a)) list.push(a);
+  for (const w of GB.world.values()) if (!acMap.has(w.hex) && !w.ground) list.push(w);
+  const scale = 5.5 * (GB.dist - 1) * (GB.k || 0.728) / Math.max(400, innerHeight), m = r.tmp.m, camN = r.tmp.q.copy(r.camera.position).normalize();
+  let n = 0;
+  for (const a of list) {
+    if (n >= r.MAX) break;
+    const o = a.t0 ? displayPos(a, now, _gbo) : a;
+    a._gl = o.lat; a._go = o.lon;
+    gbPlaneMatrix(o.lat, o.lon, a.alt, a.track, a === GB.sel ? 0 : scale, m);
+    r.fleet.setMatrixAt(n++, m);
+  }
+  r.fleet.count = n; r.fleet.instanceMatrix.needsUpdate = true;
+  r.fleet.material.color.set(C.accent || "#00f0ff");
+  if (GB.sel) { const o = GB.sel.t0 ? displayPos(GB.sel, now, _gbo) : GB.sel; r.sel.visible = true; r.sel.matrixAutoUpdate = false; gbPlaneMatrix(o.lat, o.lon, GB.sel.alt, GB.sel.track, scale * 1.7, r.sel.matrix); r.sel.matrixWorldNeedsUpdate = true; } else r.sel.visible = false;
+  r.renderer.render(r.scene, r.camera);
+  gbLabels(camN);
+  if (now - GB.last > 1000) { GB.last = now; $("#gbCount").textContent = `${n.toLocaleString("en-GB")} aircraft`; if (GB.sel) gbCard(); }
+}
+function gbProject(lat, lon, alt, out) {
+  const r = GB.r, v = r.tmp.p; gbN(lat, lon, 1.003 + clamp(alt || 0, 0, 45000) * 0.0000005, v);
+  const front = v.clone().normalize().dot(r.tmp.q) > 0.12;
+  v.project(r.camera); out.x = (v.x + 1) / 2 * innerWidth; out.y = (1 - v.y) / 2 * innerHeight; out.front = front;
+  return out;
+}
+function gbLabels() {
+  const cv = $("#gbLabels"), dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (cv.width !== Math.round(innerWidth * dpr)) { cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr); }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, innerWidth, innerHeight);
+  const a = GB.sel; if (!a) return;
+  const p = gbProject(a._gl ?? a.lat, a._go ?? a.lon, a.alt, {}); if (!p.front) return;
+  const t = callOf(a), w = Math.ceil(textW(t, LBL_F1)) + 14, x = Math.round(p.x - w / 2), y = Math.round(p.y + 14);
+  g.fillStyle = "rgba(0,0,0,.3)"; roundRect(g, x, y + 1, w, 20, 6); g.fill();
+  g.fillStyle = C.alert; roundRect(g, x, y, w, 20, 6); g.fill();
+  g.font = LBL_F1; g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "alphabetic"; g.fillText(t, x + w / 2, y + 14);
+}
+function gbPick(cx, cy) {
+  let best = null, bd = 22 * 22;
+  const o = {};
+  for (const a of GB.r.list) {
+    gbProject(a._gl ?? a.lat, a._go ?? a.lon, a.alt, o); if (!o.front) continue;
+    const d = (o.x - cx) ** 2 + (o.y - cy) ** 2; if (d < bd) { bd = d; best = a; }
+  }
+  return best;
+}
+function gbCard() {
+  const a = GB.sel, el = $("#gbCard"); if (!a) { el.hidden = true; el.dataset.hex = ""; return; }
+  const rt = acMap.has(a.hex) ? routeOf(a) : null;
+  const line = `${rt ? `${apCode(rt.origin)} → ${apCode(rt.destination)} · ` : ""}${altTag(a)} · ${fmtInt(a.gs || 0)} kt`;
+  el.hidden = false;
+  // build once per plane; afterwards only the numbers change, so taps on the buttons are never lost
+  if (el.dataset.hex !== a.hex) {
+    el.dataset.hex = a.hex;
+    el.innerHTML = `<div class="gbc-t"><b>${esc(callOf(a))}</b>${a.type ? `<span class="tg">${esc(a.type)}</span>` : ""}<button class="gbc-x" id="gbcX" aria-label="Close">×</button></div>
+    <div class="gbc-s"></div><button class="btn accent sm full" id="gbcGo">Track on map</button>`;
+  }
+  el.querySelector(".gbc-s").textContent = line;
+}
+async function gbWorld() {
+  if (!GB.on || S.commercial) return;
+  GB_HUBS.forEach(([la, lo], i) => {
+    GB.timers.push(setTimeout(async () => {
+      if (!GB.on) return;
+      for (const src of ["adsblol", "adsbfi"]) {
+        try {
+          const j = await getJSON(SOURCES[src].point(la, lo, 250), 9000);
+          const now = performance.now();
+          for (const n of normalize(j)) { n.t0 = now; n.seen = now; n.errLat = 0; n.errLon = 0; GB.world.set(n.hex, n); }
+          break;
+        } catch (e) {}
+      }
+    }, i * 1200));
+  });
+  // forget planes not refreshed for a while
+  const cut = performance.now() - 4 * 60000; for (const [k, w] of GB.world) if (w.seen < cut) GB.world.delete(k);
+  GB.timers.push(setTimeout(gbWorld, 75000));
+}
+async function enterGlobe() {
+  const T = await loadThree();
+  if (!T) { toast("The globe needs WebGL, which isn't available here."); return; }
+  try { if (!GB.r) gbBuild(T); else { GB.r.renderer.setSize(innerWidth, innerHeight, false); } } catch (e) { toast("The globe couldn't start on this device."); return; }
+  const c = centre(); GB.lat = clamp(c.lat, -60, 70); GB.lon = c.lon; GB.dist = 3; GB.vel = null; GB.sel = null;
+  gbFov();
+  $("#globeView").hidden = false; $("#gbCard").hidden = true; GB.on = true; document.body.classList.add("globe-on");
+  GB.raf = requestAnimationFrame(gbFrame); gbWorld();
+}
+function exitGlobe(toPlane) {
+  if (!GB.on) return;
+  GB.on = false; cancelAnimationFrame(GB.raf); GB.timers.forEach(clearTimeout); GB.timers = [];
+  $("#globeView").hidden = true; document.body.classList.remove("globe-on"); dirty = true;
+  if (toPlane) {
+    let a = acMap.get(toPlane.hex);
+    if (!a) { ingest([{ ...toPlane }], "adsblol"); a = acMap.get(toPlane.hex); }
+    if (a) { select(a); centreOn(a); return; }
+  }
+  setView(lonToU(GB.lon), latToV(clamp(GB.lat, -80, 80)), clamp(V.z, minZoom, GB.dist < 2.4 ? 5.5 : 3.5));
+}
+addEventListener("resize", () => { if (GB.on && GB.r) { GB.r.renderer.setSize(innerWidth, innerHeight, false); gbFov(); } });
+/* Drag to spin, pinch or scroll to zoom, tap a plane to see it */
+(() => {
+  const el = $("#gbLabels"), pts = new Map();
+  el.addEventListener("pointerdown", (e) => {
+    el.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    GB.drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, t: performance.now(), moved: false }; GB.vel = null;
+    if (pts.size === 2) { const [p, q] = [...pts.values()]; GB.pinch = { d: Math.hypot(p.x - q.x, p.y - q.y), dist: GB.dist }; }
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (GB.pinch && pts.size >= 2) { const [p, q] = [...pts.values()]; GB.dist = clamp(GB.pinch.dist * (GB.pinch.d / Math.max(20, Math.hypot(p.x - q.x, p.y - q.y))), 1.4, 6); GB.drag && (GB.drag.moved = true); return; }
+    const d = GB.drag; if (!d) return;
+    const dx = e.clientX - d.lx, dy = e.clientY - d.ly; d.lx = e.clientX; d.ly = e.clientY;
+    if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 6) d.moved = true;
+    const k = 0.22 * (GB.dist - 1) / 1.6;
+    GB.lon -= dx * k; GB.lat = clamp(GB.lat + dy * k, -80, 80);
+    GB.vel = { x: -dx * k, y: dy * k };
+  });
+  const up = (e) => {
+    pts.delete(e.pointerId);
+    if (pts.size < 2) GB.pinch = null;
+    const d = GB.drag; if (!d || pts.size) return;
+    GB.drag = null;
+    if (!d.moved) { const a = gbPick(e.clientX, e.clientY); GB.sel = a || null; GB.vel = null; gbCard(); }
+  };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  el.addEventListener("wheel", (e) => { e.preventDefault(); GB.dist = clamp(GB.dist * Math.exp(e.deltaY * 0.0012), 1.4, 6); }, { passive: false });
+  $("#gbExit").addEventListener("click", () => exitGlobe());
+  $("#gbCard").addEventListener("click", (e) => {
+    if (e.target.closest("#gbcX")) { GB.sel = null; gbCard(); }
+    else if (e.target.closest("#gbcGo")) exitGlobe(GB.sel);
+  });
+  $("#btnGlobe").addEventListener("click", enterGlobe);
+})();
 
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
