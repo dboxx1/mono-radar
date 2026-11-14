@@ -1316,6 +1316,10 @@ function readColors() {
 }
 const ink = (a) => `rgba(${C.inkRGB},${a})`;
 const FONT = '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace';
+const UIF = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const LBL_F1 = `700 11.5px ${UIF}`, LBL_F2 = `500 10px ${UIF}`;
+const TW = new Map();
+function textW(t, f) { const k = f + "|" + t; let w = TW.get(k); if (w == null) { if (TW.size > 4000) TW.clear(); ctx.font = f; w = ctx.measureText(t).width; TW.set(k, w); } return w; }
 const DISPLAY = '"Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif';
 
 /* ---------------- Canvas ---------------- */
@@ -2269,7 +2273,7 @@ function sizeFor(shape) { const z = V.z, t = z < 3.5 ? 0.55 : z < 5 ? 0.66 : z <
 function drawAirports(g) {
   if (!S.airports || V.z < 4.8) return;
   const showMed = V.z >= 7.2, lblL = V.z >= 6, lblM = V.z >= 8.5;
-  g.font = `500 10px ${FONT}`; g.textBaseline = "middle"; g.textAlign = "left";
+  g.font = `700 10.5px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif`; g.textBaseline = "middle"; g.textAlign = "left";
   const b = viewBounds();
   for (const ap of AIRPORTS) {
     const large = ap[6] === 1;
@@ -2434,24 +2438,28 @@ function draw(now) {
   if (S.labels && (V.z >= 7 || visible.length < 90)) {
     grid.clear();
     for (const a of visible) { const r = sizeFor(a._shape) / 2; gridAdd(a._x - r, a._y - r, r * 2, r * 2); }
-    const two = V.z >= 8.5;
-    g.textBaseline = "top"; g.textAlign = "center";
+    const two = V.z >= 8.5, snap = (v) => Math.round(v * DPR) / DPR;
+    const L = C.dark
+      ? { bg: "rgba(16,16,18,0.94)", edge: "rgba(0,0,0,0.35)", t1: "#ffffff", t2: "rgba(255,255,255,0.62)", gnd: "rgba(255,255,255,0.7)" }
+      : { bg: "#ffffff", edge: "rgba(0,0,0,0.16)", t1: "#111113", t2: "#5f5f66", gnd: "#6e6e74" };
+    g.textBaseline = "alphabetic"; g.textAlign = "center";
     const ordered = visible.slice().sort((p, q) => (q === selected) - (p === selected) || (!!q.emerg - !!p.emerg) || ((p._x - V.cx) ** 2 + (p._y - V.cy) ** 2) - ((q._x - V.cx) ** 2 + (q._y - V.cy) ** 2));
     let n = 0;
     for (const a of ordered) {
       if (n > 220) break;
       const t = callOf(a) + (a.emerg ? " " + emergName(a.emerg) : "");
       const t2 = two ? [a.ground ? "GND" : a.alt == null ? "" : a.alt >= 18000 ? "FL" + String(Math.round(a.alt / 100)).padStart(3, "0") : fmtInt(a.alt) + " ft", a.type].filter(Boolean).join(" · ") : "";
-      const w = Math.max(t.length * charW, t2.length * charW2) + 12, h = t2 ? 29 : 17;
-      const off = (sizeFor(a._shape) * (a === selected ? 1.25 : 1)) / 2 + 4, lx = a._x - w / 2, ly = a._y + off;
+      // Clean label: solid box, system font, equal padding, snapped to whole pixels so edges and text stay sharp
+      const w = Math.ceil(Math.max(textW(t, LBL_F1), t2 ? textW(t2, LBL_F2) : 0)) + 14, h = t2 ? 32 : 20;
+      const off = (sizeFor(a._shape) * (a === selected ? 1.25 : 1)) / 2 + 5, lx = snap(a._x - w / 2), ly = snap(a._y + off), cx = lx + w / 2;
       if (a !== selected && !a.emerg && !gridFree(lx, ly, w, h)) continue;
       gridAdd(lx, ly, w, h); n++;
       const strong = a === selected || a.emerg;
-      g.globalAlpha = strong ? 1 : 0.82; g.fillStyle = strong ? C.alert : C.bg; roundRect(g, lx, ly, w, h, 6); g.fill();
-      if (!strong) { g.globalAlpha = 1; g.strokeStyle = C.line; g.lineWidth = 1; g.stroke(); }
-      g.globalAlpha = 1; g.fillStyle = strong ? "#fff" : a.ground ? C.ink2 : C.ink;
-      g.font = `600 10.5px ${FONT}`; g.fillText(t, a._x, ly + 3);
-      if (t2) { g.font = `400 9.5px ${FONT}`; g.fillStyle = strong ? "#fff" : C.ink2; g.globalAlpha = strong ? 0.8 : 1; g.fillText(t2, a._x, ly + 16); g.globalAlpha = 1; }
+      g.globalAlpha = 1;
+      g.fillStyle = strong ? "rgba(0,0,0,0.25)" : L.edge; roundRect(g, lx, ly + 1, w, h, 6); g.fill();
+      g.fillStyle = strong ? C.alert : L.bg; roundRect(g, lx, ly, w, h, 6); g.fill();
+      g.font = LBL_F1; g.fillStyle = strong ? "#fff" : a.ground ? L.gnd : L.t1; g.fillText(t, cx, ly + 14);
+      if (t2) { g.font = LBL_F2; g.fillStyle = strong ? "rgba(255,255,255,0.86)" : L.t2; g.fillText(t2, cx, ly + 26.5); }
     }
     g.textAlign = "left";
   }
