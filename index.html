@@ -1689,8 +1689,8 @@ function tones(style) {
   if (style === "sel") return { body: d ? "#ff6a5c" : "#f0503f", edgeTone: d ? "#d93425" : "#c42a1d", wing: d ? "#f2402f" : "#dc3b2c", eng: "#5e140c", edge: d ? "#ffffff" : "#1a1a1a", prop: "#ff6a5c", glow: d ? "rgba(255,74,61,.95)" : "rgba(229,55,42,.75)" };
   if (style === "emerg") return { body: "#ff6a5c", edgeTone: "#d93425", wing: "#f2402f", eng: "#5e140c", edge: d ? "rgba(0,0,0,.92)" : "#1a1a1a", prop: "#ff6a5c" };
   if (style === "mil") return d ? { body: "#cdd08a", edgeTone: "#a2a65e", wing: "#aeb26a", eng: "#4f5226", prop: "#cdd08a" } : { body: "#8f9440", edgeTone: "#6d7230", wing: "#7c8136", eng: "#3c3f18", prop: "#6d7230" };
-  return d ? { body: "#ffd84d", edgeTone: "#e8a400", wing: "#f5b400", eng: "#6b4c00", edge: "rgba(0,0,0,.92)", prop: "#ffd84d" }
-           : { body: "#ffc414", edgeTone: "#d69300", wing: "#eea300", eng: "#5a4000", edge: "rgba(25,20,10,.88)", prop: "#9a6d00" };
+  return d ? { body: "#ffde1f", edgeTone: "#f2bd00", wing: "#ffcf0f", eng: "#3a2c00", edge: "rgba(0,0,0,.95)", prop: "#ffde1f" }
+           : { body: "#ffd814", edgeTone: "#efb700", wing: "#ffc800", eng: "#3a2c00", edge: "rgba(0,0,0,.9)", prop: "#7a5c00" };
 }
 const TONE_CACHE = new Map(), GRADS = new Map();
 function tonesC(style) { const k = style + (C.dark ? 1 : 0); let t = TONE_CACHE.get(k); if (!t) { t = tones(style); TONE_CACHE.set(k, t); } return t; }
@@ -1704,9 +1704,13 @@ function planeMatrix(g, x, y, px, rot) {
   const k = px / 64, c = Math.cos(rot) * k, s = Math.sin(rot) * k;
   g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, (x - 32 * (c - s)) * DPR, (y - 32 * (s + c)) * DPR);
 }
+function outlinePlane(g, sh, T, px) {
+  g.lineJoin = "round"; g.strokeStyle = T.edge || "rgba(0,0,0,.9)"; g.lineWidth = 1.7 * 64 / px; g.stroke(sh.union);
+}
 function drawPlane(g, shape, style, px, x, y, rot) {
   const sh = SHAPES[shape], T = tonesC(style);
   planeMatrix(g, x, y, px, rot);
+  outlinePlane(g, sh, T, px);
   if (sh.prop) { g.globalAlpha = shape === "heli" ? 0.16 : 0.75; g.fillStyle = T.prop; g.fill(sh.prop); g.globalAlpha = 1; }
   g.fillStyle = T.wing; if (sh.wings) g.fill(sh.wings); if (sh.tail) g.fill(sh.tail);
   if (sh.eng && !sh.engTop) { g.fillStyle = T.eng; g.fill(sh.eng); }
@@ -1723,6 +1727,7 @@ function sprite(shape, style, px) {
   const g = c.getContext("2d"), k = (px / 64) * DPR;
   g.setTransform(k, 0, 0, k, pad * DPR, pad * DPR);
   g.lineJoin = "round"; g.lineCap = "round";
+  outlinePlane(g, sh, T, px);
   if (sh.prop) { g.globalAlpha = shape === "heli" ? 0.16 : 0.75; g.fillStyle = T.prop; g.fill(sh.prop); g.globalAlpha = 1; }
   g.fillStyle = T.wing; if (sh.wings) g.fill(sh.wings); if (sh.tail) g.fill(sh.tail);
   if (sh.eng && !sh.engTop) { g.fillStyle = T.eng; g.fill(sh.eng); }
