@@ -1424,9 +1424,13 @@ function ensureBasemap() {
       ml = new maplibregl.Map({ container: bm, style: url, center: [c.lon, c.lat], zoom: V.z - 1, interactive: false, attributionControl: false, pixelRatio: DPR, fadeDuration: 0, renderWorldCopies: true, maxZoom: 20 });
     } catch (e) { basemapFail(); return; }
     mlStyleUrl = url; mlState = "loading";
-    const timer = setTimeout(() => { if (mlState === "loading") basemapFail(); }, 9000);
-    ml.on("load", () => { clearTimeout(timer); mlState = "ready"; mlSync = ""; dirty = true; renderStyles(); updateAttrib(); });
-    ml.on("error", () => { if (mlState === "loading") { clearTimeout(timer); basemapFail(); } });
+    // Only give up if the map style itself can't load. A slow first load or a single missing tile is fine.
+    let styleOk = false;
+    const ready = () => { if (mlState !== "loading") return; clearTimeout(timer); mlState = "ready"; mlSync = ""; dirty = true; renderStyles(); updateAttrib(); };
+    const timer = setTimeout(() => { if (mlState === "loading") { if (styleOk) ready(); else basemapFail(); } }, 25000);
+    ml.once("styledata", () => { styleOk = true; });
+    ml.on("load", ready);
+    ml.on("error", (e) => { if (mlState === "loading" && !styleOk && !(e && (e.sourceId || e.tile))) { clearTimeout(timer); basemapFail(); } });
     return;
   }
   if (url !== mlStyleUrl) { mlStyleUrl = url; ml.setStyle(url); }
