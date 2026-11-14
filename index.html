@@ -24,6 +24,7 @@
   --ink-3: #636366;
   --line: rgba(255, 255, 255, 0.09);
   --land: #161616;
+  --sea: #070707;
   --panel: rgba(22, 22, 24, 0.86);
   --card: rgba(255, 255, 255, 0.055);
   --card-2: rgba(255, 255, 255, 0.1);
@@ -43,13 +44,14 @@
   --ink-2: #5f5f66;
   --ink-3: #a0a0a6;
   --line: rgba(0, 0, 0, 0.08);
-  --land: #e0e0dc;
+  --land: #cfe6a5;
+  --sea: #4ea7ea;
   --panel: rgba(250, 250, 249, 0.9);
   --card: rgba(0, 0, 0, 0.035);
   --card-2: rgba(0, 0, 0, 0.065);
   --accent: #e9a200;
   --alert: #e5372a;
-  --geo: #1e78d6;
+  --geo: #1d3f6e;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -1225,11 +1227,13 @@ const PLACES = NE.places.map(([n, lon, lat, minz, cap]) => ({ n, lat, lon, minz,
 const C = {};
 function readColors() {
   const cs = getComputedStyle(document.documentElement);
-  for (const k of ["bg", "ink", "ink-2", "ink-3", "line", "land", "accent", "alert", "geo"]) C[k.replace("-", "")] = cs.getPropertyValue("--" + k).trim();
+  for (const k of ["bg", "ink", "ink-2", "ink-3", "line", "land", "sea", "accent", "alert", "geo"]) C[k.replace("-", "")] = cs.getPropertyValue("--" + k).trim();
   const h = C.ink.replace("#", "");
   C.inkRGB = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(",");
   C.dark = !S.paper;
-  C.coast = C.dark ? "#707070" : "#8f8f8c";
+  C.coast = C.dark ? "#707070" : "#2f86cc";
+  C.river = C.dark ? C.ink3 : "#3d9be3";
+  C.border = C.dark ? C.ink3 : "#56664f";
   document.querySelector('meta[name="theme-color"]').setAttribute("content", C.bg);
 }
 const ink = (a) => `rgba(${C.inkRGB},${a})`;
@@ -1271,7 +1275,7 @@ function layout() {
 function renderBase() {
   const t0 = performance.now(), g = bctx, M = BV.M;
   g.setTransform(1, 0, 0, 1, 0, 0);
-  g.fillStyle = C.bg; g.fillRect(0, 0, base.width, base.height);
+  g.fillStyle = C.sea; g.fillRect(0, 0, base.width, base.height);
   const ws = V.ws, left = V.cx - V.u * ws;
   const uL = (-M - left) / ws, uR = (W + M - left) / ws;
   for (let k = Math.floor(uL) - 1; k <= Math.floor(uR) + 1; k++) {
@@ -1279,9 +1283,9 @@ function renderBase() {
     g.setTransform(DPR * ws, 0, 0, DPR * ws, DPR * (M + left + k * ws), DPR * (M + V.cy - V.v * ws));
     g.lineJoin = "round"; g.lineCap = "round";
     g.globalAlpha = 1; g.fillStyle = C.land; g.fill(LAND, "evenodd");
-    g.fillStyle = C.bg; g.fill(LAKES, "evenodd");
-    if (V.z >= 3.2) { g.strokeStyle = C.ink3; g.globalAlpha = V.z >= 6 ? 0.5 : 0.32; g.lineWidth = (V.z >= 7 ? 1.2 : 0.8) / ws; g.stroke(RIVERS); }
-    g.lineWidth = 0.9 / ws; g.strokeStyle = C.ink3; g.globalAlpha = 0.75; g.setLineDash([3 / ws, 3 / ws]); g.stroke(BORDER); g.setLineDash([]);
+    g.fillStyle = C.sea; g.fill(LAKES, "evenodd");
+    if (V.z >= 3.2) { g.strokeStyle = C.river; g.globalAlpha = V.z >= 6 ? 0.5 : 0.32; g.lineWidth = (V.z >= 7 ? 1.2 : 0.8) / ws; g.stroke(RIVERS); }
+    g.lineWidth = 0.9 / ws; g.strokeStyle = C.border; g.globalAlpha = 0.75; g.setLineDash([3 / ws, 3 / ws]); g.stroke(BORDER); g.setLineDash([]);
     g.globalAlpha = 1; g.lineWidth = 1.1 / ws; g.strokeStyle = C.coast; g.stroke(COAST);
     g.globalAlpha = 0.8; g.lineWidth = 0.8 / ws; g.stroke(LAKES);
     g.globalAlpha = 1;
@@ -1350,14 +1354,15 @@ function drawNight(g) {
   if (key !== nightKey || nowMs - nightAt > 30000) {
     nightKey = key; nightAt = nowMs;
     if (night.width !== nx || night.height !== ny) { night.width = nx; night.height = ny; }
-    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 62;
+    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 36, tint = C.dark ? [0, 0, 0] : [10, 28, 70];
     for (let j = 0; j < ny; j++) {
       const lat = toLatLon(0, V.v + ((j - 0.5) * cell - V.cy) / V.ws).lat * D2R, sl = Math.sin(lat), cl = Math.cos(lat);
       for (let i = 0; i < nx; i++) {
         const lon = (V.u + ((i - 0.5) * cell - V.cx) / V.ws) * 360 - 180;
         const el = Math.asin(clamp(sl * sd + cl * cd * Math.cos((lon - sun.lon) * D2R), -1, 1)) * R2D;
         const t = clamp((0.8 - el) / 12.8, 0, 1);
-        img.data[(j * nx + i) * 4 + 3] = t * t * (3 - 2 * t) * maxA;
+        const o = (j * nx + i) * 4; img.data[o] = tint[0]; img.data[o + 1] = tint[1]; img.data[o + 2] = tint[2];
+        img.data[o + 3] = t * t * (3 - 2 * t) * maxA;
       }
     }
     nctx.putImageData(img, 0, 0);
@@ -1410,7 +1415,7 @@ function drawVignette(g) {
   if (key !== vigKey) {
     vigKey = key; const r = Math.hypot(W, H) / 2;
     vig = g.createRadialGradient(W / 2, H / 2, r * 0.42, W / 2, H / 2, r * 1.02);
-    vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, C.dark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.1)");
+    vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, C.dark ? "rgba(0,0,0,0.5)" : "rgba(10,30,60,0.07)");
   }
   g.setTransform(DPR, 0, 0, DPR, 0, 0); g.fillStyle = vig; g.fillRect(0, 0, W, H);
 }
@@ -1464,11 +1469,39 @@ function ensureBasemap() {
     const ready = () => { if (mlState !== "loading") return; clearTimeout(timer); mlState = "ready"; mlSync = ""; dirty = true; renderStyles(); updateAttrib(); };
     const timer = setTimeout(() => { if (mlState === "loading") { if (styleOk) ready(); else basemapFail(); } }, 25000);
     ml.once("styledata", () => { styleOk = true; });
+    ml.on("style.load", tintBasemap);
     ml.on("load", ready);
     ml.on("error", (e) => { if (mlState === "loading" && !styleOk && !(e && (e.sourceId || e.tile))) { clearTimeout(timer); basemapFail(); } });
     return;
   }
   if (url !== mlStyleUrl) { mlStyleUrl = url; ml.setStyle(url); }
+}
+const MAP_LIGHT = {
+  background: { "background-color": "#cfe6a5" },
+  park: { "fill-color": "#bddc95" },
+  water: { "fill-color": "#4ea7ea" },
+  waterway: { "line-color": "#4ea7ea" },
+  landcover_wood: { "fill-color": "#b5d68b" },
+  landcover_glacier: { "fill-color": "#f4f8f9" }, landcover_ice_shelf: { "fill-color": "#f4f8f9" },
+  landuse_residential: { "fill-color": "#dbe5c2" },
+  building: { "fill-color": "#d3d8c2" },
+  "aeroway-area": { "fill-color": "#e6ebd8" }, "aeroway-taxiway": { "line-color": "#f6f6ee" }, "aeroway-runway-casing": { "line-color": "#c5cbb5" },
+  road_area_pier: { "fill-color": "#cfe6a5" }, road_pier: { "line-color": "#cfe6a5" },
+  highway_path: { "line-color": "#e6eed3" }, highway_minor: { "line-color": "#eef2e2" },
+  highway_major_casing: { "line-color": "#bcc6a6" }, highway_major_inner: { "line-color": "#fffdf2" }, highway_major_subtle: { "line-color": "rgba(255,253,242,0.75)" },
+  highway_motorway_casing: { "line-color": "#c9b77a" }, highway_motorway_inner: { "line-color": "#fbe3a0" }, highway_motorway_subtle: { "line-color": "rgba(251,227,160,0.8)" },
+  highway_motorway_bridge_casing: { "line-color": "#c9b77a" }, highway_motorway_bridge_inner: { "line-color": "#fbe3a0" },
+  tunnel_motorway_casing: { "line-color": "#c9b77a" }, tunnel_motorway_inner: { "line-color": "#f7ebc6" },
+  railway: { "line-color": "#b3bd9e" }, railway_transit: { "line-color": "#b3bd9e" }, railway_service: { "line-color": "#b3bd9e" },
+  boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" }, boundary_disputed: { "line-color": "#7f906f" },
+  water_name_point_label: { "text-color": "#123f73" }, water_name_line_label: { "text-color": "#123f73" }, waterway_line_label: { "text-color": "#1f5a96" },
+};
+function tintBasemap() {
+  if (!ml || mlStyleUrl !== STYLES.vector.light) return;
+  for (const [id, props] of Object.entries(MAP_LIGHT)) {
+    if (!ml.getLayer(id)) continue;
+    for (const [k, v] of Object.entries(props)) { try { ml.setPaintProperty(id, k, v); } catch (e) {} }
+  }
 }
 function syncBasemap() {
   const c = toLatLon(V.u, V.v), key = `${c.lon.toFixed(7)},${c.lat.toFixed(7)},${V.z.toFixed(4)}`;
@@ -2240,7 +2273,7 @@ function draw(now) {
   g.setTransform(1, 0, 0, 1, 0, 0);
   if (basemapReady()) { syncBasemap(); g.clearRect(0, 0, cv.width, cv.height); }
   else {
-    g.fillStyle = C.bg; g.fillRect(0, 0, cv.width, cv.height);
+    g.fillStyle = C.sea; g.fillRect(0, 0, cv.width, cv.height);
     const moving = !!(gesture && gesture.type !== "maybe") || inertia || anim || follow;
     if (!BV.valid) renderBase();
     else if (baseStale()) { const tilesOn = tileLayer() && tileLoads > 0; if (!moving || (!tilesOn && now - baseAt > Math.max(90, baseCost * 3))) renderBase(); }
@@ -3087,7 +3120,7 @@ $("#filterChip").addEventListener("click", () => { resetFilters(); toast("Filter
 function renderStyles() {
   const el = $("#styles"); if (!el) return;
   el.innerHTML = Object.entries(STYLES).map(([id, st]) => {
-    const bg = id === "outline" ? `linear-gradient(135deg, var(--land) 50%, var(--bg) 50%)` : id === "streets" ? "linear-gradient(135deg,#f2efe9 0 40%,#aad3df 40% 60%,#f9d79a 60% 64%,#e8e4dc 64%)" : id === "vector" ? (S.paper ? "linear-gradient(135deg,#f4f4f2 0 45%,#d8dde3 45% 55%,#fff 55%)" : "linear-gradient(135deg,#2b2b2b 0 45%,#111 45% 55%,#3a3a3a 55% 57%,#222 57%)") : S.paper ? "repeating-linear-gradient(45deg,#e6e6e3 0 6px,#f4f4f2 6px 12px)" : "repeating-linear-gradient(45deg,#1b1b1b 0 6px,#232323 6px 12px)";
+    const bg = id === "outline" ? `linear-gradient(135deg, var(--land) 50%, var(--sea) 50%)` : id === "streets" ? "linear-gradient(135deg,#f2efe9 0 40%,#aad3df 40% 60%,#f9d79a 60% 64%,#e8e4dc 64%)" : id === "vector" ? (S.paper ? "linear-gradient(135deg,#cfe6a5 0 45%,#4ea7ea 45% 70%,#bddc95 70%)" : "linear-gradient(135deg,#2b2b2b 0 45%,#111 45% 55%,#3a3a3a 55% 57%,#222 57%)") : S.paper ? "repeating-linear-gradient(45deg,#e6e6e3 0 6px,#f4f4f2 6px 12px)" : "repeating-linear-gradient(45deg,#1b1b1b 0 6px,#232323 6px 12px)";
     return `<button class="style" data-style="${id}" aria-pressed="${S.style === id}"><i style="background:${bg}"></i>${st.label}</button>`;
   }).join("");
   const needKey = S.style === "dark" && !S.cartoKey;
