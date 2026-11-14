@@ -984,6 +984,17 @@ svg.i .f { fill: currentColor; stroke: none; }
 .globe canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibility: hidden; }
 .ctrl[aria-pressed="true"] { color: var(--accent-t); }
+
+/* Compact always-visible part of the bottom sheet: slimmer handle, search and quick buttons */
+.ex-handle { padding: 6px 0 4px; }
+.ex-top { padding-top: 0; padding-bottom: 4px; }
+.searchbox, .cancel { height: 42px; }
+.searchbox { border-radius: 13px; }
+.ex-top .me { width: 42px; height: 42px; }
+.quick { padding-top: 8px; padding-bottom: 0; }
+.qt { gap: 4px; font-size: 10.5px; min-width: 46px; padding: 0; }
+.qi { width: 46px; height: 46px; border-radius: 15px; }
+.qi svg { width: 22px; height: 22px; }
 </style>
 </head>
 <body>
@@ -4931,7 +4942,7 @@ const safeBottom = (() => { const p = document.createElement("div"); p.style.css
 function exHeights() {
   const full = ex.getBoundingClientRect().height || H * 0.95;
   const q = $("#quick"), top = ex.getBoundingClientRect().top - (parseFloat(getComputedStyle(ex).getPropertyValue("--ty")) || 0);
-  const peek = q && !$("#exHome").hidden ? Math.max(170, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 8 + safeBottom()) : 200;
+  const peek = q && !$("#exHome").hidden ? Math.max(140, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 6 + safeBottom()) : 180;
   return { full, half: Math.min(full, Math.round(H * 0.58)), peek: Math.min(full, peek || 206) };
 }
 let exPeekH = 206;
