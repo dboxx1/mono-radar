@@ -3600,7 +3600,7 @@ $("#exProfile").addEventListener("input", (e) => {
 
 /* Great-circle route points, longitudes unwrapped so lines don't jump at the antimeridian */
 const gcCache = new Map();
-function gcPts(la1, lo1, la2, lo2, n = 64) {
+function gcArr(la1, lo1, la2, lo2, n = 64) {
   const k = [la1, lo1, la2, lo2].map((x) => x.toFixed(2)).join(",");
   if (gcCache.has(k)) return gcCache.get(k);
   const r = D2R, v = (la, lo) => [Math.cos(la * r) * Math.cos(lo * r), Math.cos(la * r) * Math.sin(lo * r), Math.sin(la * r)];
@@ -3624,7 +3624,7 @@ function drawLogMap() {
   let u0 = 0, u1 = 1, v0 = 0.2, v1 = 0.78;
   if (routes.length) {
     u0 = v0 = Infinity; u1 = v1 = -Infinity;
-    for (const [o, d] of routes) for (const [la, lo] of gcPts(o[4], o[5], d[4], d[5])) { const u = (lo + 180) / 360, vv = latToV(la); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
+    for (const [o, d] of routes) for (const [la, lo] of gcArr(o[4], o[5], d[4], d[5])) { const u = (lo + 180) / 360, vv = latToV(la); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
     const pu = Math.max(0.02, (u1 - u0) * 0.18), pv = Math.max(0.02, (v1 - v0) * 0.25); u0 -= pu; u1 += pu; v0 -= pv; v1 += pv;
   }
   // keep the map's aspect ratio
@@ -3639,7 +3639,7 @@ function drawLogMap() {
   const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ffc21a";
   g.lineCap = "round"; g.lineJoin = "round";
   for (const [o, d] of routes) {
-    const pts = gcPts(o[4], o[5], d[4], d[5]);
+    const pts = gcArr(o[4], o[5], d[4], d[5]);
     g.beginPath(); pts.forEach(([la, lo], i) => (i ? g.lineTo(X(lo), Y(la)) : g.moveTo(X(lo), Y(la))));
     g.strokeStyle = accent; g.globalAlpha = 0.25; g.lineWidth = 6 * dpr; g.stroke();
     g.globalAlpha = 1; g.lineWidth = 2 * dpr; g.stroke();
@@ -3652,7 +3652,7 @@ function drawLogMap() {
 function fitLog() {
   const routes = logRoutes(); if (!routes.length) return;
   let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
-  for (const [o, d] of routes) for (const [la, lo] of gcPts(o[4], o[5], d[4], d[5])) { const u = (lo + 180) / 360, vv = latToV(la); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
+  for (const [o, d] of routes) for (const [la, lo] of gcArr(o[4], o[5], d[4], d[5])) { const u = (lo + 180) / 360, vv = latToV(la); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
   setEx("peek");
   const visH = Math.max(220, H - (exVisible() || 0) - 80);
   let z = clamp(Math.min(Math.log2((mapW * 0.8) / ((u1 - u0 || 0.001) * 256)), Math.log2((visH * 0.8) / ((v1 - v0 || 0.001) * 256))), minZoom, 9);
@@ -3665,7 +3665,7 @@ function drawLogArcs(g) {
   const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ffc21a";
   g.save(); g.lineCap = "round"; g.lineJoin = "round";
   for (const [o, d] of routes) {
-    const pts = gcPts(o[4], o[5], d[4], d[5]);
+    const pts = gcArr(o[4], o[5], d[4], d[5]);
     g.beginPath(); let px = null;
     for (const [la, lo] of pts) { toScreen(la, lo, tmp); if (px === null || Math.abs(tmp.x - px) > mapW * 0.5) g.moveTo(tmp.x, tmp.y); else g.lineTo(tmp.x, tmp.y); px = tmp.x; }
     g.strokeStyle = accent; g.globalAlpha = 0.22; g.lineWidth = 7; g.stroke();
