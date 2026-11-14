@@ -671,7 +671,7 @@ select.sel { height: 40px; padding: 0 10px; border: 1px solid var(--line); borde
 .abar #pkSave[aria-pressed="true"] svg, .abar #btnSave[aria-pressed="true"] svg { fill: currentColor; }
 .abar button:disabled { opacity: .35; }
 /* Flight detail: tabs and pinned action bar */
-.dtabs { margin: 10px 16px 6px; grid-template-columns: repeat(3, 1fr); flex: none; }
+.dtabs { margin: 10px 16px 6px; grid-template-columns: repeat(4, 1fr); flex: none; }
 .dpane { display: grid; gap: 14px; }
 .dpane[hidden] { display: none; }
 #sheet-detail .sheet-body { padding-bottom: 16px; flex: 1 1 auto; min-height: 0; }
@@ -944,6 +944,32 @@ body.gl3d .fog3d { display: none; }
 
 /* Filled icon set: Phosphor Icons, MIT License, Copyright (c) 2023 Phosphor Icons. Every outline icon swapped for its solid version */
 svg.i .f { fill: currentColor; stroke: none; }
+
+/* Seating plan */
+.seat-sum .ss-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.seat-sum small { display: block; font: 700 11px/1.3 var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; }
+.seat-sum .ss-top b { font: 700 17px/1.25 var(--font-ui); }
+.ss-n { text-align: right; } .ss-n b { display: block; font: 800 30px/1 var(--font-display) !important; font-variant-numeric: tabular-nums; }
+.ss-cls { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+.ss-cls span { display: inline-flex; align-items: center; gap: 6px; } .ss-cls i { width: 10px; height: 10px; border-radius: 3px; } .ss-cls b { color: var(--ink); font-weight: 700; }
+.seatmap { display: grid; gap: 10px; justify-items: center; }
+.deck-n { justify-self: start; font: 700 11.5px var(--font-ui); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.fuse { position: relative; display: grid; gap: 3px; justify-items: center; padding: 34px 14px 26px; border-radius: 160px 160px 44px 44px / 110px 110px 28px 28px; background: var(--card); border: 1px solid var(--line); }
+.cab-h { display: flex; align-items: center; gap: 7px; width: 100%; margin: 10px 0 3px; font: 700 12.5px var(--font-ui); color: var(--ink); }
+.cab-h:first-child { margin-top: 0; }
+.cab-h i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+.cab-h span { margin-left: auto; color: var(--ink-2); font-weight: 600; font-size: 11.5px; }
+.srow { position: relative; display: flex; align-items: center; gap: 3px; }
+.srow b { width: 20px; margin-right: 4px; text-align: right; font: 600 10px/1 var(--font-ui); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.sg { display: flex; gap: 3px; }
+.ai { width: 14px; flex: none; }
+.st { flex: none; width: var(--s); height: var(--h); border-radius: 6px 6px 3px 3px; background: var(--c); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
+.st.l { height: 14px; background: none; box-shadow: none; text-align: center; font: 700 9.5px/14px var(--font-ui); color: var(--ink-2); }
+.st.blk { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+.srow.wing::before, .srow.wing::after { content: ""; position: absolute; top: -2px; bottom: -2px; width: 10px; background: rgba(127, 127, 127, .22); }
+.srow.wing::before { left: -28px; border-radius: 3px 0 0 3px; } .srow.wing::after { right: -24px; border-radius: 0 3px 3px 0; }
+.exit { display: flex; justify-content: space-between; width: 100%; margin: 3px 0; font: 800 8.5px/1 var(--font-ui); letter-spacing: .08em; color: var(--alert); }
+.seat-note { margin: 0 2px; font-size: 12px; line-height: 1.45; color: var(--ink-3); }
 </style>
 </head>
 <body>
@@ -1057,7 +1083,7 @@ svg.i .f { fill: currentColor; stroke: none; }
     <span class="grab"></span>
     <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
-  <div class="seg2 dtabs" id="dTabs" role="tablist"><button data-dtab="flight" aria-pressed="true">Flight</button><button data-dtab="aircraft" aria-pressed="false">Aircraft</button><button data-dtab="updates" aria-pressed="false">Updates <small id="dUpdN" hidden>0</small></button></div>
+  <div class="seg2 dtabs" id="dTabs" role="tablist"><button data-dtab="flight" aria-pressed="true">Flight</button><button data-dtab="aircraft" aria-pressed="false">Aircraft</button><button data-dtab="seats" aria-pressed="false">Seats</button><button data-dtab="updates" aria-pressed="false">Updates <small id="dUpdN" hidden>0</small></button></div>
   <div class="sheet-body" id="dBody">
     <div class="dpane" id="dpFlight">
       <div class="card route" id="dRoute"></div>
@@ -1068,6 +1094,7 @@ svg.i .f { fill: currentColor; stroke: none; }
       <div class="card"><h3>Aircraft</h3><dl class="kv" id="dKv"></dl></div>
       <a class="btn" id="lnkGlobe" href="https://globe.adsb.lol/" target="_blank" rel="noopener">Full track history on adsb.lol ↗</a>
     </div>
+    <div class="dpane" id="dpSeats" hidden><div id="dSeats"></div></div>
     <div class="dpane" id="dpUpdates" hidden>
       <div class="card" id="dUpdates" hidden><h3>Flight updates</h3><div class="tl" id="dTl"></div></div>
       <div class="empty-v" id="dUpdEmpty"><b>Get live updates</b>Save this flight to log take-off, cruise, descent, landing and arrival-time changes here.</div>
@@ -2715,7 +2742,8 @@ let routeOn = false, dTab = "flight";
 function setDTab(t) {
   dTab = t;
   for (const b of document.querySelectorAll("[data-dtab]")) b.setAttribute("aria-pressed", String(b.dataset.dtab === t));
-  $("#dpFlight").hidden = t !== "flight"; $("#dpAircraft").hidden = t !== "aircraft"; $("#dpUpdates").hidden = t !== "updates";
+  $("#dpFlight").hidden = t !== "flight"; $("#dpAircraft").hidden = t !== "aircraft"; $("#dpUpdates").hidden = t !== "updates"; $("#dpSeats").hidden = t !== "seats";
+  if (t === "seats" && selected) { $("#dSeats").dataset.k = ""; renderSeats(selected); }
 }
 function toggleRoute() {
   const a = selected; if (!a) return;
@@ -2779,7 +2807,7 @@ const TYPE_WIKI = (() => {
   return m;
 })();
 function airlineOf(a) { const p = (a.flight || "").slice(0, 3).toUpperCase(); return /^[A-Z]{3}\d/.test((a.flight || "").toUpperCase()) ? AIRLINES[p] || "" : ""; }
-function renderDetail() { renderDetail0(); renderDetailX(); }
+function renderDetail() { renderDetail0(); renderDetailX(); if (dTab === "seats" && selected) renderSeats(selected); }
 function renderDetail0() {
   const a = selected; if (!a) return;
   const sim = a.src === "sim", info = routeCache.get(a.hex + "|" + a.flight) || {}, acI = info.aircraft, rt = routeOf(a);
@@ -4476,6 +4504,127 @@ addEventListener("resize", () => { if (GL.on && GL.r) { GL.r.renderer.setSize(in
   el.addEventListener("wheel", (e) => { e.preventDefault(); GL.dist = clamp(GL.dist * Math.exp(e.deltaY * 0.0015), 1.2, 320); }, { passive: false });
   for (const b of document.querySelectorAll("[data-cam]")) b.addEventListener("click", () => setMode3D(b.dataset.cam));
 })();
+
+/* ---------------- Seating plans ----------------
+   Typical cabin layouts per aircraft type (not airline-specific).
+   Cabin: [class, rows, layout]. Classes: F first, J business, W premium economy, Y economy.
+   Layout "3-3b" is European business: a 3-3 row with the middle seat left empty. */
+const SEAT_TYPES = {
+  AT72: { n: "ATR 72", cab: [["Y", 18, "2-2"]], exits: [0, 1] },
+  AT76: { n: "ATR 72-600", cab: [["Y", 18, "2-2"]], exits: [0, 1] },
+  AT45: { n: "ATR 42", cab: [["Y", 12, "2-2"]], exits: [0, 1] },
+  DH8D: { n: "Dash 8 Q400", cab: [["Y", 19, "2-2"]], exits: [0, 1] },
+  CRJ2: { n: "CRJ200", cab: [["Y", 13, "2-2"]], exits: [0, 0.5] },
+  CRJ7: { n: "CRJ700", cab: [["J", 2, "1-2"], ["Y", 16, "2-2"]], exits: [0, 0.45] },
+  CRJ9: { n: "CRJ900", cab: [["J", 3, "1-2"], ["Y", 17, "2-2"]], exits: [0, 0.45] },
+  E170: { n: "Embraer 170", cab: [["Y", 18, "2-2"]], exits: [0, 0.45, 1] },
+  E75L: { n: "Embraer 175", cab: [["J", 3, "1-2"], ["Y", 17, "2-2"]], exits: [0, 0.45, 1] },
+  E75S: { n: "Embraer 175", cab: [["Y", 20, "2-2"]], exits: [0, 0.45, 1] },
+  E190: { n: "Embraer 190", cab: [["Y", 25, "2-2"]], exits: [0, 0.45, 1] },
+  E195: { n: "Embraer 195", cab: [["Y", 30, "2-2"]], exits: [0, 0.45, 1] },
+  E290: { n: "Embraer E190-E2", cab: [["Y", 27, "2-2"]], exits: [0, 0.45, 1] },
+  E295: { n: "Embraer E195-E2", cab: [["Y", 33, "2-2"]], exits: [0, 0.45, 1] },
+  BCS1: { n: "Airbus A220-100", cab: [["Y", 22, "2-3"]], exits: [0, 0.42, 1] },
+  BCS3: { n: "Airbus A220-300", cab: [["Y", 28, "2-3"]], exits: [0, 0.4, 0.44, 1] },
+  A318: { n: "Airbus A318", cab: [["Y", 20, "3-3"]], exits: [0, 0.45, 1] },
+  A319: { n: "Airbus A319", cab: [["Y", 25, "3-3"]], exits: [0, 0.42, 1] },
+  A19N: { n: "Airbus A319neo", cab: [["Y", 26, "3-3"]], exits: [0, 0.42, 1] },
+  A320: { n: "Airbus A320", cab: [["Y", 30, "3-3"]], exits: [0, 0.38, 0.42, 1] },
+  A20N: { n: "Airbus A320neo", cab: [["Y", 31, "3-3"]], exits: [0, 0.38, 0.42, 1] },
+  A321: { n: "Airbus A321", cab: [["Y", 37, "3-3"]], exits: [0, 0.27, 0.62, 1] },
+  A21N: { n: "Airbus A321neo", cab: [["Y", 39, "3-3"]], exits: [0, 0.27, 0.62, 1] },
+  B736: { n: "Boeing 737-600", cab: [["Y", 20, "3-3"]], exits: [0, 0.45, 1] },
+  B737: { n: "Boeing 737-700", cab: [["Y", 24, "3-3"]], exits: [0, 0.45, 1] },
+  B738: { n: "Boeing 737-800", cab: [["Y", 32, "3-3"]], exits: [0, 0.4, 0.44, 1] },
+  B739: { n: "Boeing 737-900", cab: [["Y", 33, "3-3"]], exits: [0, 0.4, 0.44, 0.8, 1] },
+  B37M: { n: "Boeing 737 MAX 7", cab: [["Y", 25, "3-3"]], exits: [0, 0.45, 1] },
+  B38M: { n: "Boeing 737 MAX 8", cab: [["Y", 33, "3-3"]], exits: [0, 0.4, 0.44, 1] },
+  B39M: { n: "Boeing 737 MAX 9", cab: [["Y", 35, "3-3"]], exits: [0, 0.4, 0.44, 0.8, 1] },
+  B752: { n: "Boeing 757-200", cab: [["J", 4, "2-2"], ["Y", 29, "3-3"]], exits: [0, 0.3, 0.55, 1] },
+  B753: { n: "Boeing 757-300", cab: [["J", 6, "2-2"], ["Y", 35, "3-3"]], exits: [0, 0.3, 0.55, 0.75, 1] },
+  B762: { n: "Boeing 767-200", cab: [["J", 5, "2-2-2"], ["Y", 22, "2-3-2"]], exits: [0, 0.5, 1] },
+  B763: { n: "Boeing 767-300", cab: [["J", 6, "1-2-1"], ["W", 3, "2-2-2"], ["Y", 26, "2-3-2"]], exits: [0, 0.5, 1] },
+  B764: { n: "Boeing 767-400", cab: [["J", 10, "1-2-1"], ["Y", 28, "2-3-2"]], exits: [0, 0.35, 0.65, 1] },
+  A332: { n: "Airbus A330-200", cab: [["J", 7, "1-2-1"], ["Y", 27, "2-4-2"]], exits: [0, 0.25, 0.6, 1] },
+  A333: { n: "Airbus A330-300", cab: [["J", 8, "1-2-1"], ["W", 3, "2-3-2"], ["Y", 30, "2-4-2"]], exits: [0, 0.25, 0.6, 1] },
+  A338: { n: "Airbus A330-800", cab: [["J", 7, "1-2-1"], ["Y", 26, "2-4-2"]], exits: [0, 0.25, 0.6, 1] },
+  A339: { n: "Airbus A330-900", cab: [["J", 8, "1-2-1"], ["W", 3, "2-3-2"], ["Y", 28, "2-4-2"]], exits: [0, 0.25, 0.6, 1] },
+  A343: { n: "Airbus A340-300", cab: [["J", 8, "2-2-2"], ["Y", 30, "2-4-2"]], exits: [0, 0.25, 0.6, 1] },
+  A346: { n: "Airbus A340-600", cab: [["J", 11, "2-2-2"], ["Y", 36, "2-4-2"]], exits: [0, 0.22, 0.45, 0.7, 1] },
+  A359: { n: "Airbus A350-900", cab: [["J", 11, "1-2-1"], ["W", 4, "2-3-2"], ["Y", 26, "3-3-3"]], exits: [0, 0.3, 0.6, 1] },
+  A35K: { n: "Airbus A350-1000", cab: [["J", 11, "1-2-1"], ["W", 4, "2-4-2"], ["Y", 30, "3-3-3"]], exits: [0, 0.3, 0.6, 1] },
+  B772: { n: "Boeing 777-200", cab: [["J", 10, "1-2-1"], ["W", 4, "2-4-2"], ["Y", 22, "3-4-3"]], exits: [0, 0.3, 0.6, 1] },
+  B77L: { n: "Boeing 777-200LR", cab: [["J", 10, "1-2-1"], ["Y", 30, "3-3-3"]], exits: [0, 0.3, 0.6, 1] },
+  B773: { n: "Boeing 777-300", cab: [["J", 10, "1-2-1"], ["Y", 33, "3-4-3"]], exits: [0, 0.25, 0.45, 0.75, 1] },
+  B77W: { n: "Boeing 777-300ER", cab: [["F", 2, "1-1-1"], ["J", 11, "1-2-1"], ["W", 4, "2-4-2"], ["Y", 29, "3-4-3"]], exits: [0, 0.25, 0.45, 0.75, 1] },
+  B778: { n: "Boeing 777-8", cab: [["J", 11, "1-2-1"], ["W", 4, "2-4-2"], ["Y", 29, "3-4-3"]], exits: [0, 0.25, 0.45, 0.75, 1] },
+  B779: { n: "Boeing 777-9", cab: [["J", 12, "1-2-1"], ["W", 4, "2-4-2"], ["Y", 32, "3-4-3"]], exits: [0, 0.25, 0.45, 0.75, 1] },
+  B788: { n: "Boeing 787-8", cab: [["J", 8, "1-2-1"], ["W", 3, "2-3-2"], ["Y", 22, "3-3-3"]], exits: [0, 0.3, 0.62, 1] },
+  B789: { n: "Boeing 787-9", cab: [["J", 12, "1-2-1"], ["W", 4, "2-3-2"], ["Y", 24, "3-3-3"]], exits: [0, 0.3, 0.62, 1] },
+  B78X: { n: "Boeing 787-10", cab: [["J", 12, "1-2-1"], ["W", 4, "2-3-2"], ["Y", 29, "3-3-3"]], exits: [0, 0.3, 0.62, 1] },
+  B744: { n: "Boeing 747-400", decks: [{ n: "Upper deck", cab: [["J", 8, "2-2"]], exits: [0.5] }, { n: "Main deck", cab: [["J", 6, "2-2-2"], ["W", 5, "2-4-2"], ["Y", 26, "3-4-3"]], exits: [0, 0.2, 0.45, 0.7, 1] }] },
+  B748: { n: "Boeing 747-8", decks: [{ n: "Upper deck", cab: [["J", 10, "2-2"]], exits: [0.5] }, { n: "Main deck", cab: [["F", 2, "1-1-1"], ["J", 8, "2-2-2"], ["W", 4, "2-4-2"], ["Y", 26, "3-4-3"]], exits: [0, 0.2, 0.45, 0.7, 1] }] },
+  A388: { n: "Airbus A380", decks: [{ n: "Upper deck", cab: [["J", 20, "1-2-1"], ["W", 7, "2-3-2"]], exits: [0, 0.5, 1] }, { n: "Main deck", cab: [["F", 4, "1-2-1"], ["Y", 34, "3-4-3"]], exits: [0, 0.25, 0.5, 0.75, 1] }] },
+};
+const SEAT_ALIAS = { A19N: "A19N", B3XM: "B39M", B38M: "B38M", E75L: "E75L", E75S: "E75S", CRJX: "CRJ9", AT75: "AT72", AT43: "AT45", A310: "A332", B77F: null, B74F: null };
+const CARGO_OPS = /^(FDX|UPS|BOX|GTI|CLX|ABW|CKS|DHK|BCS|MPH|GEC|CAO|ABR|ATN|KYE|NCR|CLU|CMB|PAC|SQC|CKK|AJT)/;
+const CABIN = { F: ["First", "#a97cf2"], J: ["Business", "#2f6fd6"], W: ["Premium economy", "#13a39a"], Y: ["Economy", "#8e8e93"] };
+const LETTERS = {
+  "2-2": [["A", "C"], ["D", "F"]], "1-2": [["A"], ["C", "D"]], "2-3": [["A", "C"], ["D", "E", "F"]], "3-3": [["A", "B", "C"], ["D", "E", "F"]],
+  "3-3b": [["A", "B", "C"], ["D", "E", "F"]], "2-2-2": [["A", "C"], ["D", "G"], ["H", "K"]], "2-3-2": [["A", "C"], ["D", "E", "F"], ["H", "K"]],
+  "2-4-2": [["A", "C"], ["D", "E", "F", "G"], ["H", "K"]], "3-3-3": [["A", "B", "C"], ["D", "E", "F"], ["H", "J", "K"]],
+  "3-4-3": [["A", "B", "C"], ["D", "E", "F", "G"], ["H", "J", "K"]], "1-2-1": [["A"], ["E", "F"], ["K"]], "1-1-1": [["A"], ["E"], ["K"]],
+};
+function seatPlanFor(a) {
+  const t = (a.type || "").toUpperCase();
+  if (CARGO_OPS.test((a.flight || "").toUpperCase())) return { none: "This looks like a cargo flight, so there are no passenger seats." };
+  if (["biz", "light", "heli", "glider", "fighter", "vehicle"].includes(a._shape)) return { none: "There's no seating plan for this kind of aircraft." };
+  const key = SEAT_TYPES[t] ? t : SEAT_ALIAS[t] !== undefined ? SEAT_ALIAS[t] : null;
+  const p = key && SEAT_TYPES[key];
+  return p ? p : { none: t ? `No seating plan for the ${t} yet.` : "The aircraft type isn't known, so there's no seating plan." };
+}
+function seatCount(cab) { return cab.reduce((n, [c, rows, lay]) => n + rows * (lay === "3-3b" ? 4 : LETTERS[lay].flat().length), 0); }
+function seatDeckHtml(deck, rowStart, width) {
+  const totalRows = deck.cab.reduce((n, c) => n + c[1], 0), exitRows = new Set((deck.exits || []).map((f) => (f >= 1 ? totalRows : Math.round(f * (totalRows - 1)))));
+  const wingFrom = Math.round(totalRows * 0.34), wingTo = Math.round(totalRows * 0.56);
+  let row = rowStart, idx = 0, h = "";
+  for (const [cls, rows, lay] of deck.cab) {
+    const groups = LETTERS[lay], nSeats = groups.flat().length, aisles = groups.length - 1;
+        const avail = width - 26 - aisles * 14;
+    const s = Math.floor(Math.min({ F: 32, J: 28, W: 24, Y: 20 }[cls], avail / nSeats - 3));
+    const hgt = Math.round(s * (cls === "F" || cls === "J" ? 1.2 : 1.05));
+    h += `<div class="cab-h" style="--c:${CABIN[cls][1]}"><i></i>${CABIN[cls][0]}<span>${lay.replace("b", "")} · ${rows * (lay === "3-3b" ? 4 : nSeats)} seats</span></div>`;
+    h += `<div class="srow lett" style="--s:${s}px;--h:14px"><b></b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st l">${l}</span>`).join("")}</span>`).join('<span class="ai"></span>')}</div>`;
+    for (let r = 0; r < rows; r++, row++, idx++) {
+      if (exitRows.has(idx)) h += `<div class="exit"><span>EXIT</span><span>EXIT</span></div>`;
+      const wing = idx >= wingFrom && idx <= wingTo ? " wing" : "";
+      h += `<div class="srow${wing}" style="--s:${s}px;--h:${hgt}px;--c:${CABIN[cls][1]}"><b>${row}</b>${groups.map((g, gi) => `<span class="sg">${g.map((l, li) => `<span class="st${lay === "3-3b" && li === 1 ? " blk" : ""}" title="${row}${l}"></span>`).join("")}</span>`).join('<span class="ai"></span>')}</div>`;
+    }
+  }
+  if (exitRows.has(totalRows)) h += `<div class="exit"><span>EXIT</span><span>EXIT</span></div>`;
+  return { h, next: row };
+}
+function renderSeats(a) {
+  const el = $("#dSeats"); if (!el || !a) return;
+  const key = a.hex + "|" + a.type + "|" + (a.flight || "");
+  if (el.dataset.k === key) return;
+  el.dataset.k = key;
+  const p = seatPlanFor(a);
+  if (p.none) { el.innerHTML = `<div class="empty-v"><b>No seating plan</b>${esc(p.none)}</div>`; return; }
+  const decks = p.decks || [{ n: "", cab: p.cab, exits: p.exits }];
+  const all = decks.flatMap((d) => d.cab), total = seatCount(all);
+  const byCls = {}; for (const c of all) byCls[c[0]] = (byCls[c[0]] || 0) + seatCount([c]);
+  const width = Math.min(380, (el.clientWidth || 340) - 28);
+  let row = 1, body = "";
+  for (const d of decks) {
+    const r = seatDeckHtml(d, row, width); row = r.next;
+    body += `${d.n ? `<div class="deck-n">${esc(d.n)}</div>` : ""}<div class="fuse">${r.h}</div>`;
+  }
+  el.innerHTML = `<div class="card seat-sum"><div class="ss-top"><div><small>Typical layout</small><b>${esc(p.n)}</b></div><div class="ss-n"><b>${total}</b><small>seats</small></div></div>
+    <div class="ss-cls">${Object.entries(byCls).map(([c, n]) => `<span><i style="background:${CABIN[c][1]}"></i>${CABIN[c][0]} <b>${n}</b></span>`).join("")}</div></div>
+    <div class="seatmap">${body}</div>
+    <p class="seat-note">A typical cabin for this aircraft type, not ${esc(airlineOf(a) || "this airline")}'s exact layout. Seat counts, cabins and row numbers vary between airlines and aircraft. Exits and wing position are approximate.</p>`;
+}
 
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");

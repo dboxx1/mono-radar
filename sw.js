@@ -1,6 +1,6 @@
 // Mono Radar service worker: makes the app installable and opens instantly.
 // Live data (planes, photos, weather) always comes from the network.
-const CACHE = "mono-radar-v27";
+const CACHE = "mono-radar-v28";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
