@@ -1383,6 +1383,7 @@ function drawBase(g) {
   let du = BV.u - V.u; du -= Math.round(du);
   const s = V.ws / BV.ws;
   const dx = V.cx + du * V.ws + (-BV.M - BV.cx) * s, dy = V.cy + (BV.v - V.v) * V.ws + (-BV.M - BV.cy) * s;
+  if (!base.width || !base.height) return;
   g.drawImage(base, dx * DPR, dy * DPR, base.width * s, base.height * s);
 }
 function baseStale() { let du = BV.u - V.u; du -= Math.round(du); return Math.abs(du * V.ws) > 0.3 || Math.abs((BV.v - V.v) * V.ws) > 0.3 || Math.abs(V.ws / BV.ws - 1) > 1e-4 || BV.cx !== V.cx; }
@@ -1778,10 +1779,20 @@ function customUrl(la, lo, r) {
   return t.replace(/\{lat\}/g, f4(la)).replace(/\{lon\}/g, f4(lo)).replace(/\{(radius|r|dist)\}/g, r)
     .replace(/\{lamin\}/g, f4(la - dLat)).replace(/\{lamax\}/g, f4(la + dLat)).replace(/\{lomin\}/g, f4(lo - dLon)).replace(/\{lomax\}/g, f4(lo + dLon));
 }
+/* Live aircraft feeds don't allow browser requests from other sites, so the hosted app (and the iPhone app)
+   fetch them through the app's own Vercel function, /api/feed. The Claude preview keeps calling them directly. */
+const APP_HOST = "https://mono-radar-six.vercel.app"; // your Vercel domain
+const HOSTED = /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.host);
+const FEED_HOSTS = [["https://api.adsb.lol/", "adsblol"], ["https://api.airplanes.live/", "airplanes"], ["https://opendata.adsb.fi/api/", "adsbfi"], ["https://opensky-network.org/api/", "opensky"]];
+function viaProxy(url) {
+  if (!HOSTED && location.protocol !== "capacitor:") return url;
+  for (const [h, id] of FEED_HOSTS) if (url.startsWith(h)) return `${HOSTED ? "" : APP_HOST}/api/feed?src=${id}&q=${encodeURIComponent(url.slice(h.length))}`;
+  return url;
+}
 async function getJSON(url, ms, allow404) {
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
   try {
-    const r = await fetch(url, { signal: ac.signal, cache: "no-store" });
+    const r = await fetch(viaProxy(url), { signal: ac.signal, cache: "no-store" });
     if (!r.ok && !(allow404 && r.status === 404)) { const e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
     return await r.json();
   } finally { clearTimeout(t); }
@@ -3856,7 +3867,7 @@ function runwaysHtml(ap) {
 
 /* ---- Official METAR (from metars.json beside the app, refreshed by GitHub Actions; else direct) ---- */
 const metarCache = new Map();
-const METAR_HOST = "https://mono-radar.vercel.app"; // change if your Vercel domain differs
+const METAR_HOST = APP_HOST;
 async function fetchMetar(ap) {
   const k = ap[0], c = metarCache.get(k); if (c && (c.pending || Date.now() - c.at < 600000)) return;
   metarCache.set(k, { pending: true });
