@@ -1867,7 +1867,7 @@ function ingest(list, src) {
     const last = a.trail[a.trail.length - 1];
     if (!last || distNm(last.lat, last.lon, n.lat, n.lon) > 0.2 || (n.alt != null && last.alt !== n.alt && Date.now() - last.t > 10000)) {
       a.trail.push({ lat: n.lat, lon: n.lon, alt: n.ground ? 0 : n.alt, t: Date.now() });
-      if (a.trail.length > 1500) a.trail.shift();
+      if (a.trail.length > (a._fullTrack ? 3000 : 1500)) a.trail.shift();
     }
   }
   dirty = true;
@@ -1955,7 +1955,8 @@ function customUrl(la, lo, r) {
    fetch them through the app's own Vercel function, /api/feed. The Claude preview keeps calling them directly. */
 const APP_HOST = "https://mono-radar-six.vercel.app"; // your Vercel domain
 const HOSTED = /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.host);
-const FEED_HOSTS = [["https://api.adsb.lol/", "adsblol"], ["https://api.airplanes.live/", "airplanes"], ["https://opendata.adsb.fi/api/", "adsbfi"], ["https://opensky-network.org/api/", "opensky"]];
+const FEED_HOSTS = [["https://api.adsb.lol/", "adsblol"], ["https://api.airplanes.live/", "airplanes"], ["https://opendata.adsb.fi/api/", "adsbfi"], ["https://opensky-network.org/api/", "opensky"], ["https://globe.adsb.lol/data/traces/", "trace_adsblol"], ["https://globe.airplanes.live/data/traces/", "trace_airplanes"], ["https://globe.adsb.fi/data/traces/", "trace_adsbfi"]];
+const TRACE_HOSTS = ["https://globe.adsb.lol/data/traces/", "https://globe.adsb.fi/data/traces/", "https://globe.airplanes.live/data/traces/"];
 function viaProxy(url) {
   if (!HOSTED && location.protocol !== "capacitor:") return url;
   for (const [h, id] of FEED_HOSTS) if (url.startsWith(h)) return `${HOSTED ? "" : APP_HOST}/api/feed?src=${id}&q=${encodeURIComponent(url.slice(h.length))}`;
@@ -2327,9 +2328,16 @@ function drawSelected(g, now) {
   const rt = routeOf(a);
   g.lineCap = "round"; g.lineJoin = "round";
   if (rt) {
-    const rest = gcPts(a._lat, a._lon, rt.destination.latitude, rt.destination.longitude);
-    g.strokeStyle = C.bg; g.globalAlpha = 0.45; g.lineWidth = 5; g.beginPath(); polyPath(g, rest); g.stroke();
-    g.strokeStyle = C.ink; g.globalAlpha = 0.75; g.lineWidth = 1.6; g.setLineDash([1, 6]); g.beginPath(); polyPath(g, rest); g.stroke(); g.setLineDash([]);
+    const dash = (pts, alpha) => {
+      g.setLineDash([]); g.strokeStyle = C.dark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.75)"; g.globalAlpha = alpha; g.lineWidth = 5; g.beginPath(); polyPath(g, pts); g.stroke();
+      g.strokeStyle = C.alert; g.lineWidth = 2.4; g.setLineDash([7, 6]); g.beginPath(); polyPath(g, pts); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+    };
+    // ahead: great-circle to the destination
+    dash(gcPts(a._lat, a._lon, rt.destination.latitude, rt.destination.longitude), 0.95);
+    // behind: if we don't have the real track back to the origin, bridge the gap faintly
+    const first = !rt.sim && a.trail.length ? a.trail[0] : null;
+    const from = first || { lat: a._lat, lon: a._lon };
+    if (!rt.sim && distNm(rt.origin.latitude, rt.origin.longitude, from.lat, from.lon) > 15) dash(gcPts(rt.origin.latitude, rt.origin.longitude, from.lat, from.lon), 0.45);
   }
   if (S.trail) {
     let pts;
@@ -2713,7 +2721,7 @@ function toggleRoute() {
     setFollow(false);
     const pts = gcPts(rt.origin.latitude, rt.origin.longitude, rt.destination.latitude, rt.destination.longitude);
     let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
-    for (const [la, lo] of pts) { const u = (lo + 180) / 360, vv = latToV(la); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
+    for (const p of pts.concat(a.trail)) { const u = (p.lon + 180) / 360, vv = latToV(p.lat); u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, vv); v1 = Math.max(v1, vv); }
     const cover = isWide() ? 0 : openSheet === "detail" ? H * 0.55 : peekOpen() ? $("#peek").offsetHeight : 0;
     const visH = Math.max(200, H - cover - 90);
     let z = clamp(Math.min(Math.log2((mapW * 0.8) / ((u1 - u0 || 0.001) * 256)), Math.log2((visH * 0.8) / ((v1 - v0 || 0.001) * 256))), minZoom, 10);
@@ -2723,26 +2731,7 @@ function toggleRoute() {
     flyTo(lat, lon, z, 900, cover / 2);
   }
 }
-function drawRouteLine(g, a) {
-  const rt = routeOf(a); if (!rt) return;
-  const o = rt.origin, d = rt.destination;
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ffc21a";
-  const pts = gcPts(o.latitude, o.longitude, d.latitude, d.longitude, 96);
-  g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = accent; g.lineWidth = 2; g.globalAlpha = 0.9; g.setLineDash([7, 7]);
-  g.beginPath(); let px = null;
-  for (const [la, lo] of pts) { toScreen(la, lo, tmp); if (px === null || Math.abs(tmp.x - px) > mapW * 0.5) g.moveTo(tmp.x, tmp.y); else g.lineTo(tmp.x, tmp.y); px = tmp.x; }
-  g.stroke(); g.setLineDash([]);
-  g.font = `700 12px ${getComputedStyle(document.body).fontFamily}`; g.textAlign = "center"; g.textBaseline = "middle";
-  for (const ap of [o, d]) {
-    toScreen(ap.latitude, ap.longitude, tmp);
-    g.globalAlpha = 1; g.fillStyle = accent; g.beginPath(); g.arc(tmp.x, tmp.y, 5.5, 0, Math.PI * 2); g.fill();
-    g.fillStyle = C.dark ? "#111" : "#fff"; g.beginPath(); g.arc(tmp.x, tmp.y, 2.4, 0, Math.PI * 2); g.fill();
-    const code = apCode(ap), w = g.measureText(code).width + 12;
-    g.fillStyle = C.dark ? "rgba(20,20,22,.9)" : "rgba(255,255,255,.94)"; g.beginPath(); if (g.roundRect) g.roundRect(tmp.x - w / 2, tmp.y - 27, w, 19, 6); else g.rect(tmp.x - w / 2, tmp.y - 27, w, 19); g.fill();
-    g.fillStyle = C.dark ? "#fff" : "#111"; g.fillText(code, tmp.x, tmp.y - 17.5);
-  }
-  g.restore();
-}
+function drawRouteLine(g, a) { /* the route is drawn with the selected flight: real track behind, red dashed great-circle ahead */ }
 async function shareFlight() {
   const a = selected; if (!a) return;
   const rt = routeOf(a);
@@ -2915,9 +2904,33 @@ async function fetchPhoto(a) {
   if (selected === a) { renderDetail(); renderPeek(); }
 }
 /* Full track since take-off (OpenSky, experimental endpoint) so the trail and altitude chart start at departure */
+/* Trace files hold every position of the day; keep just the current flight leg */
+function traceLeg(j) {
+  if (!j || !Array.isArray(j.trace) || !j.trace.length) return null;
+  const t0 = j.timestamp * 1000, tr = j.trace;
+  let start = 0;
+  for (let i = tr.length - 1; i > 0; i--) { if ((tr[i][6] & 2) || tr[i][0] - tr[i - 1][0] > 1800) { start = i; break; } }
+  while (start < tr.length - 2 && tr[start][3] === "ground" && tr[start + 1][3] === "ground") start++;
+  const out = [];
+  for (let i = start; i < tr.length; i++) { const q = tr[i]; if (q[1] == null || q[2] == null) continue; out.push({ lat: q[1], lon: q[2], alt: q[3] === "ground" ? 0 : typeof q[3] === "number" ? q[3] : null, t: t0 + q[0] * 1000 }); }
+  return out.length > 1 ? out : null;
+}
 async function fetchTrack(a) {
   if (a.src === "sim" || S.commercial || a._trackTried) return;
   a._trackTried = true;
+  const h = a.hex.toLowerCase();
+  if (/^[0-9a-f]{6}$/.test(h)) {
+    for (const host of TRACE_HOSTS) {
+      try {
+        const pts = traceLeg(await getJSON(`${host}${h.slice(-2)}/trace_full_${h}.json`, 10000));
+        if (!pts) continue;
+        const last = pts[pts.length - 1].t;
+        a.trail = pts.concat(a.trail.filter((q) => q.t > last)).slice(-3000); a._fullTrack = true; a._tn = -1; dirty = true;
+        if (selected === a) renderDetail();
+        return;
+      } catch (e) {}
+    }
+  }
   try {
     const j = await getJSON(`https://opensky-network.org/api/tracks/all?icao24=${enc(a.hex)}&time=0`, 10000);
     const path = j && j.path; if (!path || path.length < 2) return;
