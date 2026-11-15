@@ -5060,9 +5060,12 @@ function setEx(state) {
 function syncExplore() {
   const hide = !!openSheet || peekOpen();
   ex.classList.toggle("hide", hide);
-  const v = hide ? (peekOpen() ? $("#peek").getBoundingClientRect().height + 16 : 0) : exVisible();
+  // the plane card sits flush on the bottom edge, so the credit and keys sit the same distance above it as above the sheet
+  const v = hide ? (peekOpen() ? Math.round($("#peek").getBoundingClientRect().height) : 0) : exVisible();
   document.documentElement.style.setProperty("--exv", (isWide() ? 0 : v) + "px");
 }
+// the card grows when its photo or route loads: keep the gap right
+if (window.ResizeObserver) new ResizeObserver(() => { if (peekOpen()) syncExplore(); }).observe($("#peek"));
 (() => {
   let drag = null;
   const start = (e) => {
