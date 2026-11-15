@@ -47,8 +47,8 @@
   --ink-2: #5f5f66;
   --ink-3: #a0a0a6;
   --line: rgba(0, 0, 0, 0.08);
-  --land: #cfe6a5;
-  --sea: #4ea7ea;
+  --land: #c2ea84;
+  --sea: #2e9cf4;
   --ring: #f7f7f6;
   --accent-t: #00808c;
   --panel: rgba(250, 250, 249, 0.9);
@@ -979,10 +979,10 @@ svg.i .f { fill: currentColor; stroke: none; }
 .sm-hint { font-size: 11.5px; color: var(--ink-3); margin: -4px 2px 0; }
 .seat-note { margin: 0 2px; font-size: 12px; line-height: 1.45; color: var(--ink-3); }
 
-/* Globe view: replaces the flat map, everything else stays on top */
-.globe { position: fixed; inset: 0; z-index: 2; background: #03060c; touch-action: none; }
-.globe canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibility: hidden; }
+/* Globe view: MapLibre takes the gestures, our layer still draws the aircraft */
+body.globe-on #basemap { pointer-events: auto; background: #03060c; }
+body.globe-on #map { pointer-events: none; }
+body.globe-on .alt-legend { visibility: hidden; }
 .ctrl[aria-pressed="true"] { color: var(--accent-t); }
 
 /* Compact always-visible part of the bottom sheet: slimmer handle, search and quick buttons */
@@ -1287,7 +1287,6 @@ body.globe-on #map, body.globe-on #basemap, body.globe-on .alt-legend { visibili
   <div class="sky-top"><div class="sky-t"><b>Sky view</b><span id="skySub">Point your phone at the sky</span></div><button class="xs" id="skyX" aria-label="Close sky view"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
   <div class="sky-hint" id="skyHint"></div>
 </div>
-<div class="globe" id="globeView" hidden><canvas id="gbCanvas"></canvas><canvas id="gbLabels" aria-label="Globe with live aircraft"></canvas></div>
 <div class="view3d" id="view3d" hidden><canvas id="gl3d"></canvas><canvas id="gl3dLabels" aria-label="3D view of live aircraft"></canvas></div>
 <div class="hud3d" id="hud3d" hidden>
   <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
@@ -1358,8 +1357,10 @@ function setView(u, v, z) {
   V.v = half >= 0.5 ? 0.5 : clamp(v, half, 1 - half);
   dirty = true;
 }
-const tmp = { x: 0, y: 0 };
+const tmp = { x: 0, y: 0 }, tmp2 = { x: 0, y: 0 };
 function toScreen(lat, lon, o) {
+  if (GB.on && gbLive()) return gbProject(lat, lon, o);
+  o.hid = false;
   let du = lonToU(lon) - V.u; du -= Math.round(du);
   o.x = V.cx + du * V.ws; o.y = V.cy + (latToV(lat) - V.v) * V.ws;
   return o;
@@ -1413,8 +1414,8 @@ function readColors() {
   const h = C.ink.replace("#", "");
   C.inkRGB = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(",");
   C.dark = !S.paper;
-  C.coast = C.dark ? "#707070" : "#2f86cc";
-  C.river = C.dark ? C.ink3 : "#3d9be3";
+  C.coast = C.dark ? "#707070" : "#1a7fd6";
+  C.river = C.dark ? C.ink3 : "#2e9cf4";
   C.border = C.dark ? C.ink3 : "#56664f";
   document.querySelector('meta[name="theme-color"]').setAttribute("content", C.bg);
 }
@@ -1454,7 +1455,8 @@ function layout() {
   V.cx = mapW / 2; V.cy = H / 2;
   const bm = $("#basemap"); bm.style.width = mapW + "px"; bm.style.height = H + "px";
   if (ml) { try { ml.setPixelRatio(DPR); } catch (e) {} ml.resize(); mlSync = ""; }
-  minZoom = Math.max(1.2, Math.log2(mapW / 256));
+  minZoom = GB.on ? Math.max(1, Math.log2((0.82 * Math.min(mapW, H) * Math.PI) / 512) + 1) : Math.max(1.2, Math.log2(mapW / 256));
+  if (ml) { try { ml.setMinZoom(GB.on ? minZoom - 1 : 0); } catch (e) {} }
   setView(V.u, V.v, V.z);
   BV.valid = false; dirty = true;
 }
@@ -1540,7 +1542,7 @@ function drawNight(g) {
   if (key !== nightKey || nowMs - nightAt > 30000) {
     nightKey = key; nightAt = nowMs;
     if (night.width !== nx || night.height !== ny) { night.width = nx; night.height = ny; }
-    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 28, tint = C.dark ? [0, 0, 0] : [10, 28, 70];
+    const img = nctx.createImageData(nx, ny), sun = sunPos(nowMs), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 150 : 18, tint = C.dark ? [0, 0, 0] : [10, 28, 70];
     for (let j = 0; j < ny; j++) {
       const lat = toLatLon(0, V.v + ((j - 0.5) * cell - V.cy) / V.ws).lat * D2R, sl = Math.sin(lat), cl = Math.cos(lat);
       for (let i = 0; i < nx; i++) {
@@ -1601,7 +1603,7 @@ function drawVignette(g) {
   if (key !== vigKey) {
     vigKey = key; const r = Math.hypot(W, H) / 2;
     vig = g.createRadialGradient(W / 2, H / 2, r * 0.42, W / 2, H / 2, r * 1.02);
-    vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, C.dark ? "rgba(0,0,0,0.5)" : "rgba(10,30,60,0.07)");
+    vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, C.dark ? "rgba(0,0,0,0.5)" : "rgba(10,30,60,0.04)");
   }
   g.setTransform(DPR, 0, 0, DPR, 0, 0); g.fillStyle = vig; g.fillRect(0, 0, W, H);
 }
@@ -1628,18 +1630,23 @@ function tileLayer() { const st = STYLES[S.style] || STYLES.outline; return st.v
 /* Vector basemap: OpenFreeMap (OpenStreetMap data) drawn by MapLibre underneath the aircraft canvas */
 const ML_JS = "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js";
 let ml = null, mlState = "off", mlStyleUrl = "", mlSync = "", mlScript = false;
-const vectorWanted = () => !!(STYLES[S.style] || {}).vector && mlState !== "broken";
-const basemapReady = () => vectorWanted() && mlState === "ready" && !!ml;
+const GB = { on: false };
+let vecBroken = false;   // the street/vector map style couldn't load (the globe can still use the built-in map)
+const vectorWanted = () => (GB.on || (!!(STYLES[S.style] || {}).vector && !vecBroken)) && mlState !== "broken";
+const basemapReady = () => vectorWanted() && mlState === "ready" && !!ml && !!basemapStyle(true);
 function basemapFail() {
   if (mlState === "broken") return;
+  if (!GB.on && !/^builtin|^carto/.test(mlStyleUrl)) vecBroken = true;
   mlState = "broken"; $("#basemap").hidden = true; BV.valid = false; dirty = true; renderStyles(); updateAttrib();
+  if (GB.on) { exitGlobe(); toast("The globe can't load in this viewer, so the flat map is showing."); return; }
   toast("The street map can't load in this viewer, so the built-in map is showing.");
 }
 function ensureBasemap() {
   const bm = $("#basemap");
   if (!vectorWanted()) { bm.hidden = true; dirty = true; return; }
   bm.hidden = false;
-  const url = STYLES[S.style][S.paper ? "light" : "dark"];
+  const want = basemapStyle(); if (!want) { bm.hidden = true; return; }
+  const url = want.style;
   if (!window.maplibregl) {
     if (!mlScript) { mlScript = true; const sc = document.createElement("script"); sc.src = ML_JS; sc.onload = ensureBasemap; sc.onerror = basemapFail; document.head.appendChild(sc); }
     return;
@@ -1647,32 +1654,42 @@ function ensureBasemap() {
   if (!ml) {
     const c = toLatLon(V.u, V.v);
     try {
-      ml = new maplibregl.Map({ container: bm, style: url, center: [c.lon, c.lat], zoom: V.z - 1, interactive: false, attributionControl: false, pixelRatio: DPR, fadeDuration: 0, renderWorldCopies: true, maxZoom: 20 });
+      ml = new maplibregl.Map({ container: bm, style: url, center: [c.lon, c.lat], zoom: V.z - 1, interactive: true, attributionControl: false, pixelRatio: DPR, fadeDuration: 0, renderWorldCopies: true, maxZoom: 20, minZoom: 0 });
     } catch (e) { basemapFail(); return; }
-    mlStyleUrl = url; mlState = "loading";
+    mlStyleUrl = want.key; mlState = "loading"; applyGlobe();
+    // globe: the map moves under your fingers, and the app follows it
+    ml.on("move", (e) => {
+      if (!GB.on) return;
+      const cc = ml.getCenter();
+      if (e && e.originalEvent) { anim = null; inertia = null; if (follow) setFollow(false); }
+      setView(lonToU(cc.lng), latToV(clamp(cc.lat, -85, 85)), ml.getZoom() + 1);
+      const c2 = toLatLon(V.u, V.v); mlSync = `${c2.lon.toFixed(7)},${c2.lat.toFixed(7)},${V.z.toFixed(4)}`; dirty = true;
+    });
+    ml.on("moveend", (e) => { if (GB.on && e && e.originalEvent) viewSettled(); });
+    ml.on("click", (e) => { if (GB.on) tap(e.point.x, e.point.y); });
     // Only give up if the map style itself can't load. A slow first load or a single missing tile is fine.
     let styleOk = false;
     const ready = () => { if (mlState !== "loading") return; clearTimeout(timer); mlState = "ready"; mlSync = ""; dirty = true; renderStyles(); updateAttrib(); };
     const timer = setTimeout(() => { if (mlState === "loading") { if (styleOk) ready(); else basemapFail(); } }, 25000);
     ml.once("styledata", () => { styleOk = true; });
-    ml.on("style.load", tintBasemap);
+    ml.on("style.load", () => { tintBasemap(); try { ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {} applyGlobe(); if (mlState === "loading") setTimeout(ready, 300); });
     ml.on("load", ready);
     ml.on("error", (e) => { if (mlState === "loading" && !styleOk && !(e && (e.sourceId || e.tile))) { clearTimeout(timer); basemapFail(); } });
     return;
   }
-  if (url !== mlStyleUrl) { mlStyleUrl = url; ml.setStyle(url); }
+  if (want.key !== mlStyleUrl) { mlStyleUrl = want.key; ml.setStyle(url); }
 }
 const MAP_LIGHT = {
-  background: { "background-color": "#cfe6a5" },
-  park: { "fill-color": "#bddc95" },
-  water: { "fill-color": "#4ea7ea" },
-  waterway: { "line-color": "#4ea7ea" },
-  landcover_wood: { "fill-color": "#b5d68b" },
+  background: { "background-color": "#c2ea84" },
+  park: { "fill-color": "#acdd70" },
+  water: { "fill-color": "#2e9cf4" },
+  waterway: { "line-color": "#2e9cf4" },
+  landcover_wood: { "fill-color": "#a3d866" },
   landcover_glacier: { "fill-color": "#f4f8f9" }, landcover_ice_shelf: { "fill-color": "#f4f8f9" },
-  landuse_residential: { "fill-color": "#dbe5c2" },
+  landuse_residential: { "fill-color": "#d4e9b0" },
   building: { "fill-color": "#d3d8c2" },
   "aeroway-area": { "fill-color": "#e6ebd8" }, "aeroway-taxiway": { "line-color": "#f6f6ee" }, "aeroway-runway-casing": { "line-color": "#c5cbb5" },
-  road_area_pier: { "fill-color": "#cfe6a5" }, road_pier: { "line-color": "#cfe6a5" },
+  road_area_pier: { "fill-color": "#c2ea84" }, road_pier: { "line-color": "#c2ea84" },
   highway_path: { "line-color": "#e6eed3" }, highway_minor: { "line-color": "#eef2e2" },
   highway_major_casing: { "line-color": "#bcc6a6" }, highway_major_inner: { "line-color": "#fffdf2" }, highway_major_subtle: { "line-color": "rgba(255,253,242,0.75)" },
   highway_motorway_casing: { "line-color": "#c9b77a" }, highway_motorway_inner: { "line-color": "#fbe3a0" }, highway_motorway_subtle: { "line-color": "rgba(251,227,160,0.8)" },
@@ -1684,12 +1701,12 @@ const MAP_LIGHT = {
 };
 /* Streets (colour) in light mode: keep its roads, swap in green land and blue water */
 const STREETS_LIGHT = {
-  background: { "background-color": "#cfe6a5" },
+  background: { "background-color": "#c2ea84" },
   natural_earth: { "raster-opacity": 0.22 },
-  park: { "fill-color": "#bddc95" }, park_outline: { "line-color": "rgba(189,220,149,0.6)" },
-  landcover_wood: { "fill-color": "rgba(150,200,110,0.55)" }, landcover_grass: { "fill-color": "#bfdd97" },
-  landuse_residential: { "fill-color": "#dbe4c4" },
-  water: { "fill-color": "#4ea7ea" }, waterway_river: { "line-color": "#4ea7ea" }, waterway_other: { "line-color": "#4ea7ea" }, waterway_tunnel: { "line-color": "#4ea7ea" },
+  park: { "fill-color": "#acdd70" }, park_outline: { "line-color": "rgba(172,221,112,0.6)" },
+  landcover_wood: { "fill-color": "rgba(140,205,90,0.6)" }, landcover_grass: { "fill-color": "#acdd70" },
+  landuse_residential: { "fill-color": "#d4e9b0" },
+  water: { "fill-color": "#2e9cf4" }, waterway_river: { "line-color": "#2e9cf4" }, waterway_other: { "line-color": "#2e9cf4" }, waterway_tunnel: { "line-color": "#2e9cf4" },
   aeroway_fill: { "fill-color": "#e6ebd8" },
   boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" },
 };
@@ -1706,6 +1723,7 @@ function syncBasemap() {
   const c = toLatLon(V.u, V.v), key = `${c.lon.toFixed(7)},${c.lat.toFixed(7)},${V.z.toFixed(4)}`;
   if (key === mlSync) return;
   mlSync = key; ml.jumpTo({ center: [c.lon, c.lat], zoom: V.z - 1 });
+  if (GB.on) gbRadar();
 }
 function getTile(layer, z, x, y) {
   const key = `${layer}/${z}/${x}/${y}`;
@@ -1744,7 +1762,7 @@ function drawTiles(g) {
     }
   }
 }
-function updateAttrib() { $("#attrib").textContent = (basemapReady() ? "OpenFreeMap © OpenMapTiles · Data © OpenStreetMap" : tileLayer() ? "© OpenStreetMap contributors © CARTO" : "Natural Earth") + (S.radar ? " · Radar: RainViewer" : ""); }
+function updateAttrib() { const bk = basemapReady() ? (basemapStyle(true) || {}).key || "" : ""; $("#attrib").textContent = (bk.startsWith("builtin") ? "Natural Earth" : bk.startsWith("carto") ? "© OpenStreetMap contributors © CARTO" : bk ? "OpenFreeMap © OpenMapTiles · Data © OpenStreetMap" : tileLayer() ? "© OpenStreetMap contributors © CARTO" : "Natural Earth") + (S.radar ? " · Radar: RainViewer" : ""); }
 /* Weather radar (RainViewer, free tier: zoom 7 max, so tiles are stretched when zoomed in further) */
 const radar = { host: "", path: "", time: 0, loads: 0, errs: 0, broken: false, warned: false }, radarTiles = new Map();
 async function loadRadar() {
@@ -2404,7 +2422,8 @@ function polyPath(g, pts) {
   let pen = false, px = 0;
   for (const p of pts) {
     toScreen(p.lat, p.lon, tmp);
-    if (pen && Math.abs(tmp.x - px) > V.ws / 2) pen = false;
+    if (tmp.hid) { pen = false; continue; }
+    if (pen && !GB.on && Math.abs(tmp.x - px) > V.ws / 2) pen = false;
     if (!pen) { g.moveTo(tmp.x, tmp.y); pen = true; } else g.lineTo(tmp.x, tmp.y);
     px = tmp.x;
   }
@@ -2491,10 +2510,9 @@ function draw(now) {
     drawBase(g);
     drawTiles(g);
   }
-  drawRadar(g);
-  drawNight(g);
+  if (!GB.on) { drawRadar(g); drawNight(g); }
   drawVignette(g);
-  drawGeoLines(g);
+  if (!GB.on) drawGeoLines(g);
   g.setTransform(DPR, 0, 0, DPR, 0, 0);
   drawAirports(g);
   drawMe(g);
@@ -2511,6 +2529,8 @@ function draw(now) {
     toScreen(o.lat, o.lon, tmp);
     if (tmp.x < -30 || tmp.y < -30 || tmp.x > W + 30 || tmp.y > H + 30) continue;
     a._x = tmp.x; a._y = tmp.y; a._vis = true; visible.push(a);
+    a._rot = (a.track || 0) * D2R;
+    if (GB.on && gbLive()) { const tr = a._rot, d = 0.08; gbProject(o.lat + d * Math.cos(tr), o.lon + (d * Math.sin(tr)) / Math.max(0.15, Math.cos(o.lat * D2R)), tmp2); if (!tmp2.hid) a._rot = Math.atan2(tmp2.x - a._x, a._y - tmp2.y); }
     if (a.emerg) anyEmerg = true;
   }
   visibleCount = visible.length;
@@ -2521,21 +2541,21 @@ function draw(now) {
     g.fillStyle = C.dark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.16)";
     for (const a of visible) {
       if (a.ground) continue;
-      const px = Math.round(sizeFor(a._shape) * (a === selected ? 1.25 : 1)), rot = (a.track || 0) * D2R;
+      const px = Math.round(sizeFor(a._shape) * (a === selected ? 1.25 : 1)), rot = a._rot ?? (a.track || 0) * D2R;
       const off = 2 + clamp((a.alt || 0) / 38000, 0, 1) * px * 0.22;
       { const sp = shadowSprite(a._shape, px), c = Math.cos(rot), s = Math.sin(rot); g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, (a._x + off) * DPR, (a._y + off * 1.15) * DPR); g.drawImage(sp.c, -sp.full / 2, -sp.full / 2, sp.full, sp.full); }
     }
   }
   for (const a of visible) {
     if (a === selected) continue;
-    const px = sizeFor(a._shape), style = a.emerg ? (blink ? "emerg" : "air") : a.ground ? "ground" : a.mil ? "mil" : S.altColor ? altStyle(a.alt) : "air", rot = (a.track || 0) * D2R;
+    const px = sizeFor(a._shape), style = a.emerg ? (blink ? "emerg" : "air") : a.ground ? "ground" : a.mil ? "mil" : S.altColor ? altStyle(a.alt) : "air", rot = a._rot ?? (a.track || 0) * D2R;
     if (vector) { drawPlane(g, a._shape, style, px, a._x, a._y, rot); continue; }
     const sp = sprite(a._shape, style, px), c = Math.cos(rot), s = Math.sin(rot);
     g.setTransform(c * DPR, s * DPR, -s * DPR, c * DPR, a._x * DPR, a._y * DPR);
     g.drawImage(sp.c, -sp.full / 2, -sp.full / 2, sp.full, sp.full);
   }
   if (selected && selected._vis) {
-    const a = selected, px = Math.round(sizeFor(a._shape) * 1.25), sp = sprite(a._shape, "sel", px), rot = (a.track || 0) * D2R, c = Math.cos(rot), s = Math.sin(rot);
+    const a = selected, px = Math.round(sizeFor(a._shape) * 1.25), sp = sprite(a._shape, "sel", px), rot = a._rot ?? (a.track || 0) * D2R, c = Math.cos(rot), s = Math.sin(rot);
     if (!reduceMotion) {
       const t = (now % 1800) / 1800;
       g.setTransform(DPR, 0, 0, DPR, 0, 0); g.strokeStyle = C.alert; g.lineWidth = 2; g.globalAlpha = (1 - t) * 0.8;
@@ -2588,7 +2608,7 @@ function frame(now) {
     setView(lonToU(o.lon), latToV(o.lat) + followOff / V.ws, V.z);
   }
   if (threeD) apply3D();
-  if (GL.on || GB.on) return;
+  if (GL.on) return;
   const moving = !!(gesture && gesture.type !== "maybe") || inertia || anim || follow;
   const pxs = 0.14 * pxPerNm();
   let iv = moving ? 0 : clamp(1000 / (pxs * 5 + 0.0001), 16, 1000);
@@ -3348,7 +3368,7 @@ $("#filterChip").addEventListener("click", () => { resetFilters(); toast("Filter
 function renderStyles() {
   const el = $("#styles"); if (!el) return;
   el.innerHTML = Object.entries(STYLES).map(([id, st]) => {
-    const bg = id === "outline" ? `linear-gradient(135deg, var(--land) 50%, var(--sea) 50%)` : id === "streets" ? "linear-gradient(135deg,#f2efe9 0 40%,#aad3df 40% 60%,#f9d79a 60% 64%,#e8e4dc 64%)" : id === "vector" ? (S.paper ? "linear-gradient(135deg,#cfe6a5 0 45%,#4ea7ea 45% 70%,#bddc95 70%)" : "linear-gradient(135deg,#2b2b2b 0 45%,#111 45% 55%,#3a3a3a 55% 57%,#222 57%)") : S.paper ? "repeating-linear-gradient(45deg,#e6e6e3 0 6px,#f4f4f2 6px 12px)" : "repeating-linear-gradient(45deg,#1b1b1b 0 6px,#232323 6px 12px)";
+    const bg = id === "outline" ? `linear-gradient(135deg, var(--land) 50%, var(--sea) 50%)` : id === "streets" ? "linear-gradient(135deg,#f2efe9 0 40%,#aad3df 40% 60%,#f9d79a 60% 64%,#e8e4dc 64%)" : id === "vector" ? (S.paper ? "linear-gradient(135deg,#c2ea84 0 45%,#2e9cf4 45% 70%,#acdd70 70%)" : "linear-gradient(135deg,#2b2b2b 0 45%,#111 45% 55%,#3a3a3a 55% 57%,#222 57%)") : S.paper ? "repeating-linear-gradient(45deg,#e6e6e3 0 6px,#f4f4f2 6px 12px)" : "repeating-linear-gradient(45deg,#1b1b1b 0 6px,#232323 6px 12px)";
     return `<button class="style" data-style="${id}" aria-pressed="${S.style === id}"><i style="background:${bg}"></i>${st.label}</button>`;
   }).join("");
   const needKey = S.style === "dark" && !S.cartoKey;
@@ -4698,287 +4718,92 @@ function renderSeats(a) {
 }
 
 /* ---------------- Globe view ----------------
-   The map can switch to a 3D globe (three.js) while the rest of the app stays the same: search,
-   sheets, flight card and buttons all work on top. Drag to rotate, pinch or scroll to zoom.
-   The globe and the flat map share one view, so feeds, "Near you", search and follow keep working. */
-const GB = { on: false, r: null, lat: 30, lon: 0, dist: 3, world: new Map(), timers: [], raf: 0, drag: null, pinch: null, vel: null, theme: null, key: "", zkey: 0, k: 0.728, routeKey: "" };
-const GB_HUBS = [[51.47, -0.45], [50.03, 8.57], [40.64, -73.78], [33.94, -118.4], [41.98, -87.9], [25.25, 55.36], [1.36, 103.99], [35.55, 139.78], [22.31, 113.92], [28.56, 77.1], [-23.43, -46.47], [-33.94, 151.18]];
-const GB_MIN = 1.3, GB_MAX = 6;
-const gbN = (lat, lon, r, o) => { const la = lat * D2R, lo = lon * D2R, c = Math.cos(la); o.set(c * Math.cos(lo) * r, Math.sin(la) * r, -c * Math.sin(lo) * r); return o; };
-const gbZ = (d) => clamp(4 - Math.log2(Math.max(0.05, d - 1)), 1.5, 9);   // globe distance -> map zoom
-const gbD = (z) => clamp(1 + Math.pow(2, 4 - z), GB_MIN, GB_MAX);        // map zoom -> globe distance
-function gbTexture(T) {
-  const W = GB.r0 && GB.r0 >= 8192 ? 8192 : 4096, H = W / 2, c = document.createElement("canvas"); c.width = W; c.height = H;
-  const g = c.getContext("2d"), dark = C.dark, s = GEO.s;
-  const col = dark ? { sea: "#0b1828", land: "#1f2d3b", coast: "#3f5a73", border: "#2b3d4f", grid: "rgba(120,170,220,.10)" } : { sea: "#4ea7ea", land: "#cfe6a5", coast: "#2f86cc", border: "#7f906f", grid: "rgba(255,255,255,.22)" };
-  g.fillStyle = col.sea; g.fillRect(0, 0, W, H);
-  const path = (list, closed) => {
-    const p = new Path2D();
-    for (const arr of list) {
-      let x = 0, y = 0, prev = 0;
-      for (let i = 0; i < arr.length; i += 2) {
-        x += arr[i]; y += arr[i + 1];
-        let lon = x / s; if (i) { while (lon - prev > 180) lon -= 360; while (lon - prev < -180) lon += 360; } prev = lon;
-        const px = ((lon + 180) / 360) * W, py = ((90 - y / s) / 180) * H;
-        if (i === 0) p.moveTo(px, py); else p.lineTo(px, py);
-      }
-      if (closed) p.closePath();
+   The globe uses MapLibre's globe projection, so every map style works on it (Map, Streets, CARTO and the
+   built-in map). MapLibre handles rotating and zooming; the aircraft, labels, routes and airports are still
+   drawn by our own layer, placed with MapLibre's projection. */
+let gbGeo = null;
+function geoFC(list, closed) {
+  const sc = GEO.s, feats = [];
+  for (const arr of list) {
+    const co = []; let x = 0, y = 0, prev = 0;
+    for (let i = 0; i < arr.length; i += 2) { x += arr[i]; y += arr[i + 1]; let lon = x / sc; if (i) { while (lon - prev > 180) lon -= 360; while (lon - prev < -180) lon += 360; } prev = lon; co.push([lon, y / sc]); }
+    if (closed) { if (co.length < 3) continue; co.push(co[0].slice()); feats.push({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [co] } }); }
+    else if (co.length > 1) feats.push({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: co } });
+  }
+  return { type: "FeatureCollection", features: feats };
+}
+function builtinGlobeStyle() {
+  if (!gbGeo) gbGeo = { land: geoFC(GEO.land, true), lakes: geoFC(NE.lakes, true), coast: geoFC(GEO.coast, false), border: geoFC(GEO.border, false) };
+  return { version: 8, sources: { land: { type: "geojson", data: gbGeo.land }, lakes: { type: "geojson", data: gbGeo.lakes }, coast: { type: "geojson", data: gbGeo.coast }, border: { type: "geojson", data: gbGeo.border } },
+    layers: [
+      { id: "bg", type: "background", paint: { "background-color": C.sea } },
+      { id: "land", type: "fill", source: "land", paint: { "fill-color": C.land } },
+      { id: "lakes", type: "fill", source: "lakes", paint: { "fill-color": C.sea } },
+      { id: "border", type: "line", source: "border", paint: { "line-color": C.border, "line-width": 0.8, "line-opacity": 0.75, "line-dasharray": [3, 2] } },
+      { id: "coast", type: "line", source: "coast", paint: { "line-color": C.coast, "line-width": 1 } },
+    ] };
+}
+function cartoGlobeStyle() {
+  const layer = S.paper ? STYLES.dark.light : STYLES.dark.dark, r = DPR > 1.4 ? "@2x" : "";
+  return { version: 8, sources: { carto: { type: "raster", tileSize: 256, maxzoom: 19, tiles: ["a", "b", "c", "d"].map((h) => `https://${h}.basemaps.cartocdn.com/${layer}/{z}/{x}/{y}${r}.png?key=${encodeURIComponent(S.cartoKey)}`) } },
+    layers: [{ id: "bg", type: "background", paint: { "background-color": C.sea } }, { id: "carto", type: "raster", source: "carto" }] };
+}
+/* which MapLibre style to show: the vector styles as they are; on the globe, the built-in and CARTO maps too */
+function basemapStyle(keyOnly) {
+  const st = STYLES[S.style] || STYLES.outline;
+  if (st.vector && !vecBroken) { const u = st[S.paper ? "light" : "dark"]; return { key: u, style: u }; }
+  if (!GB.on) return null;
+  if (S.style === "dark" && S.cartoKey) return { key: `carto:${S.paper}:${S.cartoKey}`, style: keyOnly ? null : cartoGlobeStyle() };
+  return { key: `builtin:${S.paper}`, style: keyOnly ? null : builtinGlobeStyle() };
+}
+const ML_HANDLERS = ["scrollZoom", "dragPan", "doubleClickZoom", "touchZoomRotate", "keyboard"];
+function applyGlobe() {
+  if (!ml) return;
+  for (const h of [...ML_HANDLERS, "boxZoom", "dragRotate", "touchPitch"]) { try { ml[h].disable(); } catch (e) {} }
+  if (GB.on) { for (const h of ML_HANDLERS) { try { ml[h].enable(); } catch (e) {} } try { ml.touchZoomRotate.disableRotation(); } catch (e) {} }
+  try { if (ml.style && ml.style._loaded !== false) ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {}
+  if (GB.on) { try { ml.setSky({ "sky-color": "#03060c", "horizon-color": "#1d6fb8", "fog-color": "#03060c", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.5, "fog-ground-blend": 0.5, "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] }); } catch (e) {} }
+  gbRadar(true);
+}
+/* weather radar on the globe as a MapLibre layer */
+let gbRadarKey = "";
+function gbRadar(force) {
+  if (!ml) return;
+  const want = GB.on && S.radar && radar.path && !radar.broken ? radar.path : "";
+  if (!force && want === gbRadarKey) return;
+  gbRadarKey = want;
+  try {
+    if (ml.getLayer("gb-radar")) ml.removeLayer("gb-radar");
+    if (ml.getSource("gb-radar")) ml.removeSource("gb-radar");
+    if (want && ml.isStyleLoaded()) {
+      ml.addSource("gb-radar", { type: "raster", tileSize: 256, maxzoom: 7, tiles: [`${radar.host}${radar.path}/256/{z}/{x}/{y}/2/1_1.png`] });
+      ml.addLayer({ id: "gb-radar", type: "raster", source: "gb-radar", paint: { "raster-opacity": C.dark ? 0.62 : 0.55 } });
     }
-    return p;
-  };
-  const land = path(GEO.land, true), coast = path(GEO.coast, false), border = path(GEO.border, false);
-  for (const off of [-W, 0, W]) {
-    g.setTransform(1, 0, 0, 1, off, 0);
-    g.fillStyle = col.land; g.fill(land, "evenodd");
-    g.lineJoin = "round"; g.strokeStyle = col.border; g.lineWidth = W / 3400; g.stroke(border);
-    g.strokeStyle = col.coast; g.lineWidth = W / 2600; g.stroke(coast);
-  }
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.strokeStyle = col.grid; g.lineWidth = W / 2700;
-  for (let lo = -180; lo <= 180; lo += 30) { const x = ((lo + 180) / 360) * W; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
-  for (let la = -60; la <= 60; la += 30) { const y = ((90 - la) / 180) * H; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
-  return t;
+  } catch (e) {}
 }
-function gbPlaneGeo(T) {
-  const sh = new T.Shape(), pts = [[0, 1], [0.12, 0.62], [0.12, 0.22], [1, -0.2], [1, -0.36], [0.12, -0.14], [0.1, -0.62], [0.42, -0.86], [0.42, -1], [0, -0.92], [-0.42, -1], [-0.42, -0.86], [-0.1, -0.62], [-0.12, -0.14], [-1, -0.36], [-1, -0.2], [-0.12, 0.22], [-0.12, 0.62]];
-  pts.forEach(([x, y], i) => (i ? sh.lineTo(x, y) : sh.moveTo(x, y)));
-  return new T.ShapeGeometry(sh);
+/* project a position with MapLibre; points on the far side of the globe are hidden */
+function gbProject(lat, lon, o) {
+  let hid = false;
+  try { const tr = ml.transform; if (tr && tr.isLocationOccluded) hid = tr.isLocationOccluded(new maplibregl.LngLat(lon, lat)); } catch (e) {}
+  if (hid) { o.x = -1e5; o.y = -1e5; o.hid = true; return o; }
+  const p = ml.project([lon, lat]); o.x = p.x; o.y = p.y; o.hid = false; return o;
 }
-function gbBuild(T) {
-  const canvas = $("#gbCanvas");
-  const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.setSize(innerWidth, innerHeight, false);
-  GB.r0 = renderer.capabilities.maxTextureSize;
-  const scene = new T.Scene(); scene.background = new T.Color("#03060c");
-  const camera = new T.PerspectiveCamera(40, innerWidth / innerHeight, 0.01, 100);
-  const earthMat = new T.MeshPhongMaterial({ map: null, shininess: 6, specular: new T.Color(0x111a22) });
-  const earth = new T.Mesh(new T.SphereGeometry(1, 128, 96), earthMat); scene.add(earth);
-  const atmo = new T.Mesh(new T.SphereGeometry(1.08, 64, 48), new T.ShaderMaterial({
-    side: T.BackSide, transparent: true, depthWrite: false, blending: T.AdditiveBlending,
-    uniforms: { c: { value: new T.Color("#3ab0ff") } },
-    vertexShader: "varying vec3 n; void main(){ n = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-    fragmentShader: "uniform vec3 c; varying vec3 n; void main(){ float i = pow(max(0.0, 0.72 - dot(n, vec3(0.0,0.0,1.0))), 3.0); gl_FragColor = vec4(c, 1.0) * i * 2.4; }",
-  }));
-  scene.add(atmo);
-  const sp = new Float32Array(1800 * 3); for (let i = 0; i < sp.length; i += 3) { const v = new T.Vector3().randomDirection().multiplyScalar(40 + Math.random() * 20); sp[i] = v.x; sp[i + 1] = v.y; sp[i + 2] = v.z; }
-  const sg = new T.BufferGeometry(); sg.setAttribute("position", new T.BufferAttribute(sp, 3));
-  scene.add(new T.Points(sg, new T.PointsMaterial({ color: 0xffffff, size: 0.09, transparent: true, opacity: 0.55 })));
-  const amb = new T.AmbientLight(0xffffff, 1.15), sun = new T.DirectionalLight(0xffffff, 1.6); scene.add(amb, sun);
-  const pgeo = gbPlaneGeo(T), MAX = 12000;
-  const fleet = new T.InstancedMesh(pgeo, new T.MeshBasicMaterial({ color: new T.Color(C.accent || "#00f0ff"), side: T.DoubleSide }), MAX);
-  fleet.instanceMatrix.setUsage(T.DynamicDrawUsage); fleet.frustumCulled = false; fleet.count = 0; scene.add(fleet);
-  const sel = new T.Mesh(pgeo, new T.MeshBasicMaterial({ color: new T.Color(C.alert || "#ff4a3d"), side: T.DoubleSide })); sel.visible = false; sel.matrixAutoUpdate = false; scene.add(sel);
-  // selected flight: its real track behind (solid) and a red dashed great-circle ahead
-  const trail = new T.Line(new T.BufferGeometry(), new T.LineBasicMaterial({ color: new T.Color(C.accent || "#00f0ff"), transparent: true, opacity: 0.9 })); trail.frustumCulled = false; trail.visible = false; scene.add(trail);
-  const ahead = new T.Line(new T.BufferGeometry(), new T.LineDashedMaterial({ color: new T.Color(C.alert || "#ff4a3d"), dashSize: 0.012, gapSize: 0.009 })); ahead.frustumCulled = false; ahead.visible = false; scene.add(ahead);
-  GB.r = { T, renderer, scene, camera, earth, earthMat, atmo, amb, sun, fleet, sel, trail, ahead, MAX, list: [], tmp: { p: new T.Vector3(), n: new T.Vector3(), u: new T.Vector3(), e: new T.Vector3(), no: new T.Vector3(), f: new T.Vector3(), x: new T.Vector3(), m: new T.Matrix4(), q: new T.Vector3() } };
-  earthMat.map = gbTexture(T); earthMat.needsUpdate = true; GB.theme = C.dark;
-}
-function gbFov() {
-  const r = GB.r, asp = innerWidth / innerHeight;
-  r.camera.aspect = asp; r.camera.fov = asp < 1 ? Math.min(78, 2 * Math.atan(Math.tan(20 * D2R) / asp) * R2D) : 40;
-  // on wide screens the side panel covers the left, so centre the globe in the space that's left
-  const dock = document.body.classList.contains("docked") ? 400 : 0;
-  if (dock) r.camera.setViewOffset(innerWidth, innerHeight, -dock / 2, 0, innerWidth, innerHeight); else r.camera.clearViewOffset();
-  r.camera.updateProjectionMatrix();
-  GB.k = 2 * Math.tan((r.camera.fov / 2) * D2R);
-}
-function gbPlaneMatrix(lat, lon, altFt, track, scale, out) {
-  const t = GB.r.tmp, la = lat * D2R, lo = lon * D2R, tr = (track || 0) * D2R;
-  const h = 1.003 + clamp(altFt || 0, 0, 45000) * 0.0000005;
-  gbN(lat, lon, 1, t.n);
-  t.e.set(-Math.sin(lo), 0, -Math.cos(lo));
-  t.no.set(-Math.sin(la) * Math.cos(lo), Math.cos(la), Math.sin(la) * Math.sin(lo));
-  t.f.copy(t.no).multiplyScalar(Math.cos(tr)).addScaledVector(t.e, Math.sin(tr));
-  t.x.crossVectors(t.f, t.n);
-  t.u.copy(t.n).multiplyScalar(scale);
-  out.makeBasis(t.x.multiplyScalar(scale), t.f.multiplyScalar(scale), t.u);
-  out.setPosition(t.n.x * h, t.n.y * h, t.n.z * h);
-  return out;
-}
-function gbLine(line, pts, lift) {
-  const T = GB.r.T, arr = new Float32Array(pts.length * 3), v = new T.Vector3();
-  pts.forEach((p, i) => { gbN(p.lat, p.lon, lift, v); arr[i * 3] = v.x; arr[i * 3 + 1] = v.y; arr[i * 3 + 2] = v.z; });
-  line.geometry.dispose(); line.geometry = new T.BufferGeometry(); line.geometry.setAttribute("position", new T.BufferAttribute(arr, 3));
-  if (line.computeLineDistances) line.computeLineDistances();
-}
-function gbRoute(a) {
-  const r = GB.r;
-  if (!a) { r.trail.visible = r.ahead.visible = false; GB.routeKey = ""; return; }
-  const rt = routeOf(a), key = a.hex + "|" + a.trail.length + "|" + (rt ? apCode(rt.destination) : "") + "|" + Math.round(performance.now() / 4000);
-  if (key === GB.routeKey) return;
-  GB.routeKey = key;
-  const here = { lat: a._gl ?? a.lat, lon: a._go ?? a.lon };
-  const tr = a.trail.concat([here]);
-  r.trail.visible = tr.length > 1; if (tr.length > 1) gbLine(r.trail, tr, 1.004);
-  r.ahead.visible = !!rt; if (rt) gbLine(r.ahead, gcPts(here.lat, here.lon, rt.destination.latitude, rt.destination.longitude), 1.004);
-}
-const _gbo = { lat: 0, lon: 0 };
-function gbSettle() {
-  // the globe was moved by hand: the flat map follows, so feeds and "Near you" use what you're looking at
-  setView(lonToU(GB.lon), latToV(clamp(GB.lat, -84, 84)), gbZ(GB.dist));
-  GB.key = `${V.u.toFixed(5)},${V.v.toFixed(5)}`; GB.zkey = V.z; dirty = true;
-  if (typeof viewSettled === "function") viewSettled();
-}
-function gbFrame(now) {
-  if (!GB.on) return;
-  GB.raf = requestAnimationFrame(gbFrame);
-  const r = GB.r, T = r.T;
-  if (GB.theme !== C.dark) { r.earthMat.map = gbTexture(T); r.earthMat.needsUpdate = true; GB.theme = C.dark; }
-  const dt = Math.min(50, now - (GB.lt || now)); GB.lt = now;
-  if (!GB.drag && GB.vel) {
-    if (`${V.u.toFixed(5)},${V.v.toFixed(5)}` !== GB.key) GB.vel = null;   // the app moved the map: it wins
-    else {
-      GB.lon += GB.vel.x * dt; GB.lat = clamp(GB.lat + GB.vel.y * dt, -80, 80);
-      const f = Math.exp(-dt / 170); GB.vel.x *= f; GB.vel.y *= f;
-      if (Math.abs(GB.vel.x) + Math.abs(GB.vel.y) < 0.0006) { GB.vel = null; gbSettle(); }
-    }
-  }
-  // the app moved the map (search, follow, locate, zoom buttons): turn the globe to match
-  if (!GB.drag && !GB.vel && !GB.pinch) {
-    const key = `${V.u.toFixed(5)},${V.v.toFixed(5)}`;
-    if (key !== GB.key) {
-      const c = toLatLon(V.u, V.v), dl = ((c.lon - GB.lon + 540) % 360) - 180, dlat = c.lat - GB.lat, ease = follow ? 0.35 : 0.16;
-      GB.lon += dl * ease; GB.lat += dlat * ease;
-      if (Math.abs(dl) < 0.01 && Math.abs(dlat) < 0.01) { GB.lon = c.lon; GB.lat = c.lat; GB.key = key; }
-    }
-    if (Math.abs(V.z - GB.zkey) > 0.01) { const d = gbD(V.z); GB.dist += (d - GB.dist) * 0.2; if (Math.abs(d - GB.dist) < 0.002) { GB.dist = d; GB.zkey = V.z; } }
-  }
-  gbN(GB.lat, GB.lon, GB.dist, r.camera.position); r.camera.up.set(0, 1, 0); r.camera.lookAt(0, 0, 0);
-  const sp = sunPos(Date.now()); gbN(sp.dec * R2D, sp.lon, 10, r.sun.position);
-  r.amb.intensity = C.dark ? 0.95 : 1.25; r.sun.intensity = C.dark ? 1.5 : 1.3;
-  const list = r.list; list.length = 0;
-  for (const a of acMap.values()) if (!a.ground && passes(a)) list.push(a);
-  for (const w of GB.world.values()) if (!acMap.has(w.hex) && !w.ground && passes(w)) list.push(w);
-  const scale = 5.5 * (GB.dist - 1) * GB.k / Math.max(400, innerHeight), m = r.tmp.m;
-  r.tmp.q.copy(r.camera.position).normalize();
-  let n = 0;
-  for (const a of list) {
-    if (n >= r.MAX) break;
-    const o = displayPos(a, now, _gbo);
-    a._gl = o.lat; a._go = o.lon;
-    gbPlaneMatrix(o.lat, o.lon, a.alt, a.track, a === selected ? 0 : scale, m);
-    r.fleet.setMatrixAt(n++, m);
-  }
-  r.fleet.count = n; r.fleet.instanceMatrix.needsUpdate = true;
-  r.fleet.material.color.set(C.accent || "#00f0ff"); r.trail.material.color.set(C.accent || "#00f0ff");
-  const s = selected && acMap.has(selected.hex) ? selected : null;
-  if (s) { const o = displayPos(s, now, _gbo); s._gl = o.lat; s._go = o.lon; r.sel.visible = true; gbPlaneMatrix(o.lat, o.lon, s.alt, s.track, scale * 1.7, r.sel.matrix); r.sel.matrixWorldNeedsUpdate = true; } else r.sel.visible = false;
-  gbRoute(s);
-  r.renderer.render(r.scene, r.camera);
-  gbLabels(s);
-}
-function gbProject(lat, lon, alt, out) {
-  const r = GB.r, v = r.tmp.p; gbN(lat, lon, 1.003 + clamp(alt || 0, 0, 45000) * 0.0000005, v);
-  const front = v.clone().normalize().dot(r.tmp.q) > 0.12;
-  v.project(r.camera); out.x = (v.x + 1) / 2 * innerWidth; out.y = (1 - v.y) / 2 * innerHeight; out.front = front;
-  return out;
-}
-function gbLabels(a) {
-  const cv = $("#gbLabels"), dpr = Math.min(2, window.devicePixelRatio || 1);
-  if (cv.width !== Math.round(innerWidth * dpr) || cv.height !== Math.round(innerHeight * dpr)) { cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr); }
-  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, innerWidth, innerHeight);
-  if (!a) return;
-  const p = gbProject(a._gl ?? a.lat, a._go ?? a.lon, a.alt, {}); if (!p.front) return;
-  const t = callOf(a), w = Math.ceil(textW(t, LBL_F1)) + 14, x = Math.round(p.x - w / 2), y = Math.round(p.y + 14);
-  g.fillStyle = "rgba(0,0,0,.3)"; roundRect(g, x, y + 1, w, 20, 6); g.fill();
-  g.fillStyle = C.alert; roundRect(g, x, y, w, 20, 6); g.fill();
-  g.font = LBL_F1; g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "alphabetic"; g.fillText(t, x + w / 2, y + 14);
-}
-function gbPick(cx, cy) {
-  let best = null, bd = 22 * 22;
-  const o = {};
-  for (const a of GB.r.list) {
-    gbProject(a._gl ?? a.lat, a._go ?? a.lon, a.alt, o); if (!o.front) continue;
-    const d = (o.x - cx) ** 2 + (o.y - cy) ** 2; if (d < bd) { bd = d; best = a; }
-  }
-  return best;
-}
-function gbTap(cx, cy) {
-  const w = gbPick(cx, cy);
-  if (!w) { if (selected) deselect(); return; }
-  let a = acMap.get(w.hex);
-  if (!a) { ingest([{ ...w }], "adsblol"); a = acMap.get(w.hex); }
-  if (a) select(a);
-}
-async function gbWorld() {
-  if (!GB.on || S.commercial) return;
-  GB_HUBS.forEach(([la, lo], i) => {
-    GB.timers.push(setTimeout(async () => {
-      if (!GB.on) return;
-      for (const src of ["adsblol", "adsbfi"]) {
-        try {
-          const j = await getJSON(SOURCES[src].point(la, lo, 250), 9000);
-          const now = performance.now();
-          for (const n of normalize(j)) { n.t0 = now; n.seen = now; n.errLat = 0; n.errLon = 0; n.trail = []; GB.world.set(n.hex, n); }
-          break;
-        } catch (e) {}
-      }
-    }, 800 + i * 1200));
-  });
-  const cut = performance.now() - 4 * 60000; for (const [k, w] of GB.world) if (w.seen < cut) GB.world.delete(k);
-  GB.timers.push(setTimeout(gbWorld, 75000));
-}
+const gbLive = () => GB.on && mlState === "ready" && !!ml;
 function gbButton() { setTimeout(updateChips); const b = $("#btnGlobe"); b.setAttribute("aria-pressed", String(GB.on)); b.setAttribute("aria-label", GB.on ? "Flat map" : "Globe view"); }
-async function enterGlobe(quiet) {
+function enterGlobe(quiet) {
   if (GB.on) return;
-  const T = await loadThree();
-  if (!T) { if (!quiet) toast("The globe needs WebGL, which isn't available here."); return; }
-  try { if (!GB.r) gbBuild(T); else GB.r.renderer.setSize(innerWidth, innerHeight, false); } catch (e) { if (!quiet) toast("The globe couldn't start on this device."); return; }
-  const c = toLatLon(V.u, V.v); GB.lat = clamp(c.lat, -80, 80); GB.lon = c.lon; GB.vel = null;
-  GB.dist = Math.max(gbD(V.z), 2.2);
-  if (V.z > gbZ(GB.dist)) setView(V.u, V.v, gbZ(GB.dist));
-  GB.zkey = V.z; GB.key = `${V.u.toFixed(5)},${V.v.toFixed(5)}`;
-  gbFov();
-  $("#globeView").hidden = false; GB.on = true; document.body.classList.add("globe-on"); S.globe = true; savePrefs(); gbButton();
-  GB.raf = requestAnimationFrame(gbFrame); gbWorld();
+  GB.on = true; S.globe = true; savePrefs(); document.body.classList.add("globe-on"); gbButton();
+  // if the street map failed earlier, the globe still works with the built-in map
+  if (mlState === "broken") { vecBroken = true; mlState = ml ? "loading" : "off"; mlStyleUrl = ""; }
+  layout(); ensureBasemap(); applyGlobe(); mlSync = ""; dirty = true; setTimeout(updateAttrib, 1500);
 }
 function exitGlobe() {
   if (!GB.on) return;
-  GB.on = false; cancelAnimationFrame(GB.raf); GB.timers.forEach(clearTimeout); GB.timers = [];
-  $("#globeView").hidden = true; document.body.classList.remove("globe-on"); S.globe = false; savePrefs(); gbButton();
-  setView(lonToU(GB.lon), latToV(clamp(GB.lat, -84, 84)), Math.max(V.z, 3)); BV.valid = false; dirty = true;
+  GB.on = false; S.globe = false; savePrefs(); document.body.classList.remove("globe-on"); gbButton();
+  applyGlobe(); ensureBasemap(); layout(); setView(V.u, V.v, Math.max(V.z, minZoom)); BV.valid = false; mlSync = ""; dirty = true; viewSettled(); updateAttrib();
 }
-addEventListener("resize", () => { if (GB.on && GB.r) { GB.r.renderer.setSize(innerWidth, innerHeight, false); gbFov(); } });
-/* Drag to rotate, pinch or scroll to zoom, tap a plane to open its card */
-(() => {
-  const el = $("#gbLabels"), pts = new Map();
-  el.addEventListener("pointerdown", (e) => {
-    el.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    GB.drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, lt: performance.now(), moved: false, v: null }; GB.vel = null;
-    if (pts.size === 2) { const [p, q] = [...pts.values()]; GB.pinch = { d: Math.hypot(p.x - q.x, p.y - q.y), dist: GB.dist }; GB.drag.moved = true; }
-  });
-  el.addEventListener("pointermove", (e) => {
-    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (GB.pinch && pts.size >= 2) { const [p, q] = [...pts.values()]; GB.dist = clamp(GB.pinch.dist * (GB.pinch.d / Math.max(20, Math.hypot(p.x - q.x, p.y - q.y))), GB_MIN, GB_MAX); return; }
-    const d = GB.drag; if (!d) return;
-    const dx = e.clientX - d.lx, dy = e.clientY - d.ly, tn = performance.now(), dtm = Math.max(8, tn - d.lt); d.lx = e.clientX; d.ly = e.clientY; d.lt = tn;
-    if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 6) d.moved = true;
-    if (!d.moved) return;
-    const k = (R2D * (GB.dist - 1) * GB.k) / Math.max(400, innerHeight), cl = Math.max(0.2, Math.cos(GB.lat * D2R));   // keeps the point under your finger
-    GB.lon -= (dx * k) / cl; GB.lat = clamp(GB.lat + dy * k, -80, 80);
-    const cap = 0.08, vx = clamp((-dx * k) / cl / dtm, -cap, cap), vy = clamp((dy * k) / dtm, -cap, cap);
-    d.v = d.v ? { x: d.v.x * 0.5 + vx * 0.5, y: d.v.y * 0.5 + vy * 0.5 } : { x: vx, y: vy };
-    if (follow) setFollow(false);
-  });
-  const up = (e) => {
-    pts.delete(e.pointerId);
-    if (pts.size < 2 && GB.pinch) { GB.pinch = null; gbSettle(); }
-    const d = GB.drag; if (!d || pts.size) return;
-    GB.drag = null;
-    if (!d.moved) { GB.vel = null; gbTap(e.clientX, e.clientY); return; }
-    // a flick keeps spinning briefly; a slow release stops where you let go
-    if (d.v && performance.now() - d.lt < 70 && Math.abs(d.v.x) + Math.abs(d.v.y) > 0.004) { GB.vel = d.v; GB.lt = performance.now(); }
-    else { GB.vel = null; gbSettle(); }
-  };
-  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
-  let wheelT = 0;
-  el.addEventListener("wheel", (e) => { e.preventDefault(); GB.dist = clamp(GB.dist * Math.exp(e.deltaY * 0.0012), GB_MIN, GB_MAX); clearTimeout(wheelT); wheelT = setTimeout(gbSettle, 250); }, { passive: false });
-  $("#btnGlobe").addEventListener("click", () => (GB.on ? exitGlobe() : enterGlobe()));
-  if (S.globe) setTimeout(() => enterGlobe(true), 400);
-})();
-
+$("#btnGlobe").addEventListener("click", () => (GB.on ? exitGlobe() : enterGlobe()));
+if (S.globe) setTimeout(() => enterGlobe(true), 300);
 
 /* ---------------- Alerts (bell) ----------------
    One place for anything worth knowing: emergency squawks, interesting planes near you,
@@ -5050,7 +4875,6 @@ function updateChips() {
   set("layers", typeof GB !== "undefined" && GB.on ? "Globe" : "Layers", 0, false, false);
 }
 setInterval(updateChips, 2000);
-
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
 let exState = "peek", exView = "home", savedTab = "flights", nearMore = false;
