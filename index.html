@@ -120,7 +120,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .notice b { display: block; font-weight: 700; margin-bottom: 1px; }
 .toast { position: fixed; z-index: 30; left: 50%; bottom: calc(var(--exv) + 14px); transform: translate(-50%, 8px); opacity: 0; transition: opacity .2s, transform .2s; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--font-ui); max-width: calc(100% - 32px); text-align: center; pointer-events: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
-.attrib { position: fixed; z-index: 5; left: max(12px, env(safe-area-inset-left)); bottom: calc(var(--exv) + 4px); font-size: 9.5px; color: var(--ink-3); pointer-events: none; text-shadow: 0 0 4px var(--bg); }
+.attrib { position: fixed; z-index: 5; left: max(12px, env(safe-area-inset-left)); bottom: calc(var(--exv) + 6px); padding: 2px 7px; border-radius: 7px; background: var(--panel); border: 1px solid var(--line); font: 500 10px/14px var(--font-ui); color: var(--ink-2); pointer-events: none; }
 
 /* Explore sheet */
 .explore {
@@ -710,12 +710,17 @@ select.sel { height: 40px; padding: 0 10px; border: 1px solid var(--line); borde
 .ex-top .me { background: var(--card-2) !important; color: var(--ink) !important; box-shadow: inset 0 0 0 1px var(--line) !important; }
 
 /* ---- Altitude key ---- */
-.alt-legend { position: fixed; z-index: 6; left: 12px; bottom: calc(var(--exv, 0px) + 30px); padding: 7px 9px 6px; border-radius: 12px; background: var(--panel); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid var(--line); width: 196px; pointer-events: none; transition: bottom .3s; }
+.map-keys { position: fixed; z-index: 6; left: 12px; right: 12px; bottom: calc(var(--exv, 0px) + 30px); display: flex; align-items: flex-end; gap: 6px; pointer-events: none; transition: bottom .3s; }
+.map-keys[hidden] { display: none; }
+.alt-legend { padding: 7px 9px 6px; border-radius: 12px; background: var(--panel); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid var(--line); width: 176px; flex: none; }
+.rd-legend { width: 150px; }
+.rd-legend .al-bar { grid-template-columns: repeat(8, 1fr); }
+.rd-legend .al-lab { display: flex; justify-content: space-between; }
 .al-t { display: block; font: 700 9.5px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 5px; }
 .al-bar { display: grid; grid-template-columns: repeat(7, 1fr); height: 7px; border-radius: 4px; overflow: hidden; }
 .al-lab { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 3px; font: 600 9.5px var(--font-ui); color: var(--ink-2); }
 .al-lab span { text-align: left; }
-@media (min-width: 900px) { .alt-legend { left: 416px; bottom: 30px; } }
+@media (min-width: 900px) { .map-keys { left: 416px; bottom: 30px; } }
 
 /* ---- Overhead card ---- */
 .overhead { margin: 14px 16px 0; }
@@ -822,6 +827,7 @@ body.three-d .fog3d { display: block; position: fixed; z-index: 2; left: 0; righ
 .h3-top .t span { font-size: 13px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .h3-top .xs { background: rgba(255, 255, 255, .14); color: #fff; }
 .h3-bot { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 12px); display: grid; gap: 8px; }
+.h3-attr { justify-self: start; padding: 2px 7px; border-radius: 7px; background: rgba(12, 12, 14, .72); font: 500 10px/14px var(--font-ui); color: rgba(255,255,255,.85); pointer-events: none; }
 .h3-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .h3-stats div { border-radius: 14px; background: rgba(12, 12, 14, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 9px 10px; color: #fff; display: grid; gap: 2px; min-width: 0; }
 .h3-stats small { font: 700 9.5px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
@@ -982,7 +988,7 @@ svg.i .f { fill: currentColor; stroke: none; }
 /* Globe view: MapLibre takes the gestures, our layer still draws the aircraft */
 body.globe-on #basemap { pointer-events: auto; background: #03060c; }
 body.globe-on #map { pointer-events: none; }
-body.globe-on .alt-legend { visibility: hidden; }
+body.globe-on #altLegend { display: none; }
 .ctrl[aria-pressed="true"] { color: var(--accent-t); }
 
 /* Compact always-visible part of the bottom sheet: slimmer handle, search and quick buttons */
@@ -1111,7 +1117,7 @@ body.globe-on .alt-legend { visibility: hidden; }
   </div>
 </section>
 <div class="attrib" id="attrib">Natural Earth</div>
-<div class="alt-legend" id="altLegend" hidden aria-label="Altitude colour key"></div>
+<div class="map-keys" id="mapKeys" hidden><div class="alt-legend" id="altLegend" hidden aria-label="Altitude colour key"></div><div class="alt-legend rd-legend" id="radarLegend" hidden aria-label="Rain radar colour key"></div></div>
 
 <div class="peek" id="peek" hidden role="region" aria-label="Selected flight">
   <div class="pk-head">
@@ -1291,6 +1297,7 @@ body.globe-on .alt-legend { visibility: hidden; }
 <div class="hud3d" id="hud3d" hidden>
   <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
   <div class="h3-bot">
+    <div class="h3-attr" id="h3Attr">Natural Earth</div>
     <div class="h3-stats"><div><small>Altitude</small><b id="h3Alt">—</b></div><div><small>Speed</small><b id="h3Spd">—</b></div><div><small>Heading</small><b id="h3Hdg">—</b></div><div><small>Climb</small><b id="h3Vs">—</b></div></div>
     <div class="h3-ctl"><button id="h3Out" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z"/></g></svg></button><button id="h3In" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></g></svg></button><div class="h3-cams" role="group" aria-label="Camera"><button data-cam="chase" aria-pressed="true">Chase</button><button data-cam="orbit" aria-pressed="false">Orbit</button><button data-cam="cockpit" aria-pressed="false">Cockpit</button></div><button class="exit" id="h3Exit">Exit</button></div>
   </div>
@@ -1661,7 +1668,7 @@ function ensureBasemap() {
     ml.on("move", (e) => {
       if (!GB.on) return;
       const cc = ml.getCenter();
-      if (e && e.originalEvent) { anim = null; inertia = null; if (follow) setFollow(false); }
+      if (e && e.originalEvent) { anim = null; inertia = null; if (follow && (ml.dragPan.isActive() || e.originalEvent.type === "mousemove")) setFollow(false); }
       setView(lonToU(cc.lng), latToV(clamp(cc.lat, -85, 85)), ml.getZoom() + 1);
       const c2 = toLatLon(V.u, V.v); mlSync = `${c2.lon.toFixed(7)},${c2.lat.toFixed(7)},${V.z.toFixed(4)}`; dirty = true;
     });
@@ -1710,15 +1717,16 @@ const STREETS_LIGHT = {
   aeroway_fill: { "fill-color": "#e6ebd8" },
   boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" },
 };
-function tintBasemap() {
-  if (!ml || !S.paper) return;
-  const set = mlStyleUrl === STYLES.vector.light ? MAP_LIGHT : mlStyleUrl === STYLES.streets.light ? STREETS_LIGHT : null;
+function tintMap(m, url) {
+  if (!m || !S.paper) return;
+  const set = url === STYLES.vector.light ? MAP_LIGHT : url === STYLES.streets.light ? STREETS_LIGHT : null;
   if (!set) return;
   for (const [id, props] of Object.entries(set)) {
-    if (!ml.getLayer(id)) continue;
-    for (const [k, v] of Object.entries(props)) { try { ml.setPaintProperty(id, k, v); } catch (e) {} }
+    if (!m.getLayer(id)) continue;
+    for (const [k, v] of Object.entries(props)) { try { m.setPaintProperty(id, k, v); } catch (e) {} }
   }
 }
+function tintBasemap() { tintMap(ml, mlStyleUrl); }
 function syncBasemap() {
   const c = toLatLon(V.u, V.v), key = `${c.lon.toFixed(7)},${c.lat.toFixed(7)},${V.z.toFixed(4)}`;
   if (key === mlSync) return;
@@ -2657,7 +2665,7 @@ cv.addEventListener("pointerdown", (e) => {
   if (pointers.size === 1) gesture = { type: "maybe", sx: e.clientX, sy: e.clientY, lx: e.clientX, ly: e.clientY, hist: [] };
   else if (pointers.size === 2) {
     const [a, b] = [...pointers.values()];
-    gesture = { type: "pinch", d0: Math.hypot(a.x - b.x, a.y - b.y), z0: V.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+    gesture = { type: "pinch", d0: Math.hypot(a.x - b.x, a.y - b.y), z0: V.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, sx: (a.x + b.x) / 2, sy: (a.y + b.y) / 2 };
   }
 });
 cv.addEventListener("pointermove", (e) => {
@@ -2667,12 +2675,14 @@ cv.addEventListener("pointermove", (e) => {
   if (gesture.type === "pinch") {
     if (pointers.size < 2) return;
     const [a, b] = [...pointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    // a pinch that stays put zooms around the followed plane; dragging it moves the map and stops following
+    if (follow && Math.hypot(mx - gesture.sx, my - gesture.sy) > 24) setFollow(false);
     setView(V.u - (mx - gesture.mx) / V.ws, V.v - (my - gesture.my) / V.ws, V.z);
     gesture.mx = mx; gesture.my = my;
     if (d > 10 && gesture.d0 > 10) zoomAt(gesture.z0 + Math.log2(d / gesture.d0), mx, my);
     return;
   }
-  if (gesture.type === "maybe" && Math.hypot(e.clientX - gesture.sx, e.clientY - gesture.sy) > 6) { gesture.type = "pan"; setFollow(false); cv.classList.add("dragging"); }
+  if ((gesture.type === "maybe" || gesture.type === "rest") && Math.hypot(e.clientX - gesture.sx, e.clientY - gesture.sy) > 6) { gesture.type = "pan"; setFollow(false); cv.classList.add("dragging"); }
   if (gesture.type === "pan") {
     const dx = e.clientX - gesture.lx, dy = e.clientY - gesture.ly, t = performance.now();
     gesture.lx = e.clientX; gesture.ly = e.clientY;
@@ -2695,10 +2705,10 @@ function pointerEnd(e) {
       const vx = h.reduce((s, x) => s + x[1], 0) / Math.max(16, span), vy = h.reduce((s, x) => s + x[2], 0) / Math.max(16, span);
       if (!reduceMotion && Math.hypot(vx, vy) > 0.25 && performance.now() - (h.length ? h[h.length - 1][0] : 0) < 60) inertia = { vx, vy, t: performance.now() };
       else viewSettled();
-    } else if (gesture && gesture.type === "pinch") viewSettled();
+    } else if (gesture && (gesture.type === "pinch" || gesture.type === "rest")) viewSettled();
     gesture = null; cv.classList.remove("dragging");
   } else if (pointers.size === 1 && gesture && gesture.type === "pinch") {
-    const [p] = [...pointers.values()]; gesture = { type: "pan", lx: p.x, ly: p.y, hist: [] };
+    const [p] = [...pointers.values()]; gesture = { type: "rest", sx: p.x, sy: p.y, lx: p.x, ly: p.y, hist: [] };
   }
   dirty = true;
 }
@@ -2739,7 +2749,7 @@ for (const b of document.querySelectorAll("[data-close]")) b.addEventListener("c
   if (openSheet === "detail" && selected) { showSheet(null); showPeek(true); return; }
   deselect();
 });
-function setRadar(on) { S.radar = on; savePrefs(); $("#tabWeather").setAttribute("aria-pressed", String(on)); updateAttrib(); dirty = true; if (on) { radar.broken = false; radar.errs = 0; loadRadar(); } }
+function setRadar(on) { S.radar = on; savePrefs(); $("#tabWeather").setAttribute("aria-pressed", String(on)); updateAttrib(); syncAltLegend(); dirty = true; if (on) { radar.broken = false; radar.errs = 0; loadRadar().then(syncAltLegend, () => {}); } }
 $("#tabWeather").addEventListener("click", () => { setRadar(!S.radar); setTimeout(updateChips); toast(S.radar ? "Weather radar on · last 10 minutes, from RainViewer" : "Weather radar off"); });
 function openTab(id) {
   if (openSheet === id) { closeSheets(); return; }
@@ -3891,7 +3901,15 @@ const altStyle = (alt) => { const v = alt || 0; for (let i = 0; i < ALT_BANDS.le
 function shade(hex, k) { const n = parseInt(hex.slice(1), 16); const f = (x) => Math.max(0, Math.min(255, Math.round(x * k))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; }
 function altTones(i) { const c = ALT_BANDS[i][1]; return { body: c, edgeTone: shade(c, 0.76), wing: shade(c, 0.87), eng: shade(c, 0.36), edge: "rgba(0,0,0,.9)", prop: c }; }
 (() => { const el = $("#altLegend"); el.innerHTML = `<span class="al-t">Altitude (ft)</span><div class="al-bar">${ALT_BANDS.map((b) => `<i style="background:${b[1]}"></i>`).join("")}</div><div class="al-lab">${ALT_BANDS.map((b) => `<span>${b[2]}</span>`).join("")}</div>`; })();
-function syncAltLegend() { $("#altLegend").hidden = !(S.altColor && !openSheet && !threeD && !skyOpen && !peekOpen()); }
+/* Rain radar key: RainViewer's "Universal Blue" colours, light rain to severe */
+(() => { const cols = ["#88ddee", "#0099cc", "#005588", "#ffee00", "#ffaa00", "#ff4400", "#c10000", "#ff77ff"]; $("#radarLegend").innerHTML = `<span class="al-t">Rain radar</span><div class="al-bar">${cols.map((c) => `<i style="background:${c}"></i>`).join("")}</div><div class="al-lab"><span>Light</span><span>Moderate</span><span>Heavy</span></div>`; })();
+function syncAltLegend() {
+  const free = !openSheet && !threeD && !skyOpen && !peekOpen();
+  const alt = $("#altLegend"), rd = $("#radarLegend");
+  alt.hidden = !(S.altColor && free);
+  rd.hidden = !(S.radar && radar.path && !radar.broken && free);
+  $("#mapKeys").hidden = alt.hidden && rd.hidden;
+}
 
 /* ---- Your location ---- */
 let myLoc = S.myLoc && Date.now() - (S.myLoc.at || 0) < 7 * 864e5 ? { ...S.myLoc } : null;
@@ -4401,6 +4419,138 @@ function groundCanvas() {
   }
   return c;
 }
+/* The real map on the 3D ground: the style the user picked (Map, Streets, CARTO or built-in), drawn by a
+   hidden MapLibre map and laid flat under the planes. A wide patch reaches the horizon and a sharper
+   patch follows the selected plane, a little ahead of it. Until they arrive the outline ground shows. */
+const GM = { map: null, key: "", busy: false, vecFail: false, fails: 0, at: 0, gen: 0 };
+const GM_CSS = 1024, GM_NEAR = 150;
+function groundStyle(keyOnly) {
+  const st = STYLES[S.style] || STYLES.outline;
+  if (st.vector && !vecBroken && !GM.vecFail) { const u = st[S.paper ? "light" : "dark"]; return { key: u, style: u }; }
+  if (S.style === "dark" && S.cartoKey && !tilesBroken) return { key: `carto:${S.paper}:${S.cartoKey}`, style: keyOnly ? null : cartoGlobeStyle() };
+  return { key: `builtin:${S.paper}`, style: keyOnly ? null : builtinGlobeStyle() };
+}
+function mlLib() {
+  if (window.maplibregl) return Promise.resolve(true);
+  return new Promise((res) => {
+    if (!mlScript) {
+      mlScript = true; const sc = document.createElement("script"); sc.src = ML_JS;
+      sc.onload = () => res(!!window.maplibregl); sc.onerror = () => { mlScript = false; res(false); };
+      document.head.appendChild(sc); return;
+    }
+    let n = 0; const iv = setInterval(() => { if (window.maplibregl || ++n > 80) { clearInterval(iv); res(!!window.maplibregl); } }, 250);
+  });
+}
+async function gmEnsure() {
+  if (GM.map) return GM.map;
+  if (!(await mlLib())) return null;
+  if (GM.map) return GM.map;
+  const div = document.createElement("div");
+  div.setAttribute("aria-hidden", "true");
+  div.style.cssText = `position:fixed;left:-${GM_CSS + 400}px;top:0;width:${GM_CSS}px;height:${GM_CSS}px;pointer-events:none;overflow:hidden`;
+  document.body.appendChild(div);
+  const gs = groundStyle(); GM.key = gs.key; GM.styleErr = false;
+  try {
+    GM.map = new maplibregl.Map({ container: div, style: gs.style, center: [0, 0], zoom: 2, interactive: false, attributionControl: false, pixelRatio: 2, fadeDuration: 0,
+      renderWorldCopies: true, maxZoom: 20, canvasContextAttributes: { preserveDrawingBuffer: true, antialias: false }, preserveDrawingBuffer: true });
+  } catch (e) { div.remove(); return null; }
+  GM.map.on("style.load", () => tintMap(GM.map, GM.key));
+  GM.map.on("error", (e) => { if (!(e && (e.sourceId || e.tile))) GM.styleErr = true; });
+  return GM.map;
+}
+function gmSetStyle(m, gs) { GM.key = gs.key; GM.styleErr = false; m.setStyle(gs.style); }
+async function gmWaitStyle(m, ms) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) {
+    if (m.style && m.style._loaded) return true;
+    if (GM.styleErr) return false;
+    await sleep(100);
+  }
+  return false;
+}
+async function gmRender(lat, lon, km) {
+  const m = await gmEnsure(); if (!m) return null;
+  let gs = groundStyle(true);
+  if (gs.key !== GM.key) gmSetStyle(m, groundStyle());
+  let ok = await gmWaitStyle(m, 12000);
+  if (!ok && GM.key.startsWith("http")) { GM.vecFail = true; gmSetStyle(m, groundStyle()); ok = await gmWaitStyle(m, 8000); }
+  if (!ok) return null;
+  const z = Math.log2((40075016.686 * Math.cos(lat * D2R) * GM_CSS) / (512 * km * 1000));
+  m.jumpTo({ center: [lon, lat], zoom: z, bearing: 0, pitch: 0 });
+  await new Promise((res) => { let done = false; const fin = () => { if (!done) { done = true; clearTimeout(t); res(); } }; const t = setTimeout(fin, 10000); m.once("idle", fin); m.triggerRepaint(); });
+  const src = m.getCanvas(), N = src.width; if (!N) return null;
+  const c = document.createElement("canvas"); c.width = c.height = N;
+  c.getContext("2d").drawImage(src, 0, 0, N, N);
+  const span = GM_CSS / (512 * Math.pow(2, z)), u = lonToU(lon), v = latToV(lat);
+  return { canvas: c, u0: u - span / 2, u1: u + span / 2, v0: v - span / 2, v1: v + span / 2, lat, lon, key: GM.key };
+}
+/* the patch as a mesh: vertices placed by their real position, the picture mapped in Web Mercator */
+function gmGeo(T, P, seg) {
+  const n = seg + 1, pos = new Float32Array(n * n * 3), uv = new Float32Array(n * n * 2), idx = [], o = { x: 0, y: 0, z: 0 };
+  for (let j = 0, k = 0; j <= seg; j++) for (let i = 0; i <= seg; i++, k++) {
+    const ll = toLatLon(P.u0 + (P.u1 - P.u0) * i / seg, P.v0 + (P.v1 - P.v0) * j / seg);
+    enu(ll.lat, ll.lon, 0, o); pos[k * 3] = o.x; pos[k * 3 + 1] = 0; pos[k * 3 + 2] = o.z; uv[k * 2] = i / seg; uv[k * 2 + 1] = 1 - j / seg;
+  }
+  for (let j = 0; j < seg; j++) for (let i = 0; i < seg; i++) { const a = j * n + i, b = a + 1, c = a + n, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const g = new T.BufferGeometry();
+  g.setAttribute("position", new T.BufferAttribute(pos, 3)); g.setAttribute("uv", new T.BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+const GM_SEG = { far: 28, near: 14 };
+function gmFade(c) {
+  const g = c.getContext("2d"), N = c.width;
+  g.globalCompositeOperation = "destination-in";
+  for (const hz of [true, false]) {
+    const gr = hz ? g.createLinearGradient(0, 0, N, 0) : g.createLinearGradient(0, 0, 0, N);
+    gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(0.2, "#000"); gr.addColorStop(0.8, "#000"); gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, N, N);
+  }
+  g.globalCompositeOperation = "source-over";
+}
+function gmApply(P, which) {
+  const r = GL.r, T = GL.THREE; if (!r || !P) return;
+  if (which === "near") gmFade(P.canvas);
+  const tex = new T.CanvasTexture(P.canvas); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = r.renderer.capabilities.getMaxAnisotropy();
+  const mat = new T.MeshBasicMaterial({ map: tex, transparent: which === "near", depthWrite: false, depthTest: which === "near", side: T.DoubleSide });
+  const slot = which === "near" ? "gNear" : "gFar", old = r[slot];
+  if (old) { r.scene.remove(old); old.geometry.dispose(); old.material.map.dispose(); old.material.dispose(); }
+  const mesh = new T.Mesh(gmGeo(T, P, GM_SEG[which]), mat);
+  mesh.renderOrder = which === "near" ? -9 : -10; mesh.frustumCulled = false; mesh.userData.P = P;
+  r.scene.add(mesh); r[slot] = mesh;
+  if (which === "far") r.ground.visible = false;
+  gmAttrib();
+}
+function gmRelayout() {
+  const r = GL.r, T = GL.THREE; if (!r) return;
+  for (const slot of ["gFar", "gNear"]) { const m = r[slot]; if (!m) continue; m.geometry.dispose(); m.geometry = gmGeo(T, m.userData.P, GM_SEG[slot === "gFar" ? "far" : "near"]); }
+}
+function gmAttrib() {
+  const r = GL.r, k = r && (r.gFar || r.gNear) && (r.gFar || r.gNear).visible ? (r.gFar || r.gNear).userData.P.key : "builtin";
+  $("#h3Attr").textContent = k.startsWith("http") ? "OpenFreeMap © OpenMapTiles · Data © OpenStreetMap" : k.startsWith("carto") ? "© OpenStreetMap contributors © CARTO" : "Natural Earth";
+}
+const _og = { lat: 0, lon: 0 };
+function gmTick(now, a0) {
+  const r = GL.r; if (!r || GM.busy || now - GM.at < 900 || GM.fails >= 3) return;
+  GM.at = now;
+  const key = groundStyle(true).key, nP = r.gNear && r.gNear.userData.P, fP = r.gFar && r.gFar.userData.P;
+  // a different map style or theme: hide the old pictures until the new ones are drawn
+  if (r.gNear && nP.key !== key && r.gNear.visible) r.gNear.visible = false;
+  if (r.gFar && fP.key !== key && r.gFar.visible) { r.gFar.visible = false; r.ground.visible = true; gmAttrib(); }
+  displayPos(a0, now, _og);
+  const hd = (a0.track || 0) * D2R, ahead = a0.ground ? 0 : 25;
+  const nlat = clamp(_og.lat + (Math.cos(hd) * ahead) / KM_LAT, -84, 84), nlon = _og.lon + (Math.sin(hd) * ahead) / (KM_LON * Math.cos(_og.lat * D2R));
+  let job = null;
+  if (!nP || nP.key !== key || distNm(nP.lat, nP.lon, nlat, nlon) * 1.852 > 35) job = ["near", nlat, nlon, GM_NEAR];
+  else if (!fP || fP.key !== key || fP.lat !== GL.O.lat || fP.lon !== GL.O.lon) job = ["far", GL.O.lat, GL.O.lon, GR * 2];
+  if (!job) return;
+  GM.busy = true; const gen = GM.gen;
+  gmRender(job[1], job[2], job[3]).then((P) => {
+    GM.busy = false;
+    if (!P) { GM.fails++; return; }
+    GM.fails = 0;
+    if (GL.on && gen === GM.gen && P.key === groundStyle(true).key) { gmApply(P, job[0]); const m = GL.r[job[0] === "near" ? "gNear" : "gFar"]; m.visible = true; }
+  }).catch(() => { GM.busy = false; GM.fails++; });
+}
 function glBuild(T) {
   const host = $("#view3d");
   const renderer = new T.WebGLRenderer({ canvas: $("#gl3d"), antialias: true, powerPreference: "high-performance" });
@@ -4414,8 +4564,8 @@ function glBuild(T) {
   const sun = new T.DirectionalLight(0xffffff, 1.4); sun.position.set(-0.5, 1, 0.3); scene.add(sun);
   // ground
   const tex = new T.CanvasTexture(groundCanvas()); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  const ground = new T.Mesh(new T.PlaneGeometry(GR * 2, GR * 2), new T.MeshBasicMaterial({ map: tex }));
-  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  const ground = new T.Mesh(new T.PlaneGeometry(GR * 2, GR * 2), new T.MeshBasicMaterial({ map: tex, depthWrite: false, depthTest: false }));
+  ground.rotation.x = -Math.PI / 2; ground.renderOrder = -11; scene.add(ground);
   // aircraft: one instanced mesh for everyone, one mesh for the selected plane
   const geo = planeGeometry(T);
   const mat = new T.MeshLambertMaterial({ color: 0xffffff, vertexColors: true });
@@ -4436,6 +4586,7 @@ function glRecentre(lat, lon) {
   glOrigin(lat, lon);
   const r = GL.r; if (!r) return;
   groundCanvas(); r.tex.needsUpdate = true; GL.rs.clear();
+  gmRelayout();
 }
 const PLANE_COLORS = new Map();
 function planeColor(a) {
@@ -4473,6 +4624,7 @@ function glFrame(t) {
   displayPos(a0, now, _o);
   if (distNm(GL.O.lat, GL.O.lon, _o.lat, _o.lon) > 80) glRecentre(_o.lat, _o.lon);
   const S0 = glState(a0, now, dt);
+  gmTick(now, a0);
   // aircraft
   const cam = r.camera, cp = cam.position, d = r.dummy, list = [];
   let n = 0, nn = 0, nf = 0;
@@ -4557,13 +4709,13 @@ async function enterGL() {
     if (!GL.r) glBuild(T); else { glRecentre(_o.lat, _o.lon); GL.r.renderer.setSize(innerWidth, innerHeight, false); }
     $("#view3d").hidden = false; GL.on = true; GL.camInit = false; GL.last = 0; GL.yaw = 0; GL.pitch = 0.32; GL.dist = 9;
     GL.z0 = V.z; setView(V.u, V.v, 7.2); // wider live-data area around the plane
-    setMode3D(GL.mode); GL.raf = requestAnimationFrame(glFrame);
+    setMode3D(GL.mode); GM.fails = 0; GM.at = 0; gmAttrib(); GL.raf = requestAnimationFrame(glFrame);
     return true;
   } catch (e) { GL.failed = true; return false; }
 }
 function exitGL() {
   if (!GL.on) return;
-  GL.on = false; cancelAnimationFrame(GL.raf); $("#view3d").hidden = true;
+  GL.on = false; GM.gen++; cancelAnimationFrame(GL.raf); $("#view3d").hidden = true;
   setView(V.u, V.v, Math.max(GL.z0, 8));
 }
 function setMode3D(m) {
