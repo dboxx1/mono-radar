@@ -120,7 +120,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .notice b { display: block; font-weight: 700; margin-bottom: 1px; }
 .toast { position: fixed; z-index: 30; left: 50%; bottom: calc(var(--exv) + 14px); transform: translate(-50%, 8px); opacity: 0; transition: opacity .2s, transform .2s; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font: 600 13px var(--font-ui); max-width: calc(100% - 32px); text-align: center; pointer-events: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
-.attrib { position: fixed; z-index: 5; left: max(12px, env(safe-area-inset-left)); bottom: calc(var(--exv) + 6px); padding: 2px 7px; border-radius: 7px; background: var(--panel); border: 1px solid var(--line); font: 500 10px/14px var(--font-ui); color: var(--ink-2); pointer-events: none; }
+.attrib { position: fixed; z-index: 5; left: max(12px, env(safe-area-inset-left)); bottom: calc(var(--exv) + 6px); padding: 2px 7px; border-radius: 7px; background: var(--panel); border: 1px solid var(--line); font: 500 9.5px/14px var(--font-ui); color: var(--ink-2); pointer-events: none; }
 
 /* Explore sheet */
 .explore {
@@ -827,7 +827,7 @@ body.three-d .fog3d { display: block; position: fixed; z-index: 2; left: 0; righ
 .h3-top .t span { font-size: 13px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .h3-top .xs { background: rgba(255, 255, 255, .14); color: #fff; }
 .h3-bot { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 12px); display: grid; gap: 8px; }
-.h3-attr { justify-self: start; padding: 2px 7px; border-radius: 7px; background: rgba(12, 12, 14, .72); font: 500 10px/14px var(--font-ui); color: rgba(255,255,255,.85); pointer-events: none; }
+.h3-attr { justify-self: start; padding: 2px 7px; border-radius: 7px; background: rgba(12, 12, 14, .72); font: 500 9.5px/14px var(--font-ui); color: rgba(255,255,255,.85); pointer-events: none; }
 .h3-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .h3-stats div { border-radius: 14px; background: rgba(12, 12, 14, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 9px 10px; color: #fff; display: grid; gap: 2px; min-width: 0; }
 .h3-stats small { font: 700 9.5px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
@@ -1041,6 +1041,16 @@ body.globe-on #altLegend { display: none; }
 .chips-row .qt.hot .qi svg { animation: chipPulse 1.6s ease-in-out infinite; }
 @keyframes chipPulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .chips-row .qt.hot .qi svg { animation: none; } }
+/* ---- One gutter everywhere: sheet content, card headers and photo headers all sit var(--gut) from the edge ---- */
+.pk-main { padding-left: var(--gut); }
+.pk-grid { padding: 8px var(--gut); }
+.peek .xs { top: 12px; right: var(--gut); }
+.hero-text { left: var(--gut); right: var(--gut); }
+.hero .x { top: 12px; right: var(--gut); }
+.hero-cap { left: var(--gut); top: 22px; max-width: calc(100% - var(--gut) * 2 - 48px); }
+@media (min-width: 900px) { .pk-grid { padding: 4px var(--gut) var(--gut); } }
+.vtitle { margin-left: var(--gut); margin-right: var(--gut); }
+.vsub { margin-left: 0; margin-right: 0; }
 </style>
 </head>
 <body>
@@ -1240,7 +1250,7 @@ body.globe-on #altLegend { display: none; }
     <div>
       <h3>Base map</h3>
       <div class="styles" id="styles"></div>
-      <p class="small muted" id="tileNote" style="margin:10px 2px 0"></p>
+      <p class="small muted" id="tileNote" style="margin:10px 0 0"></p>
       <div class="field" id="keyField" style="margin-top:8px" hidden><input id="cartoKey" type="text" placeholder="CARTO basemaps API key" spellcheck="false" autocomplete="off" aria-label="CARTO basemaps API key"><button class="btn" id="btnKey">Save</button></div>
     </div>
     <div>
