@@ -2433,7 +2433,7 @@ function drawSelected(g, now) {
   g.lineCap = "round"; g.lineJoin = "round";
   if (rt) {
     const dash = (pts, alpha) => {
-      g.setLineDash([]); g.strokeStyle = C.dark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.75)"; g.globalAlpha = alpha; g.lineWidth = 5; g.beginPath(); polyPath(g, pts); g.stroke();
+      g.globalAlpha = alpha; g.lineCap = "round";
       g.strokeStyle = C.alert; g.lineWidth = 2.4; g.setLineDash([7, 6]); g.beginPath(); polyPath(g, pts); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
     };
     // ahead: great-circle to the destination
@@ -2451,8 +2451,7 @@ function drawSelected(g, now) {
       pts[pts.length - 1].alt = a.alt;
     } else pts = a.trail.concat([{ lat: a._lat, lon: a._lon, alt: a.alt }]);
     if (pts.length > 1) {
-      g.strokeStyle = C.bg; g.globalAlpha = 0.6; g.lineWidth = 8; g.beginPath(); polyPath(g, pts); g.stroke();
-      g.lineWidth = 3.4; g.globalAlpha = 1;
+      g.lineWidth = 3; g.globalAlpha = 1; g.lineCap = "round";
       let px = null, py = null;
       for (const p of pts) {
         toScreen(p.lat, p.lon, tmp);
