@@ -1267,6 +1267,10 @@ body.globe-on #altLegend { display: none; }
 .sec > header { padding-bottom: 10px; }
 .tg { padding: 10px var(--pad); }
 .group .row, .group > button { padding-left: var(--pad); padding-right: var(--pad); }
+/* airport menu chips (shown in place of the smart chips when zoomed in on an airport) */
+.ap-chips .ap-id { background: var(--gl-acc); border-color: var(--gl-acc-b); color: var(--gl-acc-t); }
+.ap-chips .ap-id .ql b { font-weight: 800; letter-spacing: .02em; margin-right: 2px; }
+.ap-chips .ql { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1310,6 +1314,7 @@ body.globe-on #altLegend { display: none; }
   </div>
   <div class="ex-body" id="exBody">
     <div id="exHome">
+      <div class="quick chips-row ap-chips" id="apQuick" hidden aria-label="Airport menu"></div>
       <div class="quick chips-row" id="quick">
         <button class="qt" data-chip="alerts" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg><span class="badge" id="emergBadge" hidden>0</span></span><span class="ql">Alerts</span><span class="qn"></span></button>
         <button class="qt" data-chip="weather" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg></span><span class="ql">Weather</span><span class="qn"></span></button>
@@ -2531,8 +2536,62 @@ function covered() {
   return pts.every((p) => cov.circles.some((c) => distNm(c.lat, c.lon, p.lat, p.lon) <= c.r));
 }
 let settleTimer;
+/* ---- Airport context: zoomed in on an airport, the chip row becomes that airport's menu ----
+   Info, arrivals, departures, weather, ATC, delays and save, each opening the airport sheet where it belongs. */
+let focusAp = null, apChipsKey = "";
+function nearAirport() {
+  if (V.z < 11 || threeD) return null;
+  const c = toLatLon(V.u, V.v), lim = V.z >= 12.5 ? 3 : 5;
+  let best = null, bd = 1e9;
+  for (const ap of AIRPORTS) { const d = distNm(c.lat, c.lon, ap[4], ap[5]); if (d < bd) { bd = d; best = ap; } }
+  return bd < lim ? best : null;
+}
+const APC = (d) => `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="${d}"/></g></svg>`;
+const APC_I = {
+  ap: "M235.58,128.84,160,91.06V48a32,32,0,0,0-64,0V91.06L20.42,128.84A8,8,0,0,0,16,136v32a8,8,0,0,0,9.57,7.84L96,161.76v18.93L82.34,194.34A8,8,0,0,0,80,200v32a8,8,0,0,0,11,7.43l37-14.81,37,14.81A8,8,0,0,0,176,232V200a8,8,0,0,0-2.34-5.66L160,180.69V161.76l70.43,14.08A8,8,0,0,0,240,168V136A8,8,0,0,0,235.58,128.84Z",
+  arr: "M256,216a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16H248A8,8,0,0,1,256,216Zm-24-48a8,8,0,0,0,8-8V128a39.83,39.83,0,0,0-24.27-36.82L180,77.85,151.84,25.62a16,16,0,0,0-10.77-8.25,15.9,15.9,0,0,0-13.39,2.94,16.14,16.14,0,0,0-6.08,12.89L121.52,66l-27-11.3L69.66,11.55A16,16,0,0,0,40,18.42V93.24a39.89,39.89,0,0,0,28.41,38.29L227.7,167.66A8.27,8.27,0,0,0,232,168Z",
+  dep: "M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z",
+  wx: "M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z",
+  atc: "M232,136v64a32,32,0,0,1-32,32H184a32,32,0,0,1-32-32V160a32,32,0,0,1,32-32h31.12A87.61,87.61,0,0,0,128,48h-1.16a87.62,87.62,0,0,0-86,80H72a32,32,0,0,1,32,32v40a32,32,0,0,1-32,32H56a32,32,0,0,1-32-32V136A104.12,104.12,0,0,1,126.82,32H128A104,104,0,0,1,232,136Z",
+  dly: "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z",
+};
+function renderApChips() {
+  const ap = focusAp; if (!ap) return;
+  airportWx(ap);
+  const t = airportTraffic(ap), w = wxCache.get(ap[0]), saved = S.saved.airports.includes(ap[0]);
+  const hold = holdingAt(ap).length, f = faaFor(ap), red = f.some((e) => e.k === "closed" || e.k === "stop");
+  const dly = red ? "Ground stop" : f.length ? "Delays" : hold >= 3 ? `${hold} holding` : "";
+  const chip = (go, icon, label, n, cls) => `<button class="qt${cls ? " " + cls : ""}" data-apgo="${go}"><span class="qi">${APC(icon)}</span><span class="ql">${label}</span><span class="qn">${n || ""}</span></button>`;
+  const html = chip("overview", APC_I.ap, `<b>${esc(ap[1] || ap[0])}</b> ${esc(shortApName(ap))}`, "", "ap-id")
+    + (dly ? chip("overview", APC_I.dly, esc(dly), "", "hot") : "")
+    + chip("arr", APC_I.arr, "Arrivals", t.arr.length)
+    + chip("dep", APC_I.dep, "Departures", t.dep.length)
+    + chip("weather", APC_I.wx, w && w.cur ? `${Math.round(w.cur.temperature_2m)}° · ${esc(WMO(w.cur.weather_code))}` : "Weather", "")
+    + chip("atc", APC_I.atc, "ATC", "")
+    + `<button class="qt${saved ? " on" : ""}" data-apsave aria-pressed="${saved}"><span class="qi">${STAR_SVG(saved)}</span><span class="ql">${saved ? "Saved" : "Save"}</span><span class="qn"></span></button>`;
+  if (html !== apChipsKey) { apChipsKey = html; $("#apQuick").innerHTML = html; }
+}
+const shortApName = (ap) => String(ap[2] || "").replace(/\b(International|Intl\.?|Airport|Regional)\b/gi, "").replace(/\s{2,}/g, " ").trim().split(/[-–(]/)[0].trim();
+function syncApChips() {
+  const ap = nearAirport();
+  if (ap !== focusAp) { focusAp = ap; apChipsKey = ""; if (ap) $("#apQuick").scrollLeft = 0; }
+  $("#apQuick").hidden = !focusAp; $("#quick").hidden = !!focusAp;
+  if (focusAp) renderApChips();
+}
+setInterval(() => { if (focusAp && !document.hidden) renderApChips(); }, 5000);
+$("#apQuick").addEventListener("click", (e) => {
+  const ap = focusAp; if (!ap) return;
+  const sv = e.target.closest("[data-apsave]");
+  if (sv) { const i = S.saved.airports.indexOf(ap[0]); if (i >= 0) { S.saved.airports.splice(i, 1); toast(`Removed ${ap[1] || ap[0]}`); } else { S.saved.airports.unshift(ap[0]); toast(`Saved ${ap[2]}`); } savePrefs(); savedBadge(); updateChips(); renderApChips(); return; }
+  const g = e.target.closest("[data-apgo]"); if (!g) return;
+  const go = g.dataset.apgo;
+  openAirport(ap);
+  if (go === "arr" || go === "dep") { boardTab = go; setATab("flights"); }
+  else if (go !== "overview") setATab(go);
+  renderAirport();
+});
 function viewSettled() {
-  savePrefs(); hud(); setTimeout(() => renderExplore(true), 600);
+  savePrefs(); hud(); setTimeout(() => renderExplore(true), 600); setTimeout(syncApChips, 0);
   clearTimeout(settleTimer);
   settleTimer = setTimeout(() => {
     if (feed.mode === "sim") { simFill(); return; }
