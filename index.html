@@ -1184,6 +1184,35 @@ body.globe-on #altLegend { display: none; }
 .live .lg span { display: inline-flex; align-items: center; gap: 6px; }
 .live .lg i { width: 8px; height: 8px; border-radius: 3px; background: var(--card-2); box-shadow: inset 0 0 0 1px var(--line); }
 .live .lg i.a { background: var(--accent); box-shadow: none; }
+/* ==== Spacing system: one gutter everywhere ====
+   The gap between cards equals the sheet's side padding (--gut), and a card's padding plus its 1px border
+   is one gutter too, so every edge in a sheet sits on the same 16px rhythm. */
+:root { --gap: var(--gut); --pad: calc(var(--gut) - 1px); }
+.sheet-body, .vpad { gap: var(--gap); }
+.card, .sf, .live .stat, .stats div.pri { padding: var(--pad); }
+.live, .ngrid, .styles, .stats { gap: var(--gap); }
+.rail { gap: var(--gap); }
+/* flight card (peek) */
+.pk-main { padding: var(--gut) 10px var(--gut) var(--gut); }
+.pk-grid { gap: var(--gap); padding: var(--gut); }
+.pk-grid .pk-route, .pk-grid .pk-side, .pk-cell { padding: var(--pad); }
+@media (min-width: 900px) { .pk-grid { padding: var(--gut); } .pk-grid .pk-route, .pk-grid .pk-side { padding: var(--pad); } }
+/* flight sheet: squawk, hex, updated and feed share one card */
+.stats .srow { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0; border-radius: 16px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+.stats .srow > div { border: 0; border-radius: 0; background: none; padding: 12px var(--pad); min-width: 0; }
+.stats .srow > div + div { border-left: 1px solid var(--line); }
+.stats .srow > div:first-child { padding-left: var(--pad); }
+.stats .srow dd { font-size: 14px; }
+/* airport sheet: sections in a bottom tab bar, like the flight card's action bar */
+#sheet-airport .sheet-body { padding-bottom: var(--gut); }
+.tabbar { grid-template-columns: repeat(4, 1fr); position: relative; isolation: isolate; --liq-in: 6px; --liq-in-y: 5px; --liq-r: 16px; }
+.tabbar > button { position: relative; z-index: 1; color: var(--ink-2); transition: color .28s ease; }
+.tabbar > button[aria-pressed="true"] { color: var(--accent-t); }
+.tabbar > button svg { width: 24px; height: 24px; }
+.tabbar > button span { font-size: 11px; font-weight: 600; }
+.tabbar > .liq { border-radius: 16px; }
+.tb-i { position: relative; display: grid; place-items: center; }
+.tb-n { position: absolute; top: -5px; left: calc(100% - 6px); min-width: 18px; height: 16px; padding: 0 5px; border-radius: 99px; background: var(--accent); color: #04282c; font: 800 10px/16px var(--font-ui); text-align: center; }
 </style>
 </head>
 <body>
@@ -1345,8 +1374,8 @@ body.globe-on #altLegend { display: none; }
     <span class="grab"></span>
     <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
-  <div class="seg2 dtabs" id="aTabs" role="tablist"><button data-atab="overview" aria-pressed="true">Overview</button><button data-atab="flights" aria-pressed="false">Flights <small id="aFlN" hidden>0</small></button><button data-atab="weather" aria-pressed="false">Weather</button><button data-atab="atc" aria-pressed="false">ATC</button></div>
   <div class="sheet-body" id="aBody"></div>
+  <nav class="abar tabbar" id="aTabs" role="tablist" aria-label="Airport sections"><button data-atab="overview" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M120,56v48a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40h48A16,16,0,0,1,120,56Zm80-16H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm-96,96H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm96,0H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Z"/></g></svg><span>Overview</span></button><button data-atab="flights" aria-pressed="false"><span class="tb-i"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g></svg><small class="tb-n" id="aFlN" hidden>0</small></span><span>Flights</span></button><button data-atab="weather" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg><span>Weather</span></button><button data-atab="atc" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,136v64a32,32,0,0,1-32,32H184a32,32,0,0,1-32-32V160a32,32,0,0,1,32-32h31.12A87.61,87.61,0,0,0,128,48h-1.16a87.62,87.62,0,0,0-86,80H72a32,32,0,0,1,32,32v40a32,32,0,0,1-32,32H56a32,32,0,0,1-32-32V136A104.12,104.12,0,0,1,126.82,32H128A104,104,0,0,1,232,136Z"/></g></svg><span>ATC</span></button></nav>
 </aside>
 
 <!-- Filters -->
@@ -3118,7 +3147,8 @@ function renderDetail0() {
     ["Squawk", a.squawk || "—", ""], ["Hex", sim ? "—" : a.hex.toUpperCase(), ""], ["Updated", age < 10 ? age.toFixed(0) : Math.round(age), "s"],
     ["Feed", sim ? "Sim" : (SOURCES[a.src] || {}).label || "—", ""],
   ];
-  $("#dStats").innerHTML = cells.map(([k, v, u], i) => `<div${i < 4 ? ' class="pri"' : ""}><dt>${k}</dt><dd>${esc(String(v))}${u && v !== "—" ? `<small>${u}</small>` : ""}</dd></div>`).join("");
+  const cell = ([k, v, u], pri) => `<div${pri ? ' class="pri"' : ""}><dt>${k}</dt><dd>${esc(String(v))}${u && v !== "—" ? `<small>${u}</small>` : ""}</dd></div>`;
+  $("#dStats").innerHTML = cells.slice(0, 4).map((c) => cell(c, true)).join("") + `<div class="srow">${cells.slice(4).map((c) => cell(c)).join("")}</div>`;
   const kv = [["Type", typeName || a.type], ["Registration", a.reg || (acI && acI.registration)], ["Operator", a.owner || (acI && acI.registered_owner) || airline],
     ["Country", acI && acI.registered_owner_country_name], ["Built", a.year], ["Position", `${lat.toFixed(4)}, ${lon.toFixed(4)}`], ["Category", a.cat]].filter(([, v]) => v);
   $("#dKv").innerHTML = kv.map(([k, v]) => `<dt>${k}</dt><dd>${esc(String(v))}</dd>`).join("");
@@ -5455,11 +5485,14 @@ function liqPlace(seg, animate) {
   let pill = seg.querySelector(":scope > .liq");
   if (!pill) { pill = document.createElement("i"); pill.className = "liq"; pill.setAttribute("aria-hidden", "true"); seg.prepend(pill); seg.classList.add("liq-on"); if (liqRO) liqRO.observe(seg); }
   const b = seg.querySelector(':scope > button[aria-pressed="true"]');
+  seg.classList.toggle("liq-on", true);
   if (!b) { pill.style.opacity = "0"; return; }
   if (!seg.offsetWidth) return;
-  const x = b.offsetLeft, w = b.offsetWidth, key = liqKey(seg), prev = liqPrev.get(key);
+  const ins = parseFloat(getComputedStyle(seg).getPropertyValue("--liq-in")) || 0, insY = parseFloat(getComputedStyle(seg).getPropertyValue("--liq-in-y")) || ins;
+  const x = b.offsetLeft + ins, w = b.offsetWidth - ins * 2, key = liqKey(seg), prev = liqPrev.get(key);
   liqPrev.set(key, { x, w });
-  pill.style.cssText = `opacity:1;top:${b.offsetTop}px;height:${b.offsetHeight}px;left:${x}px;width:${w}px;border-radius:${getComputedStyle(b).borderRadius}`;
+  const rad = getComputedStyle(seg).getPropertyValue("--liq-r").trim() || getComputedStyle(b).borderRadius;
+  pill.style.cssText = `opacity:1;top:${b.offsetTop + insY}px;height:${b.offsetHeight - insY * 2}px;left:${x}px;width:${w}px;border-radius:${rad}`;
   if (!animate || !prev || (Math.abs(prev.x - x) < 1 && Math.abs(prev.w - w) < 1) || reduceMo.matches || !pill.animate) return;
   const dir = x > prev.x ? 1 : -1, L0 = prev.x, R0 = prev.x + prev.w, L1 = x, R1 = x + w, frames = [];
   // the overshoot squashes against the ends of the bar instead of spilling out of it
@@ -5481,16 +5514,16 @@ function liqPane(el, dir) {
 new MutationObserver((muts) => {
   const segs = new Set();
   for (const m of muts) {
-    if (m.type === "attributes") { const sg = m.target.parentElement; if (sg && sg.matches(".seg2, .h3-cams")) segs.add(sg); }
+    if (m.type === "attributes") { const sg = m.target.parentElement; if (sg && sg.matches(".seg2, .h3-cams, .tabbar")) segs.add(sg); }
     else for (const n of m.addedNodes) {
       if (n.nodeType !== 1) continue;
-      if (n.matches(".seg2, .h3-cams")) segs.add(n);
-      else if (n.firstElementChild) n.querySelectorAll(".seg2, .h3-cams").forEach((sg) => segs.add(sg));
+      if (n.matches(".seg2, .h3-cams, .tabbar")) segs.add(n);
+      else if (n.firstElementChild) n.querySelectorAll(".seg2, .h3-cams, .tabbar").forEach((sg) => segs.add(sg));
     }
   }
   for (const sg of segs) liqPlace(sg, true);
 }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-pressed"] });
-document.querySelectorAll(".seg2, .h3-cams").forEach((sg) => liqPlace(sg, false));
+document.querySelectorAll(".seg2, .h3-cams, .tabbar").forEach((sg) => liqPlace(sg, false));
 /* ---------------- Explore sheet ---------------- */
 const ex = $("#explore");
 let exState = "peek", exView = "home", savedTab = "flights", nearMore = false;
