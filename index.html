@@ -1365,6 +1365,8 @@ body.globe-on #altLegend { display: none; }
 .hero .x, .peek .xs, .res-hero .go, .amap .go, .h3-ctl button, .h3-cams { box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5); }
 .btn.accent, .chips-row .qt.on, .atc .listen { box-shadow: 0 8px 20px -12px rgba(0, 240, 255, .7); }
 .atc .listen { box-shadow: 0 8px 20px -12px rgba(52, 199, 89, .7); }
+/* compass tape under the 3D view's top card */
+.h3-tape { position: absolute; height: 40px; border-radius: 14px; background: rgba(12, 12, 14, .55); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -1633,6 +1635,7 @@ body.globe-on #altLegend { display: none; }
 <div class="view3d" id="view3d" hidden><canvas id="gl3d"></canvas><canvas id="gl3dLabels" aria-label="3D view of live aircraft"></canvas></div>
 <div class="hud3d" id="hud3d" hidden>
   <div class="h3-top"><div class="t"><b id="h3Call">—</b><span id="h3Sub"></span></div><button class="xs" id="h3X" aria-label="Exit 3D view"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>
+  <canvas class="h3-tape" id="h3Tape" aria-hidden="true"></canvas>
   <div class="h3-bot">
     <div class="h3-attr" id="h3Attr">Natural Earth</div>
     <div class="h3-stats"><div><small>Altitude</small><b id="h3Alt">—</b></div><div><small>Speed</small><b id="h3Spd">—</b></div><div><small>Heading</small><b id="h3Hdg">—</b></div><div><small>Climb</small><b id="h3Vs">—</b></div></div>
@@ -5510,8 +5513,44 @@ function glFrame(t) {
   cam.position.copy(GL.cam); cam.lookAt(GL.look); cam.updateProjectionMatrix();
   r.renderer.render(r.scene, cam);
   glLabels(list, a0, S0);
+  glTape(cam);
   // drop states for planes that left
   if (!GL.gcAt || now - GL.gcAt > 5000) { GL.gcAt = now; for (const [k, s] of GL.rs) if (now - s.seen > 4000) GL.rs.delete(k); }
+}
+/* Compass tape across the top of the 3D view, like the AR sky view: the direction the camera is facing,
+   with N, NE, E... at the major marks, N in cyan, and a cyan pointer at the centre */
+function glTape(cam) {
+  const cv = $("#h3Tape"); if (!cv) return;
+  const top = $("#hud3d .h3-top"); if (!top) return;
+  const tb = top.getBoundingClientRect();
+  if (GL._tapeTop !== tb.bottom || GL._tapeW !== tb.width) { GL._tapeTop = tb.bottom; GL._tapeW = tb.width; cv.style.top = tb.bottom + 8 + "px"; cv.style.left = tb.left + "px"; cv.style.width = tb.width + "px"; }
+  const w = tb.width, h = 40, dpr = Math.min(devicePixelRatio || 1, 2);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  // heading of the camera's view, and how many degrees the screen spans across
+  const d = (GL._dir || (GL._dir = new GL.THREE.Vector3()));
+  cam.getWorldDirection(d);
+  const head = ((Math.atan2(d.x, -d.z) * R2D) % 360 + 360) % 360;
+  const pxd = w / 120; // about 120° across the tape, so N, E, S and W come round often like the AR view
+  if (GL._tapeHead != null && Math.abs(wrap180(head - GL._tapeHead)) < 0.05 && GL._tapeW2 === w) return;
+  GL._tapeHead = head; GL._tapeW2 = w;
+  const g = cv.getContext("2d"), font = getComputedStyle(document.body).fontFamily, X = (b) => w / 2 + wrap180(b - head) * pxd;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 1;
+  const span = w / 2 / pxd + 10;
+  for (let b = Math.floor((head - span) / 5) * 5; b <= head + span; b += 5) {
+    const x = X(b); if (x < 4 || x > w - 4) continue;
+    const bb = ((b % 360) + 360) % 360, major = bb % 45 === 0, ten = bb % 15 === 0;
+    const fade = Math.min(1, Math.min(x, w - x) / 36);
+    g.globalAlpha = fade;
+    g.strokeStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.moveTo(x, h - 4); g.lineTo(x, h - (major ? 14 : ten ? 10 : 7)); g.stroke();
+    const nearMid = Math.abs(x - w / 2) < 50;
+    if (major && !nearMid) { g.fillStyle = bb === 0 ? "#00f0ff" : "#fff"; g.font = `800 13px ${font}`; g.fillText(compass(bb), x, 13); }
+    else if (ten && !major && !nearMid) { g.fillStyle = "rgba(255,255,255,.5)"; g.font = `600 9.5px ${font}`; g.fillText(String(bb), x, 13); }
+  }
+  g.globalAlpha = 1;
+  // the exact heading sits in the middle, over the pointer
+  g.fillStyle = "#00f0ff"; g.font = `800 13px ${font}`; g.fillText(`${String(Math.round(head) % 360).padStart(3, "0")}° ${compass(head)}`, w / 2, 13);
+  g.beginPath(); g.moveTo(w / 2 - 6, h); g.lineTo(w / 2 + 6, h); g.lineTo(w / 2, h - 7); g.fill();
 }
 function glLabels(list, a0, S0) {
   const cv = $("#gl3dLabels"), w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
