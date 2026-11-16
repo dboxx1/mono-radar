@@ -1379,10 +1379,10 @@ body.globe-on #altLegend { display: none; }
 .chip.beat .dot { animation: beat .8s ease-out; }
 @keyframes beat { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .8); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
 /* connecting / updating: a dashed accent ring that turns, with the accent pulse */
-.chip[data-mode="connecting"] .dot, .chip[data-mode="stale"][data-sub="retry"] .dot { width: 10px; height: 10px; background: transparent; border: 1.8px dashed var(--accent); box-shadow: none; animation: dotspin 2.4s linear infinite, seek 1.3s ease-out infinite; }
+.chip[data-mode="connecting"] .dot, .chip[data-mode="stale"][data-sub="retry"] .dot, .chip[data-mode="cached"][data-sub="retry"] .dot { width: 10px; height: 10px; background: transparent; border: 1.8px dashed var(--accent); box-shadow: none; animation: dotspin 2.4s linear infinite, seek 1.3s ease-out infinite; }
 @keyframes dotspin { to { transform: rotate(360deg); } }
 @keyframes seek { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .85); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
-.chip[data-mode="stale"]:not([data-sub="retry"]) .dot { background: var(--alert); border: 0; box-shadow: 0 0 8px rgba(255, 59, 48, .55); animation: none; }
+.chip[data-mode="stale"]:not([data-sub="retry"]) .dot, .chip[data-mode="cached"]:not([data-sub="retry"]) .dot { background: var(--alert); border: 0; box-shadow: 0 0 8px rgba(255, 59, 48, .55); animation: none; }
 .chip[data-mode="sim"] .dot { background: transparent; border: 1.6px solid var(--accent); box-shadow: none; animation: none; }
 </style>
 </head>
@@ -2361,7 +2361,39 @@ function ingest(list, src) {
   }
   dirty = true;
 }
+/* ---- Last-seen cache: the planes from your last session show straight away, then the live feed takes over ----
+   Every 20 s while live (and when the app is hidden) a compact copy of the traffic is kept on the device. On the
+   next launch it is drawn at once, nudged forward along each plane's track, with the status on "Updating" until
+   the first live update replaces it. If the network is down, the last-seen traffic stays rather than a simulation. */
+const SNAP_KEY = "monoRadar.snap", SNAP_MAX_AGE = 30 * 60000;
+let snapAt = 0;
+function saveSnap(force) {
+  if (feed.mode !== "live" || (!force && Date.now() - snapAt < 20000)) return;
+  snapAt = Date.now();
+  try {
+    const c = centre(), list = [...acMap.values()].filter((a) => a.lat != null && performance.now() - a.seen < 60000);
+    if (list.length > 4000) list.sort((p, q) => distNm(c.lat, c.lon, p.lat, p.lon) - distNm(c.lat, c.lon, q.lat, q.lon)).length = 4000;
+    const r = (x, k) => (x == null ? null : Math.round(x * k) / k);
+    const ac = list.map((a) => [a.hex, a.flight || "", a.reg || "", a.type || "", r(a.lat, 1e4), r(a.lon, 1e4), a.ground ? 1 : 0, a.alt ?? null, r(a.gs, 1), r(a.track, 1), a.vs ?? null, a.squawk || "", a.cat || "", a.mil ? 1 : 0, a.desc || "", Math.round((performance.now() - a.t0) / 1000)]);
+    localStorage.setItem(SNAP_KEY, JSON.stringify({ t: Date.now(), ac }));
+  } catch (e) { /* storage full or unavailable: skip */ }
+}
+function loadSnap() {
+  try {
+    const j = JSON.parse(localStorage.getItem(SNAP_KEY) || "null");
+    if (!j || !Array.isArray(j.ac) || !j.ac.length || Date.now() - j.t > SNAP_MAX_AGE) return false;
+    const gap = (Date.now() - j.t) / 1000;
+    const list = j.ac.map((x) => ({ hex: x[0], flight: x[1], reg: x[2], type: x[3], lat: x[4], lon: x[5], ground: !!x[6], alt: x[7], gs: x[8], track: x[9], vs: x[10], squawk: x[11], cat: x[12], mil: !!x[13], desc: x[14] || "", emerg: null, owner: "", year: "", age: Math.min(60, gap + (x[15] || 0)) }));
+    ingest(list, "cache");
+    for (const n of list) { const a = acMap.get(n.hex); if (a) a._cached = true; }
+    feed.mode = "cached"; feed.cacheStart = Date.now(); feed.cacheAt = j.t;
+    return true;
+  } catch (e) { return false; }
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) saveSnap(true); });
+addEventListener("pagehide", () => saveSnap(true));
 function prune() {
+  if (feed.mode === "cached") return;
   const now = performance.now(), ttl = feed.mode === "sim" ? 15000 : 50000;
   for (const [k, a] of acMap) if (now - a.seen > ttl && a !== selected && !(S.saved.flights[k] && now - a.seen < 300000)) acMap.delete(k);
   if (selected && now - selected.seen > 90000) { acMap.delete(selected.hex); selectedLost = true; }
@@ -2620,6 +2652,7 @@ async function refresh() {
   const ok = lists.length > 0;
   if (ok) {
     if (feed.mode === "sim") { stopSim(); acMap.clear(); if (selected) deselect(); toast("Live traffic connected"); }
+    const fromCache = feed.mode === "cached", tIn = performance.now();
     feed.mode = "live"; feed.everLive = true; feed.lastOk = Date.now();
     feed.sources = [...new Set(lists.map((l) => l.id))];
     feed.coverage = coverage; feed.planKind = plan.kind; feed.hint = hint;
@@ -2628,11 +2661,14 @@ async function refresh() {
     const byId = {};
     for (const { a, id } of merged.values()) (byId[id] = byId[id] || []).push(a);
     for (const id in byId) ingest(byId[id], id);
+    if (fromCache) for (const [k, a] of acMap) if (a._cached && a.seen < tIn && a !== selected && !S.saved.flights[k]) acMap.delete(k);
+    for (const a of acMap.values()) if (a.seen >= tIn) a._cached = false;
+    saveSnap();
     $("#notice").hidden = true;
     { const c = $("#feedChip"); c.classList.remove("beat"); void c.offsetWidth; c.classList.add("beat"); }
-  } else if (!feed.everLive) {
+  } else if (!feed.everLive && feed.mode !== "cached") {
     startSim();
-  } else if (Date.now() - feed.lastOk > 20000) {
+  } else if (feed.mode !== "cached" && Date.now() - feed.lastOk > 20000) {
     feed.mode = "stale";
   }
   busy = false;
@@ -6185,7 +6221,7 @@ function renderLive() {
   const top = (m) => [...m.entries()].sort((p, q) => q[1] - p[1])[0];
   const ta = top(al), tt = top(ty), n = acMap.size, pct = n ? Math.round((air / n) * 100) : 0;
   const ic = (path) => `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="${path}"/></g></svg>`;
-  const feedName = feed.mode === "live" ? feed.sources.map((s) => SOURCES[s].label).join(" + ") : feed.mode === "sim" ? "Simulated" : "Connecting";
+  const feedName = feed.mode === "live" ? feed.sources.map((s) => SOURCES[s].label).join(" + ") : feed.mode === "sim" ? "Simulated" : feed.mode === "cached" ? "Last seen, updating" : "Connecting";
   $("#liveSub").textContent = feedName;
   const go = `<svg class="i go" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></g></svg>`;
   // one card shape: small label, one big value, one quiet line under it; empty cards say so quietly
@@ -6219,11 +6255,11 @@ function hud() {
   const chip = $("#feedChip"); chip.dataset.mode = feed.mode;
   // just the state: Live, Simulation, or Disconnected (feed names and counts live in Settings and the Live tab)
   // lost the feed: "Updating" while it keeps retrying for the first couple of minutes, then "Disconnected"
-  const retrying = feed.mode === "stale" && navigator.onLine !== false && Date.now() - feed.lastOk < 120000;
+  const retrying = (feed.mode === "stale" && navigator.onLine !== false && Date.now() - feed.lastOk < 120000) || (feed.mode === "cached" && navigator.onLine !== false && Date.now() - feed.cacheStart < 120000);
   chip.dataset.sub = retrying ? "retry" : "";
   const offline = navigator.onLine === false && feed.mode !== "sim";
   if (offline) chip.dataset.mode = "stale";
-  const t = offline ? "Disconnected" : feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? (retrying ? "Updating" : "Disconnected") : "Connecting";
+  const t = offline ? "Disconnected" : feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" || feed.mode === "cached" ? (retrying ? "Updating" : "Disconnected") : "Connecting";
   $("#feedText").textContent = t;
   chip.setAttribute("aria-label", `Feed: ${t}. Open settings`);
   const hint = feed.mode === "live" ? feed.hint : "";
@@ -6278,6 +6314,7 @@ setEx("peek"); setTimeout(() => setEx(exState), 400);
 $("#qMil").setAttribute("aria-pressed", String(milOnly()));
 addEventListener("resize", () => setEx(exState));
 requestAnimationFrame(frame);
+if (loadSnap()) hud();
 refresh();
 setInterval(() => {
   prune(); hud();
