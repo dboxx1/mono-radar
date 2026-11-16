@@ -1323,6 +1323,10 @@ body.globe-on #altLegend { display: none; }
 .wt .k { display: flex; align-items: center; gap: 5px; }
 #sheet-airport.wx-mode .hero-text { text-align: center; }
 #sheet-airport.wx-mode .hero-text .meta { justify-content: center; }
+/* bottom bars (plane card, flight sheet, airport): no pill behind the active item, just the accent colour */
+.tabbar > .liq { display: none; }
+.abar:not(.tabbar) > button[aria-pressed="true"]::before, .abar > button:active::before { content: none; }
+.abar > button:active { opacity: .6; }
 </style>
 </head>
 <body>
