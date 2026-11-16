@@ -1371,6 +1371,17 @@ body.globe-on #altLegend { display: none; }
 /* the compass runs across the very top of the 3D view, edge to edge; the flight card sits under it */
 .h3-tape { left: 0; right: 0; top: env(safe-area-inset-top); width: 100%; border-radius: 0; background: rgba(12, 12, 14, .5); }
 .h3-top { top: calc(env(safe-area-inset-top) + 40px + 10px); }
+/* feed status dot
+   Live: accent dot, with an accent pulse each time fresh positions arrive.
+   Connecting / reconnecting: a plain grey dot with a repeating accent pulse.
+   Disconnected: red.  Simulation: hollow accent ring. */
+.chip .dot { background: var(--accent); border: 0; box-shadow: 0 0 8px rgba(0, 240, 255, .55); }
+.chip.beat .dot { animation: beat .8s ease-out; }
+@keyframes beat { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .8); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
+.chip[data-mode="connecting"] .dot, .chip[data-mode="stale"][data-sub="retry"] .dot { background: var(--ink-3); border: 0; box-shadow: none; animation: seek 1.3s ease-out infinite; }
+@keyframes seek { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .85); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
+.chip[data-mode="stale"]:not([data-sub="retry"]) .dot { background: var(--alert); border: 0; box-shadow: 0 0 8px rgba(255, 59, 48, .55); animation: none; }
+.chip[data-mode="sim"] .dot { background: transparent; border: 1.6px solid var(--accent); box-shadow: none; animation: none; }
 </style>
 </head>
 <body>
@@ -2616,6 +2627,7 @@ async function refresh() {
     for (const { a, id } of merged.values()) (byId[id] = byId[id] || []).push(a);
     for (const id in byId) ingest(byId[id], id);
     $("#notice").hidden = true;
+    { const c = $("#feedChip"); c.classList.remove("beat"); void c.offsetWidth; c.classList.add("beat"); }
   } else if (!feed.everLive) {
     startSim();
   } else if (Date.now() - feed.lastOk > 20000) {
@@ -6204,7 +6216,12 @@ let charW = 6.3, charW2 = 5.7;
 function hud() {
   const chip = $("#feedChip"); chip.dataset.mode = feed.mode;
   // just the state: Live, Simulation, or Disconnected (feed names and counts live in Settings and the Live tab)
-  const t = feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? "Disconnected" : "Connecting";
+  // lost the feed: "Reconnecting" while it keeps retrying for the first couple of minutes, then "Disconnected"
+  const retrying = feed.mode === "stale" && navigator.onLine !== false && Date.now() - feed.lastOk < 120000;
+  chip.dataset.sub = retrying ? "retry" : "";
+  const offline = navigator.onLine === false && feed.mode !== "sim";
+  if (offline) chip.dataset.mode = "stale";
+  const t = offline ? "Disconnected" : feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? (retrying ? "Reconnecting" : "Disconnected") : "Connecting";
   $("#feedText").textContent = t;
   chip.setAttribute("aria-label", `Feed: ${t}. Open settings`);
   const hint = feed.mode === "live" ? feed.hint : "";
@@ -6225,6 +6242,8 @@ function toast(msg, act) {
 $("#zIn").addEventListener("click", () => flyTo(centre().lat, centre().lon, Math.round(V.z) + 1, 260));
 $("#zOut").addEventListener("click", () => flyTo(centre().lat, centre().lon, Math.round(V.z) - 1, 260));
 $("#feedChip").addEventListener("click", () => { showSheet("settings"); openSettings(); });
+addEventListener("offline", () => hud());
+addEventListener("online", () => { hud(); clearTimeout(pollTimer); pollTimer = setTimeout(refresh, 300); });
 $("#btnRetry").addEventListener("click", async () => { toast("Trying live feeds again…"); for (const k in status) delete status[k]; feed.everLive = false; clearTimeout(pollTimer); await refresh(); if (feed.mode === "sim") toast("Live feeds are still blocked here. Open the standalone file."); });
 $("#noticeX").addEventListener("click", () => { noticeDismissed = true; $("#notice").hidden = true; });
 $("#btnFollow").addEventListener("click", () => { if (!selected) return; if (follow) setFollow(false); else centreOn(selected, V.z, 300); });
