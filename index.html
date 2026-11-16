@@ -27,7 +27,7 @@
   --sea: #070707;
   --ring: #1b1b1d;
   --accent-t: var(--accent);
-  --gut: 16px;
+  --gut: 12px;
   --panel: rgba(22, 22, 24, 0.86);
   --card: rgba(255, 255, 255, 0.055);
   --card-2: rgba(255, 255, 255, 0.1);
@@ -1228,6 +1228,45 @@ body.globe-on #altLegend { display: none; }
 .abar > button:active::before { opacity: .7; }
 .tabbar > button { color: var(--ink); }
 .tabbar > button[aria-pressed="true"] { color: var(--accent-t); }
+/* ==== Compact: a 12px gutter and one set of sizes ====
+   Gutter, gaps between cards and card padding all follow --gut. Content cards share one corner radius,
+   things nested inside a card share a smaller one, and the type scale is trimmed to fit more on screen. */
+:root { --r-card: 16px; --r-in: 10px; }
+.card, .live .stat, .pk-grid > div, .stats div.pri, .stats .srow, .sf, .board, .fq, .group, .toggles, .style, .empty-v, .fr-tip, .sh-row, .ncard, .alist, .acard, .pcard, .amap, .res-hero { border-radius: var(--r-card); }
+.dl-row, .astats > div, .pk-stats div, .rw-g > div, .style i, .dl-hold button, .fq-more { border-radius: var(--r-in); }
+.card h3 { margin-bottom: 10px; }
+.sheet-body { padding-top: var(--gut); }
+.vpad { padding-bottom: var(--gut); }
+/* tighter type and controls */
+.live .stat { min-height: 0; }
+.live .stat .k { margin-bottom: 6px; }
+.live .stat .v { font-size: 26px; }
+.live .stat.big .v { font-size: 44px; }
+.live .bar { margin: 10px 0 6px; }
+.abar, .abar > button { min-height: 56px; }
+.abar > button { padding: 7px 2px 6px; gap: 3px; }
+.abar > button svg, .abar #btnSave svg, .abar #pkSave svg { width: 22px; height: 22px; }
+.tabbar { --liq-in: 6px; --liq-in-y: 4px; --liq-r: 14px; }
+.abar:not(.tabbar) > button[aria-pressed="true"]::before, .abar > button:active::before { inset: 4px 6px; border-radius: 14px; }
+.stats div.pri dd { font-size: 20px; }
+.pk-main { padding: var(--gut) 8px var(--gut) var(--gut); }
+.pk-head { min-height: 92px; }
+/* explore sheet blocks on the same gutter */
+.overhead { margin: var(--gut) var(--gut) 0; }
+.oh-empty { padding: var(--pad); border-radius: var(--r-card); gap: 8px 12px; }
+.near-h { padding: var(--gut) var(--gut) var(--gut); margin-top: var(--gut); }
+.htabs { margin: 0 var(--gut) var(--gut); }
+.dtabs { margin: var(--gut) var(--gut) 0; }
+.alist { margin: 0 var(--gut); }
+.more-btn { margin: var(--gut) var(--gut) 0; width: calc(100% - var(--gut) * 2); border-radius: var(--r-card); }
+.board .bh, .board .br { padding: 0 var(--pad); }
+.pcard h3 { margin: var(--pad) var(--pad) 0; }
+.pcard .pa { padding: 4px var(--pad) var(--pad); gap: var(--gap); }
+.style { padding: 8px 8px var(--pad); }
+.sec { padding-top: calc(var(--gut) * 1.5); }
+.sec > header { padding-bottom: 10px; }
+.tg { padding: 10px var(--pad); }
+.group .row, .group > button { padding-left: var(--pad); padding-right: var(--pad); }
 </style>
 </head>
 <body>
