@@ -26,6 +26,7 @@ Open the site in Safari → Share → **Add to Home Screen**.
 Aircraft: adsb.lol (ODbL), airplanes.live, adsb.fi, OpenSky Network. Routes: adsbdb, hexdb.io.
 Photos: Planespotters.net, Airport-Data.com, Wikipedia. Weather: Open-Meteo (CC BY 4.0),
 NOAA Aviation Weather Center (METAR), RainViewer. Map: OpenFreeMap / OpenMapTiles / OpenStreetMap
-contributors, MapLibre. Airports and runways: OurAirports (public domain). Free for personal use.
+contributors, MapLibre. Airports, runways and ATC frequencies: OurAirports (public domain).
+US delays: FAA NAS Status (public domain). Live ATC audio links go to LiveATC.net. Free for personal use.
 
 Icons: [Phosphor Icons](https://phosphoricons.com) (MIT).
