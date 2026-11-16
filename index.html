@@ -1114,6 +1114,49 @@ body.globe-on #altLegend { display: none; }
 .fq-more { margin-top: 8px; width: 100%; height: 38px; border-radius: 12px; background: var(--card-2); font-weight: 600; font-size: 13.5px; color: var(--ink-2); }
 .atc .small { margin: 10px 0 0; }
 .board .bd-more { margin: 0; border-radius: 0; background: transparent; color: #a1a1a6; border-top: 1px solid #222; height: 40px; }
+/* ==== One glass material for every button and tab ====
+   The same frosted recipe as the map buttons: translucent fill, backdrop blur, hairline border, a soft top
+   highlight and a gentle shadow. Over the map and photos the fill is denser so icons stay readable; inside
+   sheets it is a lighter tint of the same glass. Selected = brighter glass; primary = glass tinted cyan. */
+:root {
+  --gl: rgba(255, 255, 255, .075); --gl-on: rgba(255, 255, 255, .17); --gl-b: rgba(255, 255, 255, .12);
+  --gl-hi: inset 0 1px 0 rgba(255, 255, 255, .09); --gl-sh: 0 6px 16px -8px rgba(0, 0, 0, .55);
+  --gl-blur: blur(20px) saturate(1.6);
+  --gl-img: rgba(18, 18, 20, .42); --gl-img-b: rgba(255, 255, 255, .2);
+  --gl-acc: linear-gradient(180deg, rgba(0, 240, 255, .30), rgba(0, 240, 255, .16)); --gl-acc-b: rgba(0, 240, 255, .5); --gl-acc-t: #7ff8ff;
+}
+:root[data-ink="paper"] {
+  --gl: rgba(255, 255, 255, .6); --gl-on: rgba(255, 255, 255, .98); --gl-b: rgba(0, 0, 0, .075);
+  --gl-hi: inset 0 1px 0 rgba(255, 255, 255, .9); --gl-sh: 0 6px 16px -10px rgba(0, 0, 0, .22);
+  --gl-acc: linear-gradient(180deg, rgba(0, 240, 255, .34), rgba(0, 240, 255, .2)); --gl-acc-b: rgba(0, 170, 190, .45); --gl-acc-t: #005d66;
+}
+.btn, .x, .ex-top .me, .searchbox, .seg2, .chips-row .qt, .fq-more, .dl-hold button, .sh-row, .h3-ctl button, .h3-cams {
+  background: var(--gl); border: 1px solid var(--gl-b); box-shadow: var(--gl-hi), var(--gl-sh);
+  -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur);
+}
+.ex-top .me { background: var(--gl) !important; color: var(--ink) !important; box-shadow: var(--gl-hi), var(--gl-sh) !important; }
+.btn[aria-pressed="true"], .chips-row .qt[aria-pressed="true"] { background: var(--gl-on); }
+.btn:active, .x:active, .chips-row .qt:active, .fq-more:active, .sh-row:active, .dl-hold button:active { background: var(--gl-on); }
+/* tabs: a glass track with a brighter glass pill for the selected tab */
+.seg2 { padding: 3px; }
+.seg2 button { border: 1px solid transparent; background: transparent; }
+.seg2 button[aria-pressed="true"] { background: var(--gl-on); color: var(--ink); border-color: var(--gl-b); box-shadow: var(--gl-hi), 0 2px 8px -2px rgba(0, 0, 0, .35); }
+/* primary actions and "on" chips: the same glass, tinted cyan */
+.btn.accent, .chips-row .qt.on, .atc .listen { background: var(--gl-acc); border-color: var(--gl-acc-b); color: var(--gl-acc-t); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 20px -12px rgba(0, 240, 255, .7); }
+.chips-row .qt.on .qn { color: inherit; }
+.chips-row .qt.hot { background: linear-gradient(180deg, rgba(255, 74, 61, .26), rgba(255, 74, 61, .12)); border-color: rgba(255, 74, 61, .45); color: var(--alert); }
+.atc .listen { --gl-acc: linear-gradient(180deg, rgba(52, 199, 89, .32), rgba(52, 199, 89, .16)); border-color: rgba(52, 199, 89, .5); color: #6ee08f; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 8px 20px -12px rgba(52, 199, 89, .7); background: var(--gl-acc); }
+:root[data-ink="paper"] .atc .listen { color: #1a7a3a; }
+/* on photos and the map: denser glass so it reads over any picture */
+.hero .x, .peek .xs, .res-hero .go, .amap .go, .h3-ctl button, .h3-cams { background: var(--gl-img); border: 1px solid var(--gl-img-b); color: #fff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 6px 16px -8px rgba(0, 0, 0, .5); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); }
+.res-hero .go, .h3-ctl .exit { background: linear-gradient(180deg, rgba(0, 240, 255, .42), rgba(0, 240, 255, .24)); border-color: rgba(0, 240, 255, .6); color: #fff; }
+.h3-ctl .h3-cams button { border: 1px solid transparent; box-shadow: none; background: transparent; }
+.h3-ctl .h3-cams button[aria-pressed="true"] { background: rgba(255, 255, 255, .24); color: #fff; border-color: rgba(255, 255, 255, .22); }
+.ctrl-group.glass, .chip { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 6px 18px rgba(0, 0, 0, .28); }
+.chip.filter { background: var(--gl-acc); border-color: var(--gl-acc-b); color: var(--gl-acc-t); }
+/* the flight card's action bar is one glass strip */
+.abar { background: var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); border-top: 1px solid var(--gl-b); }
+.abar button.main { background: var(--gl-on); }
 </style>
 </head>
 <body>
