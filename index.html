@@ -1315,6 +1315,14 @@ body.globe-on #altLegend { display: none; }
 #sheet-airport.wx-mode .hero-text .kicker { color: rgba(255,255,255,.85); }
 #sheet-airport.wx-mode .hero .x { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); }
 #sheet-airport.wx-mode .wx-top { padding-top: 4px; }
+/* weather icons and a centred header on the weather page */
+.wi { width: 26px; height: 26px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.18)); }
+.wh i { display: grid; place-items: center; height: 28px; }
+.wd .di .wi { width: 24px; height: 24px; }
+.wti { width: 13px; height: 13px; flex: none; }
+.wt .k { display: flex; align-items: center; gap: 5px; }
+#sheet-airport.wx-mode .hero-text { text-align: center; }
+#sheet-airport.wx-mode .hero-text .meta { justify-content: center; }
 </style>
 </head>
 <body>
@@ -3625,7 +3633,39 @@ function delaysHtml(ap) {
    The airport's Weather tab is a full weather page, iPhone Weather style: the background is a live scene
    drawn for the current conditions (sun or stars, drifting cloud, rain angled by the wind, snow, fog banks,
    lightning) over a sky gradient for day or night, with glass cards for the forecast on top. */
-const WXE = (c, day) => c === 0 ? (day ? "☀️" : "🌙") : c === 1 ? (day ? "🌤️" : "🌙") : c === 2 ? (day ? "⛅️" : "☁️") : c === 3 ? "☁️" : c <= 48 ? "🌫️" : c <= 57 ? "🌦️" : c <= 67 ? "🌧️" : c <= 77 ? "🌨️" : c <= 82 ? "🌧️" : c <= 86 ? "🌨️" : "⛈️";
+/* Weather icons: small multicolour glyphs in the spirit of iPhone Weather (sun yellow, cloud white,
+   rain blue, lightning yellow), drawn as SVG so they look the same everywhere */
+const WI = (() => {
+  const sun = (x = 12, y = 12, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})"><circle r="4.4" fill="#ffcc33"/>${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<line x1="0" y1="-6.6" x2="0" y2="-8.8" stroke="#ffcc33" stroke-width="2" stroke-linecap="round" transform="rotate(${a})"/>`).join("")}</g>`;
+  const moon = (x = 0, y = 0, k = 1) => `<path transform="translate(${x} ${y}) scale(${k})" d="M20.5 13.6A8.6 8.6 0 1 1 10.4 3.5a6.8 6.8 0 0 0 10.1 10.1z" fill="#f4f1d0"/>`;
+  const cloud = (dy = 0, col = "#fff", x = 0, k = 1) => `<g transform="translate(${x} ${dy}) scale(${k})" fill="${col}"><circle cx="8.6" cy="14.2" r="4.3"/><circle cx="14.2" cy="11.6" r="5.4"/><circle cx="18.6" cy="15" r="3.5"/><rect x="8.6" y="13.6" width="10" height="4.9" rx="2.4"/></g>`;
+  const drops = (n, col = "#64d2ff") => [[8.6, 19.5], [12.8, 20.5], [17, 19.5]].slice(0, n).map(([x, y]) => `<line x1="${x}" y1="${y}" x2="${x - 1.1}" y2="${y + 2.6}" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`).join("");
+  const svg = (inner) => `<svg class="wi" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+  return {
+    clearD: svg(sun()), clearN: svg(moon()),
+    partlyD: svg(sun(8.2, 8.4, .72) + cloud(2.4, "#fff", 1, .92)), partlyN: svg(moon(-1.5, -1.5, .7) + cloud(2.4, "#fff", 1, .92)),
+    cloudy: svg(cloud(-2.2, "#c3ccd8", -2.4, .92) + cloud(1.6, "#fff", 1.2, .9)),
+    fog: svg(cloud(-3.2, "#fff") + `<line x1="4" y1="18.6" x2="20" y2="18.6" stroke="#dfe5ec" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="22" x2="18" y2="22" stroke="#dfe5ec" stroke-width="2" stroke-linecap="round"/>`),
+    drizzle: svg(cloud(-3.4) + drops(2)), rain: svg(cloud(-3.4) + drops(3)),
+    snow: svg(cloud(-3.4) + [[8.4, 20.2], [12.6, 21.8], [16.8, 20.2]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.45" fill="#e6f6ff"/>`).join("")),
+    storm: svg(cloud(-3.6, "#c9d1dc") + `<path d="M13.6 14.2 10 19.6h2.8l-1.2 4 4.6-5.8h-2.9l1.6-3.6z" fill="#ffd60a"/>`),
+  };
+})();
+const WXE = (c, day) => c <= 1 ? (day ? WI.clearD : WI.clearN) : c === 2 ? (day ? WI.partlyD : WI.partlyN) : c === 3 ? WI.cloudy : c <= 48 ? WI.fog : c <= 57 ? WI.drizzle : c <= 67 ? WI.rain : c <= 77 ? WI.snow : c <= 82 ? WI.rain : c <= 86 ? WI.snow : WI.storm;
+/* small one-colour label icons for the detail tiles */
+const WTI = (() => {
+  const s = (inner) => `<svg class="wti" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`, st = 'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+  return {
+    feels: s(`<path d="M10 4.5a2 2 0 0 1 4 0v9.1a4.2 4.2 0 1 1-4 0z" fill="currentColor"/>`),
+    wind: s(`<path ${st} d="M3 9h11.5a2.6 2.6 0 1 0-2.6-2.6M3 13.5h15a2.8 2.8 0 1 1-2.8 2.8M3 18h7"/>`),
+    hum: s(`<path d="M12 2.8c3.6 4.3 6.2 7.7 6.2 10.9a6.2 6.2 0 0 1-12.4 0c0-3.2 2.6-6.6 6.2-10.9z" fill="currentColor"/>`),
+    vis: s(`<path fill="currentColor" fill-rule="evenodd" d="M12 5.2c-5.2 0-8.6 4.2-9.6 6.8 1 2.6 4.4 6.8 9.6 6.8s8.6-4.2 9.6-6.8c-1-2.6-4.4-6.8-9.6-6.8zm0 10.6a3.8 3.8 0 1 1 0-7.6 3.8 3.8 0 0 1 0 7.6z"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/>`),
+    pres: s(`<path fill="currentColor" fill-rule="evenodd" d="M2.8 16.5a9.2 9.2 0 0 1 18.4 0zM11 15.6l4.6-5.4 1 .8-4.2 5.6z"/>`),
+    sunr: s(`<path fill="currentColor" d="M6.6 17a5.4 5.4 0 0 1 10.8 0z"/><path ${st} d="M2.5 20.5h19M12 3.5v4M4.9 9.4l2 1.6M19.1 9.4l-2 1.6M9.4 5.9 12 3.3l2.6 2.6"/>`),
+    uv: s(`<circle cx="12" cy="12" r="4.4" fill="currentColor"/><path ${st} d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>`),
+    rain: s(`<path fill="currentColor" d="M12 3a9.2 9.2 0 0 1 9.2 9.2H2.8A9.2 9.2 0 0 1 12 3z"/><path ${st} d="M12 12.2v6.3a2.2 2.2 0 0 1-4.4 0"/>`),
+  };
+})();
 function wxKind(c) { return c <= 1 ? "clear" : c === 2 ? "partly" : c === 3 ? "cloudy" : c <= 48 ? "fog" : c <= 57 ? "drizzle" : c <= 67 ? "rain" : c <= 77 ? "snow" : c <= 82 ? "rain" : c <= 86 ? "snow" : "storm"; }
 const WX_SKY = {
   clear: [["#1f6fd0", "#4c9fe8", "#8fcaf5"], ["#060d24", "#122450", "#24386a"]],
@@ -3756,7 +3796,7 @@ function wxPageHtml(ap) {
   // 7 days with iPhone-style temperature range bars
   const mins = d.temperature_2m_min || [], maxs = d.temperature_2m_max || [], wMin = Math.min(...mins), wMax = Math.max(...maxs), span = Math.max(1, wMax - wMin);
   const days = (d.time || []).map((x, i) => { const lo = mins[i], hi = maxs[i], l = ((lo - wMin) / span) * 100, r = ((hi - wMin) / span) * 100, pp = d.precipitation_probability_max ? d.precipitation_probability_max[i] : 0;
-    const dot = i === 0 ? `<em style="left:${(((c.temperature_2m - wMin) / span) * 100).toFixed(1)}%"></em>` : "";
+    const dot = i === 0 ? `<em style="left:${Math.max(0, Math.min(100, ((c.temperature_2m - wMin) / span) * 100)).toFixed(1)}%"></em>` : "";
     return `<div class="wd"><span class="dn">${i === 0 ? "Today" : new Date(x + "T12:00Z").toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" })}</span><span class="di">${WXE(d.weather_code[i], true)}${pp >= 30 ? `<small>${pp}%</small>` : ""}</span><span class="lo">${Math.round(lo)}°</span><span class="rg"><i style="left:${l.toFixed(1)}%;right:${(100 - r).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(lo)},${tempCol(hi)})"></i>${dot}</span><span class="hi">${Math.round(hi)}°</span></div>`; }).join("");
   const tile = (icon, k, v, sub, extra) => `<div class="wt"><span class="k">${icon} ${k}</span><b>${v}</b><span class="s">${sub || ""}</span>${extra || ""}</div>`;
   const vis = c.visibility == null ? "—" : c.visibility >= 10000 ? "10+ km" : `${(c.visibility / 1000).toFixed(c.visibility < 5000 ? 1 : 0)} km`;
@@ -3768,14 +3808,14 @@ function wxPageHtml(ap) {
     ${hours ? `<div class="wxc"><p class="wx-sum">${esc(summ)}</p><div class="whs">${hours}</div></div>` : ""}
     ${days ? `<div class="wxc"><span class="wx-k">7-day forecast</span>${days}</div>` : ""}
     <div class="wtg">
-      ${tile("🌡️", "Feels like", `${Math.round(c.apparent_temperature ?? c.temperature_2m)}°`, Math.abs((c.apparent_temperature ?? c.temperature_2m) - c.temperature_2m) >= 2 ? ((c.apparent_temperature < c.temperature_2m) ? "Wind makes it feel colder." : "Humidity makes it feel warmer.") : "Similar to the actual temperature.")}
-      ${tile("💨", "Wind", `${Math.round(c.wind_speed_10m)}<small> kt</small>`, `From ${dirName(c.wind_direction_10m)} (${String(Math.round(c.wind_direction_10m)).padStart(3, "0")}°)${c.wind_gusts_10m > c.wind_speed_10m + 4 ? ` · gusts ${Math.round(c.wind_gusts_10m)} kt` : ""}`, compass)}
-      ${tile("💧", "Humidity", c.relative_humidity_2m == null ? "—" : `${Math.round(c.relative_humidity_2m)}%`, c.cloud_cover != null ? `Cloud cover ${Math.round(c.cloud_cover)}%` : "")}
-      ${tile("👁️", "Visibility", vis, c.visibility != null && c.visibility < 5000 ? "Reduced visibility." : "Clear view.")}
-      ${tile("🧭", "Pressure", c.pressure_msl == null ? "—" : `${Math.round(c.pressure_msl)}<small> hPa</small>`, "Sea level (QNH)")}
-      ${tile("🌅", "Sunrise", sr, `Sunset ${ss}`)}
-      ${uv != null ? tile("☀️", "UV index", uv, uv <= 2 ? "Low" : uv <= 5 ? "Moderate" : uv <= 7 ? "High" : "Very high") : ""}
-      ${tile("☔️", "Rain chance", d.precipitation_probability_max ? `${d.precipitation_probability_max[0]}%` : "—", c.precipitation ? `${c.precipitation} mm in the last hour` : "Today")}
+      ${tile(WTI.feels, "Feels like", `${Math.round(c.apparent_temperature ?? c.temperature_2m)}°`, Math.abs((c.apparent_temperature ?? c.temperature_2m) - c.temperature_2m) >= 2 ? ((c.apparent_temperature < c.temperature_2m) ? "Wind makes it feel colder." : "Humidity makes it feel warmer.") : "Similar to the actual temperature.")}
+      ${tile(WTI.wind, "Wind", `${Math.round(c.wind_speed_10m)}<small> kt</small>`, `From ${dirName(c.wind_direction_10m)} (${String(Math.round(c.wind_direction_10m)).padStart(3, "0")}°)${c.wind_gusts_10m > c.wind_speed_10m + 4 ? ` · gusts ${Math.round(c.wind_gusts_10m)} kt` : ""}`, compass)}
+      ${tile(WTI.hum, "Humidity", c.relative_humidity_2m == null ? "—" : `${Math.round(c.relative_humidity_2m)}%`, c.cloud_cover != null ? `Cloud cover ${Math.round(c.cloud_cover)}%` : "")}
+      ${tile(WTI.vis, "Visibility", vis, c.visibility != null && c.visibility < 5000 ? "Reduced visibility." : "Clear view.")}
+      ${tile(WTI.pres, "Pressure", c.pressure_msl == null ? "—" : `${Math.round(c.pressure_msl)}<small> hPa</small>`, "Sea level (QNH)")}
+      ${tile(WTI.sunr, "Sunrise", sr, `Sunset ${ss}`)}
+      ${uv != null ? tile(WTI.uv, "UV index", uv, uv <= 2 ? "Low" : uv <= 5 ? "Moderate" : uv <= 7 ? "High" : "Very high") : ""}
+      ${tile(WTI.rain, "Rain chance", d.precipitation_probability_max ? `${d.precipitation_probability_max[0]}%` : "—", c.precipitation ? `${c.precipitation} mm in the last hour` : "Today")}
     </div>
     ${metarCache.get(ap[0]) && metarCache.get(ap[0]).m ? wxBlock(ap) : ""}
     ${runwaysHtml(ap)}
