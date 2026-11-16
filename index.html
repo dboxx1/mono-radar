@@ -1367,6 +1367,9 @@ body.globe-on #altLegend { display: none; }
 .atc .listen { box-shadow: 0 8px 20px -12px rgba(52, 199, 89, .7); }
 /* compass tape under the 3D view's top card */
 .h3-tape { position: absolute; height: 40px; border-radius: 14px; background: rgba(12, 12, 14, .55); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); pointer-events: none; }
+/* the compass runs across the very top of the 3D view, edge to edge; the flight card sits under it */
+.h3-tape { left: 0; right: 0; top: env(safe-area-inset-top); width: 100%; border-radius: 0; background: rgba(12, 12, 14, .5); }
+.h3-top { top: calc(env(safe-area-inset-top) + 40px + 10px); }
 </style>
 </head>
 <body>
@@ -5521,16 +5524,13 @@ function glFrame(t) {
    with N, NE, E... at the major marks, N in cyan, and a cyan pointer at the centre */
 function glTape(cam) {
   const cv = $("#h3Tape"); if (!cv) return;
-  const top = $("#hud3d .h3-top"); if (!top) return;
-  const tb = top.getBoundingClientRect();
-  if (GL._tapeTop !== tb.bottom || GL._tapeW !== tb.width) { GL._tapeTop = tb.bottom; GL._tapeW = tb.width; cv.style.top = tb.bottom + 8 + "px"; cv.style.left = tb.left + "px"; cv.style.width = tb.width + "px"; }
-  const w = tb.width, h = 40, dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = cv.clientWidth || innerWidth, h = 40, dpr = Math.min(devicePixelRatio || 1, 2);
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
   // heading of the camera's view, and how many degrees the screen spans across
   const d = (GL._dir || (GL._dir = new GL.THREE.Vector3()));
   cam.getWorldDirection(d);
   const head = ((Math.atan2(d.x, -d.z) * R2D) % 360 + 360) % 360;
-  const pxd = w / 120; // about 120° across the tape, so N, E, S and W come round often like the AR view
+  const pxd = Math.max(w / 140, 2.6); // roughly 120-140° across the screen, so N, E, S and W come round often like the AR view
   if (GL._tapeHead != null && Math.abs(wrap180(head - GL._tapeHead)) < 0.05 && GL._tapeW2 === w) return;
   GL._tapeHead = head; GL._tapeW2 = w;
   const g = cv.getContext("2d"), font = getComputedStyle(document.body).fontFamily, X = (b) => w / 2 + wrap180(b - head) * pxd;
