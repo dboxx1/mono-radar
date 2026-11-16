@@ -1271,6 +1271,43 @@ body.globe-on #altLegend { display: none; }
 .ap-chips .ap-id { background: var(--gl-acc); border-color: var(--gl-acc-b); color: var(--gl-acc-t); }
 .ap-chips .ap-id .ql b { font-weight: 800; letter-spacing: .02em; margin-right: 2px; }
 .ap-chips .ql { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ==== Dynamic weather page ==== */
+.wx-bg { position: absolute; left: 0; right: 0; width: 100%; z-index: 0; pointer-events: none; display: block; }
+.wx-bg[hidden] { display: none; }
+#aBody { position: relative; z-index: 1; }
+#aBody.wx-on { background: transparent; --ink: #fff; --ink-2: rgba(255,255,255,.78); --ink-3: rgba(255,255,255,.58); --line: rgba(255,255,255,.16); --card: rgba(16,26,42,.22); --card-2: rgba(255,255,255,.10); --accent-t: #9ff6ff; color: #fff; }
+#aBody.wx-on .card, #aBody.wx-on .btn, .wxc, .wt { background: rgba(16, 26, 42, .22); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); color: #fff; box-shadow: none; }
+.wxp { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); color: #fff; }
+.wxp > * { min-width: 0; }
+.wx-top { display: grid; justify-items: center; text-align: center; padding: 14px 0 8px; text-shadow: 0 1px 2px rgba(0,0,0,.28), 0 2px 22px rgba(0,0,0,.28); }
+.wx-loc { font: 600 22px/1.2 var(--font-ui); letter-spacing: -.01em; }
+.wx-t { font: 200 86px/1 var(--font-ui); letter-spacing: -.04em; margin: 2px 0 2px 14px; }
+.wx-c, .wx-hl { font: 600 17px/1.35 var(--font-ui); opacity: .94; }
+.wxc { border-radius: var(--r-card); padding: var(--pad); }
+.wx-sum { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.18); font-size: 13.5px; line-height: 1.35; }
+.whs { display: flex; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--pad) * -1); padding: 0 calc(var(--pad) - 6px); }
+.whs::-webkit-scrollbar { display: none; }
+.wh { flex: none; width: 54px; display: grid; justify-items: center; gap: 5px; font-weight: 600; }
+.wh span { font-size: 13px; } .wh i { font-style: normal; font-size: 22px; line-height: 1.1; } .wh small { font-size: 10.5px; color: #9ddcff; height: 12px; line-height: 12px; font-weight: 700; } .wh b { font-size: 17px; }
+.wx-k { display: block; font: 700 11px/1 var(--font-ui); letter-spacing: .07em; text-transform: uppercase; opacity: .72; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.18); }
+.wd { display: grid; grid-template-columns: 50px 34px 32px 1fr 32px; align-items: center; gap: 8px; height: 44px; border-top: 1px solid rgba(255,255,255,.12); }
+.wx-k + .wd { border-top: 0; }
+.wd .dn { font-weight: 600; font-size: 16px; }
+.wd .di { font-size: 20px; display: grid; justify-items: center; line-height: 1; }
+.wd .di small { font-size: 10px; color: #9ddcff; font-weight: 700; margin-top: 2px; }
+.wd .lo { opacity: .6; text-align: right; font-weight: 600; font-size: 16px; } .wd .hi { font-weight: 600; font-size: 16px; }
+.wd .rg { position: relative; height: 5px; border-radius: 99px; background: rgba(0,0,0,.2); }
+.wd .rg i { position: absolute; top: 0; bottom: 0; border-radius: 99px; }
+.wd .rg em { position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.25); transform: translate(-50%, -50%); }
+.wtg { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.wt { position: relative; border-radius: var(--r-card); padding: var(--pad); min-height: 110px; display: grid; align-content: start; gap: 4px; }
+.wt .k { font: 700 11px/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; opacity: .72; margin-bottom: 6px; }
+.wt b { font: 500 30px/1.05 var(--font-ui); letter-spacing: -.02em; }
+.wt b small { font-size: 15px; opacity: .8; font-weight: 500; }
+.wt .s { font-size: 12.5px; opacity: .86; line-height: 1.3; }
+.cmp { position: absolute; right: 12px; top: 30px; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.35); }
+.cmp i { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 3px; margin-left: -1.5px; border-radius: 3px; background: linear-gradient(#fff 50%, rgba(255,255,255,.3) 50%); }
+.wx-src { margin: 0; text-align: center; font-size: 11.5px; opacity: .7; }
 </style>
 </head>
 <body>
@@ -1433,6 +1470,7 @@ body.globe-on #altLegend { display: none; }
     <span class="grab"></span>
     <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
+  <canvas class="wx-bg" id="wxBg" hidden aria-hidden="true"></canvas>
   <div class="sheet-body" id="aBody"></div>
   <nav class="abar tabbar" id="aTabs" role="tablist" aria-label="Airport sections"><button data-atab="overview" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M120,56v48a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40h48A16,16,0,0,1,120,56Zm80-16H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm-96,96H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm96,0H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Z"/></g></svg><span>Overview</span></button><button data-atab="flights" aria-pressed="false"><span class="tb-i"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g></svg><small class="tb-n" id="aFlN" hidden>0</small></span><span>Flights</span></button><button data-atab="weather" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg><span>Weather</span></button><button data-atab="atc" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,136v64a32,32,0,0,1-32,32H184a32,32,0,0,1-32-32V160a32,32,0,0,1,32-32h31.12A87.61,87.61,0,0,0,128,48h-1.16a87.62,87.62,0,0,0-86,80H72a32,32,0,0,1,32,32v40a32,32,0,0,1-32,32H56a32,32,0,0,1-32-32V136A104.12,104.12,0,0,1,126.82,32H128A104,104,0,0,1,232,136Z"/></g></svg><span>ATC</span></button></nav>
 </aside>
@@ -3041,6 +3079,7 @@ function showSheet(id) {
   if (isWide() && !!was !== !!id) layout();
   syncExplore();
   dirty = true;
+  setTimeout(() => wxBgSync(), 0);
 }
 function closeSheets() { showSheet(null); selected = null; selectedLost = false; setFollow(false); dirty = true; }
 for (const b of document.querySelectorAll("[data-close]")) b.addEventListener("click", () => {
@@ -3417,8 +3456,8 @@ async function airportWx(ap) {
   if (c && (c.pending || Date.now() - c.at < 600000)) return;
   wxCache.set(ap[0], { pending: true });
   try {
-    const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${ap[4]}&longitude=${ap[5]}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,pressure_msl&wind_speed_unit=kn&timezone=auto`, 8000);
-    wxCache.set(ap[0], { at: Date.now(), cur: j.current, off: j.utc_offset_seconds, abbr: j.timezone_abbreviation });
+    const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${ap[4]}&longitude=${ap[5]}&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,pressure_msl,visibility&hourly=temperature_2m,weather_code,is_day,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&forecast_days=7&wind_speed_unit=kn&timezone=auto`, 8000);
+    wxCache.set(ap[0], { at: Date.now(), cur: j.current, hourly: j.hourly, daily: j.daily, off: j.utc_offset_seconds, abbr: j.timezone_abbreviation });
   } catch (e) { wxCache.set(ap[0], { at: Date.now(), err: true }); }
   if (airport === ap && openSheet === "airport") renderAirport();
 }
@@ -3575,6 +3614,166 @@ function delaysHtml(ap) {
     ${rows.length ? `<div class="dl-rows">${rows.map(([c, ic, b, sub, extra]) => `<div class="dl-row"><span class="ic ${c}">${ic}</span><b>${esc(b)}</b><span>${esc(sub || "")}</span>${extra || ""}</div>`).join("")}</div>` : `<p class="small muted" style="margin:10px 0 0">${isUS(ap) ? "No delays reported and nothing holding nearby." : "Nothing holding nearby right now."}</p>`}
     <p class="small muted" style="margin:10px 0 0">${src}Holding is spotted from live positions.${isUS(ap) ? "" : " Official delay data isn't published for free outside the US."}</p></div>`;
 }
+/* ==== Dynamic weather page ====
+   The airport's Weather tab is a full weather page, iPhone Weather style: the background is a live scene
+   drawn for the current conditions (sun or stars, drifting cloud, rain angled by the wind, snow, fog banks,
+   lightning) over a sky gradient for day or night, with glass cards for the forecast on top. */
+const WXE = (c, day) => c === 0 ? (day ? "☀️" : "🌙") : c === 1 ? (day ? "🌤️" : "🌙") : c === 2 ? (day ? "⛅️" : "☁️") : c === 3 ? "☁️" : c <= 48 ? "🌫️" : c <= 57 ? "🌦️" : c <= 67 ? "🌧️" : c <= 77 ? "🌨️" : c <= 82 ? "🌧️" : c <= 86 ? "🌨️" : "⛈️";
+function wxKind(c) { return c <= 1 ? "clear" : c === 2 ? "partly" : c === 3 ? "cloudy" : c <= 48 ? "fog" : c <= 57 ? "drizzle" : c <= 67 ? "rain" : c <= 77 ? "snow" : c <= 82 ? "rain" : c <= 86 ? "snow" : "storm"; }
+const WX_SKY = {
+  clear: [["#1f6fd0", "#4c9fe8", "#8fcaf5"], ["#060d24", "#122450", "#24386a"]],
+  partly: [["#3577bf", "#6ea6d8", "#a9cdea"], ["#0d1630", "#1f2e55", "#34466e"]],
+  cloudy: [["#56677a", "#7f8fa0", "#a9b5c1"], ["#1a212b", "#2c3644", "#424d5d"]],
+  fog: [["#6f7a85", "#98a1aa", "#bec5cc"], ["#22282f", "#353d46", "#4d5660"]],
+  drizzle: [["#405063", "#5f7083", "#8495a6"], ["#121922", "#212b38", "#323f4e"]],
+  rain: [["#33414f", "#4f5f70", "#728294"], ["#0e141b", "#1b2430", "#2b3644"]],
+  snow: [["#6d8197", "#97a8ba", "#c4d0dc"], ["#1f2836", "#333e50", "#4b576d"]],
+  storm: [["#1b202b", "#2b3242", "#3f4859"], ["#0b0e14", "#171c26", "#262d3b"]],
+};
+const WXA = { raf: 0, kind: "", day: true, wind: 0, windDir: 270, parts: null, clouds: null, t0: 0, last: 0, flash: 0, nextFlash: 0, w: 0, h: 0, dpr: 1, sprite: null };
+function cloudSprite(dark) {
+  const c = document.createElement("canvas"); c.width = 320; c.height = 150; const g = c.getContext("2d");
+  const puffs = [[80, 95, 52], [130, 70, 62], [190, 80, 56], [240, 100, 44], [160, 105, 58], [105, 110, 46], [210, 112, 46]];
+  for (const [x, y, r] of puffs) { const gr = g.createRadialGradient(x, y, r * 0.2, x, y, r); const col = dark ? "205,212,222" : "255,255,255"; gr.addColorStop(0, `rgba(${col},.95)`); gr.addColorStop(.6, `rgba(${col},.55)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+  return c;
+}
+function wxSetScene(kind, day, wind, dir) {
+  const W = WXA.w || 400, H = WXA.h || 700;
+  const changed = kind !== WXA.kind || day !== WXA.day;
+  WXA.wind = wind || 0; WXA.windDir = dir == null ? 270 : dir;
+  if (!changed && WXA.parts) return;
+  WXA.kind = kind; WXA.day = day; WXA.sprite = cloudSprite(kind !== "clear" && kind !== "partly" || !day);
+  const rnd = (a, b) => a + Math.random() * (b - a), P = [];
+  if ((kind === "clear" || kind === "partly") && !day) for (let i = 0; i < 110; i++) P.push({ t: "star", x: Math.random(), y: Math.random() * 0.75, r: rnd(.4, 1.5), ph: rnd(0, 6.28), sp: rnd(.6, 2) });
+  const nRain = kind === "rain" ? 170 : kind === "storm" ? 220 : kind === "drizzle" ? 80 : 0;
+  for (let i = 0; i < nRain; i++) P.push({ t: "rain", x: Math.random(), y: Math.random(), l: rnd(12, 26) * (kind === "drizzle" ? .6 : 1), v: rnd(.9, 1.4) * (kind === "drizzle" ? .6 : 1), a: rnd(.18, .42) });
+  if (kind === "snow") for (let i = 0; i < 140; i++) P.push({ t: "snow", x: Math.random(), y: Math.random(), r: rnd(1, 3.4), v: rnd(.05, .13), ph: rnd(0, 6.28), sw: rnd(8, 26) });
+  WXA.parts = P;
+  const nc = kind === "clear" ? (day ? 1 : 0) : kind === "partly" ? 4 : kind === "cloudy" ? 9 : kind === "fog" ? 3 : kind === "snow" ? 6 : 8;
+  WXA.clouds = Array.from({ length: nc }, (_, i) => ({ x: Math.random(), y: rnd(-0.05, kind === "partly" || kind === "clear" ? 0.32 : 0.5), s: rnd(.7, 1.6) * (kind === "cloudy" || kind === "storm" ? 1.25 : 1), v: rnd(.004, .012), a: rnd(.45, .85) * (kind === "clear" ? .5 : 1) }));
+  WXA.nextFlash = performance.now() + 2500;
+}
+function wxFrame(now) {
+  const cv = $("#wxBg"); if (!cv || cv.hidden) { WXA.raf = 0; return; }
+  const g = cv.getContext("2d"), W = WXA.w, H = WXA.h, dpr = WXA.dpr;
+  const dt = Math.min(0.05, (now - (WXA.last || now)) / 1000); WXA.last = now;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const sky = (WX_SKY[WXA.kind] || WX_SKY.clear)[WXA.day ? 0 : 1], gr = g.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, sky[0]); gr.addColorStop(.55, sky[1]); gr.addColorStop(1, sky[2]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const k = WXA.kind, t = now / 1000;
+  // sun glow and soft rays, or the moon
+  if ((k === "clear" || k === "partly") && WXA.day) {
+    const sx = W * 0.82, sy = H * 0.08, pulse = 1 + Math.sin(t * 0.6) * 0.04;
+    const sg = g.createRadialGradient(sx, sy, 0, sx, sy, W * 0.75 * pulse); sg.addColorStop(0, "rgba(255,248,215,.85)"); sg.addColorStop(.12, "rgba(255,240,190,.45)"); sg.addColorStop(.4, "rgba(255,230,170,.10)"); sg.addColorStop(1, "rgba(255,230,170,0)");
+    g.fillStyle = sg; g.fillRect(0, 0, W, H);
+    g.save(); g.translate(sx, sy); g.rotate(t * 0.03); g.globalAlpha = .07;
+    for (let i = 0; i < 9; i++) { g.rotate(Math.PI * 2 / 9); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(0, 0); g.lineTo(W * 1.1, -14); g.lineTo(W * 1.1, 14); g.closePath(); g.fill(); }
+    g.restore();
+  } else if ((k === "clear" || k === "partly") && !WXA.day) {
+    const mx = W * 0.8, my = H * 0.1, mg = g.createRadialGradient(mx, my, 0, mx, my, 120); mg.addColorStop(0, "rgba(235,240,255,.55)"); mg.addColorStop(.15, "rgba(220,228,255,.18)"); mg.addColorStop(1, "rgba(220,228,255,0)");
+    g.fillStyle = mg; g.fillRect(0, 0, W, H); g.fillStyle = "rgba(245,247,255,.95)"; g.beginPath(); g.arc(mx, my, 16, 0, Math.PI * 2); g.fill();
+  }
+  // particles under the clouds: stars
+  for (const p of WXA.parts) if (p.t === "star") { g.globalAlpha = .35 + .65 * Math.abs(Math.sin(t * p.sp + p.ph)); g.fillStyle = "#fff"; g.beginPath(); g.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2); g.fill(); }
+  g.globalAlpha = 1;
+  // drifting clouds (direction follows the wind)
+  const wdx = Math.sin(((WXA.windDir + 180) % 360) * D2R) >= 0 ? 1 : -1, wsp = 1 + Math.min(3, WXA.wind / 12);
+  if (WXA.sprite) for (const c of WXA.clouds) {
+    c.x += c.v * wsp * wdx * dt; if (c.x > 1.35) c.x = -0.45; if (c.x < -0.45) c.x = 1.35;
+    const cw = 320 * c.s * (W / 400), ch = 150 * c.s * (W / 400);
+    g.globalAlpha = c.a * (k === "fog" ? .55 : 1); g.drawImage(WXA.sprite, c.x * W - cw / 2, c.y * H, cw, ch);
+  }
+  g.globalAlpha = 1;
+  // fog banks
+  if (k === "fog") for (let i = 0; i < 4; i++) {
+    const y = H * (0.25 + i * 0.18), off = ((t * (8 + i * 4)) % (W * 2)) - W, fg = g.createLinearGradient(0, y - 60, 0, y + 60);
+    fg.addColorStop(0, "rgba(255,255,255,0)"); fg.addColorStop(.5, "rgba(255,255,255,.22)"); fg.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = fg; g.fillRect(off - W, y - 60, W * 3, 120);
+  }
+  // rain (slanted by the wind) and snow (swaying)
+  const slant = Math.max(-0.45, Math.min(0.45, (WXA.wind / 40) * -wdx));
+  g.lineCap = "round";
+  for (const p of WXA.parts) {
+    if (p.t === "rain") {
+      p.y += p.v * dt * 1.4; p.x += slant * p.v * dt * 1.4 * (H / W); if (p.y > 1.05) { p.y = -0.05; p.x = Math.random() * 1.2 - 0.1; }
+      const x = p.x * W, y = p.y * H; g.strokeStyle = `rgba(210,225,240,${p.a})`; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x, y); g.lineTo(x + slant * p.l, y + p.l); g.stroke();
+    } else if (p.t === "snow") {
+      p.y += p.v * dt; if (p.y > 1.03) { p.y = -0.03; p.x = Math.random(); }
+      const x = p.x * W + Math.sin(t * 0.8 + p.ph) * p.sw, y = p.y * H; g.fillStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(x, y, p.r, 0, Math.PI * 2); g.fill();
+    }
+  }
+  // lightning
+  if (k === "storm") {
+    if (now > WXA.nextFlash) { WXA.flash = 1; WXA.nextFlash = now + 2500 + Math.random() * 6000; }
+    if (WXA.flash > 0) { g.fillStyle = `rgba(230,236,255,${WXA.flash * 0.55})`; g.fillRect(0, 0, W, H); WXA.flash = Math.max(0, WXA.flash - dt * (WXA.flash > 0.6 ? 6 : 2.5)); }
+  }
+  if (reduceMo.matches) { WXA.raf = 0; return; }
+  WXA.raf = requestAnimationFrame(wxFrame);
+}
+function wxBgSync() {
+  const cv = $("#wxBg"), on = openSheet === "airport" && aTab === "weather" && !!airport;
+  $("#aBody").classList.toggle("wx-on", on);
+  if (!on) { cv.hidden = true; if (WXA.raf) cancelAnimationFrame(WXA.raf); WXA.raf = 0; return; }
+  const w = wxCache.get(airport[0]), c = w && w.cur;
+  const body = $("#aBody"), W = body.clientWidth, H = body.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.style.top = body.offsetTop + "px"; cv.style.height = H + "px";
+  if (W !== WXA.w || H !== WXA.h || dpr !== WXA.dpr) { WXA.w = W; WXA.h = H; WXA.dpr = dpr; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  wxSetScene(c ? wxKind(c.weather_code) : "partly", c ? c.is_day !== 0 : true, c ? c.wind_speed_10m : 8, c ? c.wind_direction_10m : 270);
+  cv.hidden = false;
+  if (!WXA.raf) { WXA.last = 0; WXA.raf = requestAnimationFrame(wxFrame); }
+}
+if (window.ResizeObserver) new ResizeObserver(() => { if (!$("#wxBg").hidden) { WXA.w = 0; wxBgSync(); } }).observe($("#aBody"));
+document.addEventListener("visibilitychange", () => { if (document.hidden && WXA.raf) { cancelAnimationFrame(WXA.raf); WXA.raf = 0; } else wxBgSync(); });
+/* the page itself */
+const tempCol = (t) => t <= -5 ? "#7fb2ff" : t <= 5 ? "#6fd0ff" : t <= 12 ? "#7fe0b0" : t <= 18 ? "#d8e86a" : t <= 24 ? "#ffcb57" : t <= 30 ? "#ff9a3d" : "#ff5e3a";
+const dirName = (d) => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(((d % 360) + 360) % 360 / 45) % 8];
+function wxPageHtml(ap) {
+  const w = wxCache.get(ap[0]);
+  if (!w || w.pending) return `<div class="wxp"><div class="wx-top"><span class="wx-loc">${esc(shortApName(ap) || ap[2])}</span><span class="wx-t">--°</span><span class="wx-c">Loading weather…</span></div></div>`;
+  if (w.err || !w.cur) return `<div class="wxp"><div class="wx-top"><span class="wx-loc">${esc(shortApName(ap) || ap[2])}</span><span class="wx-c">Weather isn't reachable right now.</span></div>${wxBlock(ap)}${runwaysHtml(ap)}</div>`;
+  const c = w.cur, d = w.daily || {}, hr = w.hourly || {}, day = c.is_day !== 0;
+  const lo0 = d.temperature_2m_min ? Math.round(d.temperature_2m_min[0]) : null, hi0 = d.temperature_2m_max ? Math.round(d.temperature_2m_max[0]) : null;
+  // hourly: from the current local hour, 24 steps
+  const nowKey = new Date(Date.now() + (w.off || 0) * 1000).toISOString().slice(0, 13);
+  let i0 = (hr.time || []).findIndex((x) => x.slice(0, 13) === nowKey); if (i0 < 0) i0 = 0;
+  const hours = (hr.time || []).slice(i0, i0 + 24).map((x, k) => { const i = i0 + k, pp = hr.precipitation_probability ? hr.precipitation_probability[i] : 0;
+    return `<div class="wh"><span>${k === 0 ? "Now" : x.slice(11, 13)}</span><i>${WXE(hr.weather_code[i], hr.is_day ? hr.is_day[i] !== 0 : true)}</i>${pp >= 30 ? `<small>${pp}%</small>` : `<small></small>`}<b>${Math.round(k === 0 ? c.temperature_2m : hr.temperature_2m[i])}°</b></div>`; }).join("");
+  // a one-line summary like the iPhone app: the next change in conditions, or the wind
+  let summ = "";
+  const kNow = wxKind(c.weather_code);
+  for (let k = 1; k < 12 && hr.time && i0 + k < hr.time.length; k++) { const kk = wxKind(hr.weather_code[i0 + k]); if (kk !== kNow) { summ = `${WMO(hr.weather_code[i0 + k])} expected around ${hr.time[i0 + k].slice(11, 16)}.`; break; } }
+  if (!summ) summ = `${WMO(c.weather_code)} conditions for the next few hours.`;
+  if (c.wind_gusts_10m > 20) summ += ` Wind gusts up to ${Math.round(c.wind_gusts_10m)} kt.`;
+  // 7 days with iPhone-style temperature range bars
+  const mins = d.temperature_2m_min || [], maxs = d.temperature_2m_max || [], wMin = Math.min(...mins), wMax = Math.max(...maxs), span = Math.max(1, wMax - wMin);
+  const days = (d.time || []).map((x, i) => { const lo = mins[i], hi = maxs[i], l = ((lo - wMin) / span) * 100, r = ((hi - wMin) / span) * 100, pp = d.precipitation_probability_max ? d.precipitation_probability_max[i] : 0;
+    const dot = i === 0 ? `<em style="left:${(((c.temperature_2m - wMin) / span) * 100).toFixed(1)}%"></em>` : "";
+    return `<div class="wd"><span class="dn">${i === 0 ? "Today" : new Date(x + "T12:00Z").toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" })}</span><span class="di">${WXE(d.weather_code[i], true)}${pp >= 30 ? `<small>${pp}%</small>` : ""}</span><span class="lo">${Math.round(lo)}°</span><span class="rg"><i style="left:${l.toFixed(1)}%;right:${(100 - r).toFixed(1)}%;background:linear-gradient(90deg,${tempCol(lo)},${tempCol(hi)})"></i>${dot}</span><span class="hi">${Math.round(hi)}°</span></div>`; }).join("");
+  const tile = (icon, k, v, sub, extra) => `<div class="wt"><span class="k">${icon} ${k}</span><b>${v}</b><span class="s">${sub || ""}</span>${extra || ""}</div>`;
+  const vis = c.visibility == null ? "—" : c.visibility >= 10000 ? "10+ km" : `${(c.visibility / 1000).toFixed(c.visibility < 5000 ? 1 : 0)} km`;
+  const sr = d.sunrise ? d.sunrise[0].slice(11, 16) : "—", ss = d.sunset ? d.sunset[0].slice(11, 16) : "—";
+  const uv = d.uv_index_max ? Math.round(d.uv_index_max[0]) : null;
+  const compass = `<span class="cmp"><i style="transform:rotate(${(c.wind_direction_10m + 180) % 360}deg)"></i></span>`;
+  return `<div class="wxp">
+    <div class="wx-top"><span class="wx-loc">${esc(shortApName(ap) || ap[2])}</span><span class="wx-t">${Math.round(c.temperature_2m)}°</span><span class="wx-c">${esc(WMO(c.weather_code))}</span>${hi0 != null ? `<span class="wx-hl">H:${hi0}°  L:${lo0}°</span>` : ""}</div>
+    ${hours ? `<div class="wxc"><p class="wx-sum">${esc(summ)}</p><div class="whs">${hours}</div></div>` : ""}
+    ${days ? `<div class="wxc"><span class="wx-k">7-day forecast</span>${days}</div>` : ""}
+    <div class="wtg">
+      ${tile("🌡️", "Feels like", `${Math.round(c.apparent_temperature ?? c.temperature_2m)}°`, Math.abs((c.apparent_temperature ?? c.temperature_2m) - c.temperature_2m) >= 2 ? ((c.apparent_temperature < c.temperature_2m) ? "Wind makes it feel colder." : "Humidity makes it feel warmer.") : "Similar to the actual temperature.")}
+      ${tile("💨", "Wind", `${Math.round(c.wind_speed_10m)}<small> kt</small>`, `From ${dirName(c.wind_direction_10m)} (${String(Math.round(c.wind_direction_10m)).padStart(3, "0")}°)${c.wind_gusts_10m > c.wind_speed_10m + 4 ? ` · gusts ${Math.round(c.wind_gusts_10m)} kt` : ""}`, compass)}
+      ${tile("💧", "Humidity", c.relative_humidity_2m == null ? "—" : `${Math.round(c.relative_humidity_2m)}%`, c.cloud_cover != null ? `Cloud cover ${Math.round(c.cloud_cover)}%` : "")}
+      ${tile("👁️", "Visibility", vis, c.visibility != null && c.visibility < 5000 ? "Reduced visibility." : "Clear view.")}
+      ${tile("🧭", "Pressure", c.pressure_msl == null ? "—" : `${Math.round(c.pressure_msl)}<small> hPa</small>`, "Sea level (QNH)")}
+      ${tile("🌅", "Sunrise", sr, `Sunset ${ss}`)}
+      ${uv != null ? tile("☀️", "UV index", uv, uv <= 2 ? "Low" : uv <= 5 ? "Moderate" : uv <= 7 ? "High" : "Very high") : ""}
+      ${tile("☔️", "Rain chance", d.precipitation_probability_max ? `${d.precipitation_probability_max[0]}%` : "—", c.precipitation ? `${c.precipitation} mm in the last hour` : "Today")}
+    </div>
+    ${metarCache.get(ap[0]) && metarCache.get(ap[0]).m ? wxBlock(ap) : ""}
+    ${runwaysHtml(ap)}
+    <button class="btn full" id="aRadar" aria-pressed="${!!S.radar}">${S.radar ? "Hide rain radar on the map" : "Show rain radar on the map"}</button>
+    <p class="wx-src">Weather from Open-Meteo${metarCache.get(ap[0]) && metarCache.get(ap[0]).m ? " · METAR from aviationweather.gov" : ""}</p>
+  </div>`;
+}
 function renderAirport() {
   const ap = airport; if (!ap) return;
   $("#aKicker").textContent = `${ap[6] ? "Major airport" : "Airport"} · ${ap[0]}`;
@@ -3609,10 +3808,7 @@ function renderAirport() {
       ${rows.slice(0, 40).map((r) => boardRow(r, boardTab)).join("") || `<div class="none">${boardTab === "arr" ? "No arrivals spotted right now." : boardTab === "dep" ? "No departures spotted right now." : "No aircraft reporting on the ground here."}</div>`}
     </div>
     <p class="board-foot">Live from ADS-B positions: aircraft routed here or descending towards the field count as arrivals, and climbing away as departures. Times are estimates. ${t.nearby} aircraft airborne within 60 nm.</p>`;
-  else if (aTab === "weather") html = `
-    ${wxBlock(ap)}
-    ${runwaysHtml(ap)}
-    <button class="btn full" id="aRadar" aria-pressed="${!!S.radar}">${S.radar ? "Hide rain radar on the map" : "Show rain radar on the map"}</button>`;
+  else if (aTab === "weather") html = wxPageHtml(ap);
   else if (aTab === "atc") html = atcHtml(ap);
   else html = `
     ${delaysHtml(ap)}
@@ -3621,7 +3817,7 @@ function renderAirport() {
     ${nextBoard(t.dep, "dep", "Departures")}
     <button class="amap" id="aMap">${artAirport(ap)}<span class="shade"></span><span class="tx"><b>Airport map</b><span>Runways, taxiways and terminals</span></span><span class="go">Open map</span></button>
     ${actions}`;
-  if (html !== boardKey) { const sc = $("#aBody").scrollTop; boardKey = html; $("#aBody").innerHTML = html; $("#aBody").scrollTop = sc;
+  if (html !== boardKey) { const sc = $("#aBody").scrollTop; boardKey = html; $("#aBody").innerHTML = html; $("#aBody").scrollTop = sc; wxBgSync();
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     on("aZoom", () => { flyTo(ap[4], ap[5], 11.5); });
     on("aMap", () => { closeSheets(); airport = null; setEx("peek"); flyTo(ap[4], ap[5], 14.2, 1000); toast(`${ap[2]}: pinch to explore`); });
@@ -3629,7 +3825,7 @@ function renderAirport() {
     on("aSave", () => { const i = S.saved.airports.indexOf(ap[0]); if (i >= 0) { S.saved.airports.splice(i, 1); toast(`Removed ${ap[1] || ap[0]}`); } else { S.saved.airports.unshift(ap[0]); toast(`Saved ${ap[2]}`); } savePrefs(); boardKey = ""; renderAirport(); }); }
 }
 function setATab(t) {
-  aTab = t; boardKey = "";
+  aTab = t; boardKey = ""; setTimeout(wxBgSync, 0);
   for (const b of document.querySelectorAll("[data-atab]")) b.setAttribute("aria-pressed", String(b.dataset.atab === t));
   $("#aBody").scrollTop = 0;
 }
