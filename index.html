@@ -1378,7 +1378,9 @@ body.globe-on #altLegend { display: none; }
 .chip .dot { background: var(--accent); border: 0; box-shadow: 0 0 8px rgba(0, 240, 255, .55); }
 .chip.beat .dot { animation: beat .8s ease-out; }
 @keyframes beat { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .8); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
-.chip[data-mode="connecting"] .dot, .chip[data-mode="stale"][data-sub="retry"] .dot { background: var(--ink-3); border: 0; box-shadow: none; animation: seek 1.3s ease-out infinite; }
+/* connecting / updating: a dashed accent ring that turns, with the accent pulse */
+.chip[data-mode="connecting"] .dot, .chip[data-mode="stale"][data-sub="retry"] .dot { width: 10px; height: 10px; background: transparent; border: 1.8px dashed var(--accent); box-shadow: none; animation: dotspin 2.4s linear infinite, seek 1.3s ease-out infinite; }
+@keyframes dotspin { to { transform: rotate(360deg); } }
 @keyframes seek { 0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, .85); } 100% { box-shadow: 0 0 0 9px rgba(0, 240, 255, 0); } }
 .chip[data-mode="stale"]:not([data-sub="retry"]) .dot { background: var(--alert); border: 0; box-shadow: 0 0 8px rgba(255, 59, 48, .55); animation: none; }
 .chip[data-mode="sim"] .dot { background: transparent; border: 1.6px solid var(--accent); box-shadow: none; animation: none; }
