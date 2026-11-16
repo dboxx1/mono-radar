@@ -1308,6 +1308,13 @@ body.globe-on #altLegend { display: none; }
 .cmp { position: absolute; right: 12px; top: 30px; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.35); }
 .cmp i { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 3px; margin-left: -1.5px; border-radius: 3px; background: linear-gradient(#fff 50%, rgba(255,255,255,.3) 50%); }
 .wx-src { margin: 0; text-align: center; font-size: 11.5px; opacity: .7; }
+/* weather mode: no photo, the header sits on the live sky with just the airport's name */
+#sheet-airport.wx-mode .hero { height: 128px; background: transparent; z-index: 1; }
+#sheet-airport.wx-mode #aHeroArt, #sheet-airport.wx-mode .hero-img, #sheet-airport.wx-mode .hero-shade, #sheet-airport.wx-mode .hero-cap { display: none; }
+#sheet-airport.wx-mode .hero-text { text-shadow: 0 1px 2px rgba(0,0,0,.25), 0 2px 18px rgba(0,0,0,.25); }
+#sheet-airport.wx-mode .hero-text .kicker { color: rgba(255,255,255,.85); }
+#sheet-airport.wx-mode .hero .x { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.3); }
+#sheet-airport.wx-mode .wx-top { padding-top: 4px; }
 </style>
 </head>
 <body>
@@ -3713,10 +3720,12 @@ function wxFrame(now) {
 function wxBgSync() {
   const cv = $("#wxBg"), on = openSheet === "airport" && aTab === "weather" && !!airport;
   $("#aBody").classList.toggle("wx-on", on);
+  $("#sheet-airport").classList.toggle("wx-mode", on);
   if (!on) { cv.hidden = true; if (WXA.raf) cancelAnimationFrame(WXA.raf); WXA.raf = 0; return; }
   const w = wxCache.get(airport[0]), c = w && w.cur;
-  const body = $("#aBody"), W = body.clientWidth, H = body.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
-  cv.style.top = body.offsetTop + "px"; cv.style.height = H + "px";
+  // the scene runs behind the header too: the photo steps aside and the airport name sits on the sky
+  const body = $("#aBody"), W = body.clientWidth, H = body.offsetTop + body.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+  cv.style.top = "0px"; cv.style.height = H + "px";
   if (W !== WXA.w || H !== WXA.h || dpr !== WXA.dpr) { WXA.w = W; WXA.h = H; WXA.dpr = dpr; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   wxSetScene(c ? wxKind(c.weather_code) : "partly", c ? c.is_day !== 0 : true, c ? c.wind_speed_10m : 8, c ? c.wind_direction_10m : 270);
   cv.hidden = false;
@@ -3755,7 +3764,7 @@ function wxPageHtml(ap) {
   const uv = d.uv_index_max ? Math.round(d.uv_index_max[0]) : null;
   const compass = `<span class="cmp"><i style="transform:rotate(${(c.wind_direction_10m + 180) % 360}deg)"></i></span>`;
   return `<div class="wxp">
-    <div class="wx-top"><span class="wx-loc">${esc(shortApName(ap) || ap[2])}</span><span class="wx-t">${Math.round(c.temperature_2m)}°</span><span class="wx-c">${esc(WMO(c.weather_code))}</span>${hi0 != null ? `<span class="wx-hl">H:${hi0}°  L:${lo0}°</span>` : ""}</div>
+    <div class="wx-top"><span class="wx-t">${Math.round(c.temperature_2m)}°</span><span class="wx-c">${esc(WMO(c.weather_code))}</span>${hi0 != null ? `<span class="wx-hl">H:${hi0}°  L:${lo0}°</span>` : ""}</div>
     ${hours ? `<div class="wxc"><p class="wx-sum">${esc(summ)}</p><div class="whs">${hours}</div></div>` : ""}
     ${days ? `<div class="wxc"><span class="wx-k">7-day forecast</span>${days}</div>` : ""}
     <div class="wtg">
