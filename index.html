@@ -1327,6 +1327,30 @@ body.globe-on #altLegend { display: none; }
 .tabbar > .liq { display: none; }
 .abar:not(.tabbar) > button[aria-pressed="true"]::before, .abar > button:active::before { content: none; }
 .abar > button:active { opacity: .6; }
+/* ---- Seat map, cleaner: one fuselage outline, even rounded seats, red door marks for exits; scrolls sideways only ---- */
+.seatmap { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; padding-top: 2px; padding-bottom: 2px; }
+.sm-in { gap: 10px; }
+.fuse { align-items: center; gap: 18px; padding: 12px 26px 16px 58px; border-radius: 140px 26px 26px 140px / 100px 22px 22px 100px; background: var(--card); border: 1px solid var(--line); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+.cab-sec { gap: 8px; }
+.cab-h { font: 700 11px/1 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
+.cab-h i { width: 8px; height: 8px; border-radius: 50%; }
+.cab-h span { text-transform: none; letter-spacing: 0; color: var(--ink-3); }
+.cab-cols { gap: 4px; }
+.scol { gap: 4px; }
+.scol b { height: 12px; font: 600 9.5px/12px var(--font-ui); color: var(--ink-3); }
+.sg { gap: 4px; }
+.ai { height: 10px; }
+.st { width: var(--s); height: var(--s); border-radius: 5px; background: var(--c); box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.18); }
+.st.l { width: 12px; height: var(--s); border-radius: 0; background: none; box-shadow: none; font: 700 9px/1 var(--font-ui); display: grid; place-items: center; color: var(--ink-3); }
+.st.blk { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+.scol.lett { margin-right: 2px; }
+.scol.wing::before, .scol.wing::after { content: none; }
+.exit-v { display: none; }
+.sx { position: relative; width: 8px; flex: none; }
+.sx i { position: absolute; left: 1px; width: 6px; height: 14px; border-radius: 3px; background: var(--alert); }
+.sx i:first-child { top: -1px; height: 12px; } .sx i:last-child { bottom: -9px; height: 12px; }
+.sm-hint { margin: -2px 2px 0; }
+.sx-k { display: inline-block; width: 6px; height: 11px; border-radius: 3px; background: var(--alert); vertical-align: -1px; margin-right: 2px; }
 </style>
 </head>
 <body>
@@ -5628,21 +5652,21 @@ function seatCount(cab) { return cab.reduce((n, [c, rows, lay]) => n + rows * (l
 /* Landscape seat map: nose on the left, seen from above, so seat A (left side of the aircraft) is at the bottom */
 function seatDeckHtml(deck, rowStart) {
   const totalRows = deck.cab.reduce((n, c) => n + c[1], 0), exitRows = new Set((deck.exits || []).map((f) => (f >= 1 ? totalRows : Math.round(f * (totalRows - 1)))));
-  const wingFrom = Math.round(totalRows * 0.34), wingTo = Math.round(totalRows * 0.56);
-  const exitCol = '<div class="exit-v"><span>EXIT</span><i></i><span>EXIT</span></div>';
+  // an exit is a slim gap in the cabin with a red door mark at each side of the fuselage
+  const exitCol = '<div class="sx" aria-label="Exit"><i></i><i></i></div>';
   let row = rowStart, idx = 0, h = "";
   for (const [cls, rows, lay] of deck.cab) {
     const groups = LETTERS[lay].map((g) => g.slice().reverse()).reverse(), nSeats = LETTERS[lay].flat().length;
-    const s = { F: 30, J: 27, W: 23, Y: 20 }[cls], len = Math.round(s * (cls === "F" || cls === "J" ? 1.25 : 1.05));
+    const sz = { F: 26, J: 23, W: 19, Y: 16 }[cls];
     const col = (inner, extra = "") => `<div class="scol${extra}">${inner}</div>`;
-    let cols = col(`<b></b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st l">${l}</span>`).join("")}</span>`).join('<span class="ai"></span>')}`, " lett");
+    const seatsCol = (lab, mk) => groups.map((g) => `<span class="sg">${g.map(mk).join("")}</span>`).join('<span class="ai"></span>');
+    let cols = col(`<b></b>${seatsCol("", (l) => `<span class="st l">${l}</span>`)}`, " lett");
     for (let r = 0; r < rows; r++, row++, idx++) {
       if (exitRows.has(idx)) cols += exitCol;
-      const wing = idx >= wingFrom && idx <= wingTo ? " wing" : "";
-      cols += col(`<b>${row}</b>${groups.map((g) => `<span class="sg">${g.map((l) => `<span class="st${lay === "3-3b" && (l === "B" || l === "E") ? " blk" : ""}" title="${row}${l}"></span>`).join("")}</span>`).join('<span class="ai"></span>')}`, wing);
+      cols += col(`<b>${row}</b>${seatsCol(row, (l) => `<span class="st${lay === "3-3b" && (l === "B" || l === "E") ? " blk" : ""}" title="${row}${l}"></span>`)}`);
     }
     if (idx === totalRows && exitRows.has(totalRows)) cols += exitCol;
-    h += `<div class="cab-sec" style="--s:${s}px;--w:${len}px;--c:${CABIN[cls][1]}"><div class="cab-h"><i></i>${CABIN[cls][0]}<span>${lay.replace("b", "")} · ${rows * (lay === "3-3b" ? 4 : nSeats)}</span></div><div class="cab-cols">${cols}</div></div>`;
+    h += `<div class="cab-sec" style="--s:${sz}px;--c:${CABIN[cls][1]}"><div class="cab-h"><i></i>${CABIN[cls][0]}<span>${lay.replace("b", "")} · ${rows * (lay === "3-3b" ? 4 : nSeats)}</span></div><div class="cab-cols">${cols}</div></div>`;
   }
   return { h, next: row };
 }
@@ -5663,7 +5687,7 @@ function renderSeats(a) {
   }
   el.innerHTML = `<div class="card seat-sum"><div class="ss-top"><div><small>Typical layout</small><b>${esc(p.n)}</b></div><div class="ss-n"><b>${total}</b><small>seats</small></div></div>
     <div class="ss-cls">${Object.entries(byCls).map(([c, n]) => `<span><i style="background:${CABIN[c][1]}"></i>${CABIN[c][0]} <b>${n}</b></span>`).join("")}</div></div>
-    <div class="seatmap"><div class="sm-in">${body}</div></div><div class="sm-hint">Swipe sideways to see the whole cabin · front of the aircraft on the left</div>
+    <div class="seatmap"><div class="sm-in">${body}</div></div><div class="sm-hint">Swipe sideways for the whole cabin · nose on the left · <span class="sx-k"></span> exits</div>
     <p class="seat-note">A typical cabin for this aircraft type, not ${esc(airlineOf(a) || "this airline")}'s exact layout. Seat counts, cabins and row numbers vary between airlines and aircraft. Exits and wing position are approximate.</p>`;
 }
 
