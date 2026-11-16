@@ -6216,12 +6216,12 @@ let charW = 6.3, charW2 = 5.7;
 function hud() {
   const chip = $("#feedChip"); chip.dataset.mode = feed.mode;
   // just the state: Live, Simulation, or Disconnected (feed names and counts live in Settings and the Live tab)
-  // lost the feed: "Reconnecting" while it keeps retrying for the first couple of minutes, then "Disconnected"
+  // lost the feed: "Updating" while it keeps retrying for the first couple of minutes, then "Disconnected"
   const retrying = feed.mode === "stale" && navigator.onLine !== false && Date.now() - feed.lastOk < 120000;
   chip.dataset.sub = retrying ? "retry" : "";
   const offline = navigator.onLine === false && feed.mode !== "sim";
   if (offline) chip.dataset.mode = "stale";
-  const t = offline ? "Disconnected" : feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? (retrying ? "Reconnecting" : "Disconnected") : "Connecting";
+  const t = offline ? "Disconnected" : feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? (retrying ? "Updating" : "Disconnected") : "Connecting";
   $("#feedText").textContent = t;
   chip.setAttribute("aria-label", `Feed: ${t}. Open settings`);
   const hint = feed.mode === "live" ? feed.hint : "";
