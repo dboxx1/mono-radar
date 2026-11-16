@@ -99,6 +99,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #34c759; box-shadow: 0 0 10px #34c759; flex: none; }
 .chip[data-mode="sim"] .dot, .chip[data-mode="stale"] .dot { background: transparent; border: 1.6px solid var(--accent); box-shadow: none; }
+.chip[data-mode="stale"] .dot { border-color: var(--alert); }
 .chip[data-mode="connecting"] .dot { background: var(--accent); box-shadow: none; animation: blink 1s steps(2) infinite; }
 .chip.hint { font-weight: 500; color: var(--ink-2); white-space: normal; height: auto; padding: 8px 13px; line-height: 1.35; }
 .chip.filter { background: var(--accent); color: #111; border-color: transparent; }
@@ -6202,12 +6203,10 @@ $("#qMil").addEventListener("click", () => { setTimeout(updateChips, 50);
 let charW = 6.3, charW2 = 5.7;
 function hud() {
   const chip = $("#feedChip"); chip.dataset.mode = feed.mode;
-  let t = "Connecting";
-  const n = acMap.size.toLocaleString("en-GB");
-  if (feed.mode === "live") t = `Live · ${feed.sources.length > 1 ? feed.sources.length + " feeds" : SOURCES[feed.sources[0]].label} · ${n}`;
-  else if (feed.mode === "sim") t = `Simulated · ${n}`;
-  else if (feed.mode === "stale") t = `No signal · retrying`;
+  // just the state: Live, Simulation, or Disconnected (feed names and counts live in Settings and the Live tab)
+  const t = feed.mode === "live" ? "Live" : feed.mode === "sim" ? "Simulation" : feed.mode === "stale" ? "Disconnected" : "Connecting";
   $("#feedText").textContent = t;
+  chip.setAttribute("aria-label", `Feed: ${t}. Open settings`);
   const hint = feed.mode === "live" ? feed.hint : "";
   if (hint && hint !== lastHint) pushNote("feed", hint, "Feed", null, false, "feed|" + hint);
   lastHint = hint;
