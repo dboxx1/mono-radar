@@ -72,7 +72,7 @@ body {
 }
 #map { position: fixed; inset: 0; z-index: 1; display: block; touch-action: none; cursor: grab; }
 #map.dragging { cursor: grabbing; }
-#basemap { position: fixed; left: 0; top: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+#basemap { position: fixed; left: 0; top: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--map-bg, var(--bg)); }
 #basemap .maplibregl-canvas { position: absolute; left: 0; top: 0; }
 .maplibregl-missing-css { display: none; }
 button, input, select { font: inherit; color: inherit; }
@@ -1416,6 +1416,7 @@ body.globe-on #altLegend { display: none; }
 .fq, .group, .toggles, .style, .empty-v, .fr-tip, .sh-row, .wxc, .wt, .chip, .ctrl-group, .btn, .seg2, .seg2 button, .qt, .x, .xs, .me, .searchbox, .attrib,
 .alt-legend, .h3-top, .h3-ctl button, .h3-cams, .dl-hold button, .fq-more, .liq, .oh-empty, .more-btn, .pcard, .metar, .sh-name input, .addf input { border-width: 0 !important; }
 :root { --pad: var(--gut); }
+.styles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 </style>
 </head>
 <body>
@@ -1621,7 +1622,7 @@ body.globe-on #altLegend { display: none; }
 <aside class="sheet" id="sheet-mapstyle" aria-label="Map style">
   <span class="grab"></span>
   <div class="sheet-head">
-    <div><div class="kicker">Appearance</div><h2>Map &amp; layers</h2></div>
+    <div><div class="kicker">Map</div><h2>Map &amp; layers</h2></div>
     <button class="x" data-close aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
   </div>
   <div class="sheet-body">
@@ -1641,7 +1642,7 @@ body.globe-on #altLegend { display: none; }
         <label class="tg" for="tNight">Day and night shading <input type="checkbox" id="tNight"></label>
         <label class="tg" for="tAltColor">Colour planes by altitude <input type="checkbox" id="tAltColor"></label>
         <label class="tg" for="tShadows">Aircraft shadows <input type="checkbox" id="tShadows"></label>
-        <label class="tg" for="tPaper">Light mode <input type="checkbox" id="tPaper"></label>
+
       </div>
     </div>
   </div>
@@ -1712,7 +1713,7 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* ---------------- Preferences ---------------- */
 const PREF_KEY = "monoRadar.v2";
 const DEF_FILTERS = { cats: ["airliner", "turboprop", "biz", "light", "heli", "mil", "other"], ground: true, altMin: 0, altMax: 99999, airline: "", type: "" };
-const DEFAULTS = { lat: 51.47, lon: -0.46, zoom: 7, source: "auto", customUrl: "", interval: 5, style: "outline", labels: true, airports: true, trail: true, paper: false, night: true, shadows: true, geo: true, cartoKey: "", commercial: false, radar: false, filters: DEF_FILTERS };
+const DEFAULTS = { lat: 51.47, lon: -0.46, zoom: 7, source: "auto", customUrl: "", interval: 5, style: "black", labels: true, airports: true, trail: true, paper: false, night: true, shadows: true, geo: true, cartoKey: "", commercial: false, radar: false, filters: DEF_FILTERS };
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(PREF_KEY) || "{}") || {}; } catch (e) { saved = {}; }
 const S = Object.assign({}, DEFAULTS, saved);
@@ -1728,6 +1729,12 @@ let notes = Array.isArray(S.notes) ? S.notes.filter((n) => n && n.t && Date.now(
 let lastHint = "", lastMode = "";
 S.notesSeen = S.notesSeen || 0;
 if (!S.styleV) { S.style = "vector"; S.styleV = 2; }
+if (S.styleV < 3) { S.style = S.style === "streets" || S.paper ? "colour" : "black"; S.styleV = 3; }
+if (!["black", "white", "colour"].includes(S.style)) S.style = "black";
+// app appearance is its own setting now: dark, light or follow the phone
+if (!["dark", "light", "auto"].includes(S.theme)) S.theme = S.paper ? "light" : "dark";
+const prefersLight = matchMedia("(prefers-color-scheme: light)");
+S.paper = S.theme === "light" || (S.theme === "auto" && prefersLight.matches);
 if (!S.lonFix) { S.lat = DEFAULTS.lat; S.lon = DEFAULTS.lon; S.zoom = DEFAULTS.zoom; S.lonFix = 1; }
 // a broken saved view (not a number) falls back to the default view
 if (![S.lat, S.lon, S.zoom].every(Number.isFinite)) { S.lat = DEFAULTS.lat; S.lon = DEFAULTS.lon; S.zoom = DEFAULTS.zoom; }
@@ -1806,18 +1813,20 @@ const PLACES = NE.places.map(([n, lon, lat, minz, cap]) => ({ n, lat, lon, minz,
 
 /* ---------------- Colours ---------------- */
 const C = {};
+const U = {};
 function readColors() {
+  // the map (canvas, globe, 3D) follows the chosen map style...
+  Object.assign(C, MAP_TONES[mapTone()]);
+  C.inkRGB = [1, 3, 5].map((i) => parseInt(C.ink.slice(i, i + 2), 16)).join(",");
+  document.documentElement.style.setProperty("--map-bg", C.sea);
+  // ...while charts inside sheets follow the app's light/dark appearance
   const cs = getComputedStyle(document.documentElement);
-  for (const k of ["bg", "ink", "ink-2", "ink-3", "line", "land", "sea", "accent", "alert", "geo"]) C[k.replace("-", "")] = cs.getPropertyValue("--" + k).trim();
-  const h = C.ink.replace("#", "");
-  C.inkRGB = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(",");
-  C.dark = !S.paper;
-  C.coast = C.dark ? "#707070" : "#1a7fd6";
-  C.river = C.dark ? C.ink3 : "#2e9cf4";
-  C.border = C.dark ? C.ink3 : "#56664f";
-  document.querySelector('meta[name="theme-color"]').setAttribute("content", C.bg);
+  for (const k of ["bg", "ink", "ink-2", "ink-3", "accent"]) U[k.replace("-", "")] = cs.getPropertyValue("--" + k).trim();
+  U.dark = !S.paper;
+  U.inkRGB = [1, 3, 5].map((i) => parseInt(U.ink.slice(i, i + 2), 16)).join(",");
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", U.bg);
 }
-const ink = (a) => `rgba(${C.inkRGB},${a})`;
+const ink = (a) => `rgba(${U.inkRGB},${a})`;
 const FONT = '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace';
 const UIF = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const LBL_F1 = `700 11.5px ${UIF}`, LBL_F2 = `500 10px ${UIF}`;
@@ -2017,13 +2026,21 @@ function baseStale() { let du = BV.u - V.u; du -= Math.round(du); return Math.ab
 /* ---------------- Raster tiles (CARTO, greyscale) ---------------- */
 const tiles = new Map();
 let tileLoads = 0, tileErrs = 0, tilesBroken = false, tilesPending = 0;
+/* Map styles are independent of the app's light/dark appearance: a black map, a white map and a colour map.
+   Each is an OpenStreetMap vector map (OpenFreeMap) re-coloured to match, with the built-in map drawn in the
+   same colours whenever the vector map can't load. */
 const STYLES = {
-  vector: { label: "Map", vector: true, dark: "https://tiles.openfreemap.org/styles/dark", light: "https://tiles.openfreemap.org/styles/positron" },
-  streets: { label: "Streets (colour)", vector: true, dark: "https://tiles.openfreemap.org/styles/liberty", light: "https://tiles.openfreemap.org/styles/liberty?tint=light" },
-  dark: { label: "CARTO (key)", dark: "dark_all", light: "light_all" },
-  outline: { label: "Built-in", dark: null, light: null },
+  black: { label: "Black", vector: true, url: "https://tiles.openfreemap.org/styles/dark", sw: "linear-gradient(135deg,#141516 50%,#2a2d32 50%)" },
+  white: { label: "White", vector: true, url: "https://tiles.openfreemap.org/styles/positron", sw: "linear-gradient(135deg,#f6f6f4 50%,#d9dfe6 50%)" },
+  colour: { label: "Colour", vector: true, url: "https://tiles.openfreemap.org/styles/positron?tone=colour", sw: "linear-gradient(135deg,#c2ea84 50%,#2e9cf4 50%)" },
 };
-function tileLayer() { const st = STYLES[S.style] || STYLES.outline; return st.vector || tilesBroken || !S.cartoKey ? null : S.paper ? st.light : st.dark; }
+const MAP_TONES = {
+  black: { dark: true, bg: "#0b0b0c", land: "#141516", sea: "#2a2d32", ink: "#f5f5f7", ink2: "#a1a1a6", ink3: "#6e6e73", line: "rgba(255,255,255,0.09)", coast: "#4a4f57", river: "#3a3f46", border: "#5a5d63", geo: "#4fb3ff", accent: "#00f0ff", alert: "#ff4a3d" },
+  white: { dark: false, bg: "#ffffff", land: "#f6f6f4", sea: "#d9dfe6", ink: "#111113", ink2: "#5f5f66", ink3: "#a0a0a6", line: "rgba(0,0,0,0.08)", coast: "#aeb7c2", river: "#c3ccd6", border: "#b9b9bf", geo: "#1d3f6e", accent: "#00f0ff", alert: "#e5372a" },
+  colour: { dark: false, bg: "#ffffff", land: "#c2ea84", sea: "#2e9cf4", ink: "#111113", ink2: "#5f5f66", ink3: "#a0a0a6", line: "rgba(0,0,0,0.08)", coast: "#1a7fd6", river: "#2e9cf4", border: "#56664f", geo: "#1d3f6e", accent: "#00f0ff", alert: "#e5372a" },
+};
+const mapTone = () => (STYLES[S.style] ? S.style : "black");
+function tileLayer() { return null; }
 
 /* Vector basemap: OpenFreeMap (OpenStreetMap data) drawn by MapLibre underneath the aircraft canvas */
 const ML_JS = "https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js";
@@ -2077,6 +2094,9 @@ function ensureBasemap() {
   }
   if (want.key !== mlStyleUrl) { mlStyleUrl = want.key; ml.setStyle(url); }
 }
+/* black map: lighter grey sea so it isn't all black; white map: cool light-grey water */
+const MAP_BLACK = { background: { "background-color": "#141516" }, water: { "fill-color": "#2a2d32" }, waterway: { "line-color": "#3a3f46" }, water_name: { "text-color": "#8a9099" } };
+const MAP_WHITE = { background: { "background-color": "#f6f6f4" }, water: { "fill-color": "#d9dfe6" }, waterway: { "line-color": "#c3ccd6" } };
 const MAP_LIGHT = {
   background: { "background-color": "#c2ea84" },
   park: { "fill-color": "#acdd70" },
@@ -2109,8 +2129,8 @@ const STREETS_LIGHT = {
   boundary_2: { "line-color": "#56664f" }, boundary_3: { "line-color": "#7f906f" },
 };
 function tintMap(m, url) {
-  if (!m || !S.paper) return;
-  const set = url === STYLES.vector.light ? MAP_LIGHT : url === STYLES.streets.light ? STREETS_LIGHT : null;
+  if (!m) return;
+  const set = url === STYLES.colour.url ? MAP_LIGHT : url === STYLES.black.url ? MAP_BLACK : url === STYLES.white.url ? MAP_WHITE : null;
   if (!set) return;
   for (const [id, props] of Object.entries(set)) {
     if (!m.getLayer(id)) continue;
@@ -3470,18 +3490,18 @@ function drawSpark(a) {
   const g = c.getContext("2d"); g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, w, h);
   const pts = a.trail.filter((p) => p.alt != null);
   g.font = `400 10px ${FONT}`; g.textBaseline = "top";
-  if (pts.length < 2) { g.fillStyle = C.ink3; g.fillText("Builds up while the flight is on screen…", 0, 4); return; }
+  if (pts.length < 2) { g.fillStyle = U.ink3; g.fillText("Builds up while the flight is on screen…", 0, 4); return; }
   const t0 = pts[0].t, t1 = pts[pts.length - 1].t || t0 + 1;
   let lo = Math.min(...pts.map((p) => p.alt)), hi = Math.max(...pts.map((p) => p.alt));
   if (hi - lo < 1000) { const m = (hi + lo) / 2; lo = Math.max(0, m - 500); hi = lo + 1000; }
   const X = (t) => 2 + ((t - t0) / Math.max(1, t1 - t0)) * (w - 74), Y = (v) => 6 + (1 - (v - lo) / (hi - lo)) * (h - 16);
   g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); for (const v of [lo, hi]) { g.moveTo(0, Y(v)); g.lineTo(w - 68, Y(v)); } g.stroke();
   g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(X(p.t), Y(p.alt)) : g.moveTo(X(p.t), Y(p.alt))));
-  g.strokeStyle = C.ink; g.lineWidth = 1.5; g.stroke();
+  g.strokeStyle = U.ink; g.lineWidth = 1.5; g.stroke();
   g.lineTo(X(t1), h); g.lineTo(X(t0), h); g.closePath(); g.fillStyle = ink(0.08); g.fill();
-  const last = pts[pts.length - 1]; g.fillStyle = C.ink; g.beginPath(); g.arc(X(last.t), Y(last.alt), 3, 0, TAU); g.fill();
-  g.fillStyle = C.ink2; g.textAlign = "right"; g.fillText(fmtInt(hi) + " ft", w, Y(hi) - 4); g.fillText(fmtInt(lo) + " ft", w, Y(lo) - 6);
-  g.textAlign = "left"; g.fillStyle = C.ink3; g.fillText(a._fullTrack ? `since take-off · ${Math.max(1, Math.round((t1 - t0) / 60000))} min` : `last ${Math.max(1, Math.round((t1 - t0) / 60000))} min`, 2, h - 11);
+  const last = pts[pts.length - 1]; g.fillStyle = U.ink; g.beginPath(); g.arc(X(last.t), Y(last.alt), 3, 0, TAU); g.fill();
+  g.fillStyle = U.ink2; g.textAlign = "right"; g.fillText(fmtInt(hi) + " ft", w, Y(hi) - 4); g.fillText(fmtInt(lo) + " ft", w, Y(lo) - 6);
+  g.textAlign = "left"; g.fillStyle = U.ink3; g.fillText(a._fullTrack ? `since take-off · ${Math.max(1, Math.round((t1 - t0) / 60000))} min` : `last ${Math.max(1, Math.round((t1 - t0) / 60000))} min`, 2, h - 11);
 }
 const AP_ICAO = new Map(AIRPORTS.map((x) => [x[0], x]));
 async function lookup(a) {
@@ -4208,27 +4228,21 @@ $("#filterChip").addEventListener("click", () => { resetFilters(); toast("Filter
 /* Map style UI */
 function renderStyles() {
   const el = $("#styles"); if (!el) return;
-  el.innerHTML = Object.entries(STYLES).map(([id, st]) => {
-    const bg = id === "outline" ? `linear-gradient(135deg, var(--land) 50%, var(--sea) 50%)` : id === "streets" ? "linear-gradient(135deg,#f2efe9 0 40%,#aad3df 40% 60%,#f9d79a 60% 64%,#e8e4dc 64%)" : id === "vector" ? (S.paper ? "linear-gradient(135deg,#c2ea84 0 45%,#2e9cf4 45% 70%,#acdd70 70%)" : "linear-gradient(135deg,#2b2b2b 0 45%,#111 45% 55%,#3a3a3a 55% 57%,#222 57%)") : S.paper ? "repeating-linear-gradient(45deg,#e6e6e3 0 6px,#f4f4f2 6px 12px)" : "repeating-linear-gradient(45deg,#1b1b1b 0 6px,#232323 6px 12px)";
-    return `<button class="style" data-style="${id}" aria-pressed="${S.style === id}"><i style="background:${bg}"></i>${st.label}</button>`;
-  }).join("");
-  const needKey = S.style === "dark" && !S.cartoKey;
-  $("#keyField").hidden = S.style !== "dark";
-  $("#cartoKey").value = S.cartoKey;
-  $("#tileNote").innerHTML = STYLES[S.style] && STYLES[S.style].vector
-    ? (mlState === "broken" ? "The street map can't load in this viewer, so the built-in map is showing. It works in the standalone file." : mlState === "ready" ? "OpenStreetMap vector map by OpenFreeMap: roads, towns and labels at every zoom. Free, no key." : "Loading the OpenStreetMap vector map…")
-    : tilesBroken ? "Map tiles can't load in this viewer, so the built-in map is showing."
-    : S.style === "outline" ? "Built-in map: coastlines, lakes, rivers, borders and cities. Works anywhere, no key needed."
-    : needKey ? `Detailed tiles come from CARTO and need a free API key. <a href="https://carto.com/basemaps/apikey/" target="_blank" rel="noopener">Get one here ↗</a>, then paste it below. The built-in map shows until then.`
-    : "Greyscale tiles by CARTO from OpenStreetMap data.";
+  el.innerHTML = Object.entries(STYLES).map(([id, st]) => `<button class="style" data-style="${id}" aria-pressed="${mapTone() === id}"><i style="background:${st.sw}"></i>${st.label}</button>`).join("");
+  $("#keyField").hidden = true;
+  $("#tileNote").innerHTML = mlState === "broken" || vecBroken
+    ? "The street map can't load here, so the built-in map is showing in the same colours."
+    : "OpenStreetMap vector map by OpenFreeMap: roads, towns and labels at every zoom. The map style is separate from the app's light or dark appearance, which you can change in Profile.";
 }
-const TOGGLES = [["tAltColor", "altColor"], ["tLabels", "labels"], ["tAirports", "airports"], ["tTrail", "trail"], ["tGeo", "geo"], ["tNight", "night"], ["tShadows", "shadows"], ["tPaper", "paper"]];
+/* switching map style re-colours the map, planes and labels without touching the app's appearance */
+function applyMapTone() { readColors(); if (ml || mlScript) ensureBasemap(); sprites.clear(); TONE_CACHE.clear(); GRADS.clear(); BV.valid = false; dirty = true; }
+const TOGGLES = [["tAltColor", "altColor"], ["tLabels", "labels"], ["tAirports", "airports"], ["tTrail", "trail"], ["tGeo", "geo"], ["tNight", "night"], ["tShadows", "shadows"]];
 function renderMapStyle() {
   renderStyles();
   for (const [id, k] of TOGGLES) $("#" + id).checked = !!S[k];
 }
 $("#btnKey").addEventListener("click", () => { S.cartoKey = $("#cartoKey").value.trim(); tiles.clear(); tileErrs = 0; tileLoads = 0; tilesBroken = false; savePrefs(); renderStyles(); updateAttrib(); BV.valid = false; dirty = true; toast(S.cartoKey ? "Key saved. Loading detailed tiles." : "Key removed"); });
-$("#styles").addEventListener("click", (e) => { const b = e.target.closest(".style"); if (!b) return; S.style = b.dataset.style; if (STYLES[S.style].vector && mlState === "broken") { mlState = ml ? "ready" : "off"; } savePrefs(); ensureBasemap(); BV.valid = false; renderStyles(); updateAttrib(); dirty = true; });
+$("#styles").addEventListener("click", (e) => { const b = e.target.closest(".style"); if (!b) return; S.style = b.dataset.style; if (STYLES[S.style].vector && mlState === "broken") { mlState = ml ? "ready" : "off"; } savePrefs(); applyMapTone(); renderStyles(); updateAttrib(); });
 for (const [id, k] of TOGGLES) {
   $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
 }
@@ -4621,6 +4635,9 @@ function renderProfile() {
     <div class="vsub">Flight log</div>
     ${log.length ? `<div class="card" style="padding:0">${log.map(lfRow).join("")}</div>` : `<div class="empty-v"><b>Start your flight log</b>Add trips you've taken, or tap "Add to my flights" on any plane you're on. Miles, hours and your route map build up here.</div>`}
     ${alertsHtml()}
+    <div class="vsub">Appearance</div>
+    <div class="seg2" role="tablist" aria-label="Appearance">${[["dark", "Dark"], ["light", "Light"], ["auto", "Auto"]].map(([k, l]) => `<button data-theme="${k}" aria-pressed="${S.theme === k}">${l}</button>`).join("")}</div>
+    <p class="note" style="margin-top:-4px">Auto follows your phone. The map has its own black, white or colour style in Map layers.</p>
     <div class="vsub">App</div>
     <div class="group" style="margin:0">
       ${row('data-view="saved"', "#ff7ab6", "#c81e63", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Z"/></g>', "Saved", nSaved ? String(nSaved) : "")}
@@ -4638,7 +4655,13 @@ function logFlight(l) {
   S.log.push({ id: Date.now(), ...l }); savePrefs(); BV.valid = false; dirty = true;
   toast(`Added ${l.from} → ${l.to} to My flights`); return true;
 }
+function setTheme(t) {
+  S.theme = t; S.paper = t === "light" || (t === "auto" && prefersLight.matches);
+  savePrefs(); applyTheme();
+}
+if (prefersLight.addEventListener) prefersLight.addEventListener("change", () => { if (S.theme === "auto") setTheme("auto"); });
 $("#exProfile").addEventListener("click", (e) => {
+  const th = e.target.closest("[data-theme]"); if (th) { setTheme(th.dataset.theme); for (const b of $("#exProfile").querySelectorAll("[data-theme]")) b.setAttribute("aria-pressed", String(b.dataset.theme === S.theme)); return; }
   const v = e.target.closest("[data-view]"); if (v) { showView(v.dataset.view); return; }
   const t = e.target.closest("[data-ptab]"); if (t) { openTab(t.dataset.ptab); return; }
   const dl = e.target.closest("[data-dellog]"); if (dl) { S.log = S.log.filter((x) => String(x.id) !== dl.dataset.dellog); savePrefs(); dirty = true; renderProfile(); toast("Flight removed"); return; }
@@ -4690,7 +4713,7 @@ function drawLogMap() {
   if (have < want) { const cu = (u0 + u1) / 2, half = ((v1 - v0) * want) / 2; u0 = cu - half; u1 = cu + half; } else { const cvv = (v0 + v1) / 2, half = (u1 - u0) / want / 2; v0 = cvv - half; v1 = cvv + half; }
   const sc = (w / (u1 - u0)) * dpr;
   g.clearRect(0, 0, cv2.width, cv2.height);
-  g.fillStyle = C.dark ? "rgba(255,255,255,0.11)" : "rgba(0,0,0,0.09)";
+  g.fillStyle = U.dark ? "rgba(255,255,255,0.11)" : "rgba(0,0,0,0.09)";
   for (const off of [-1, 0, 1]) { g.setTransform(sc, 0, 0, sc, (off - u0) * sc, -v0 * sc); g.fill(LAND, "evenodd"); }
   g.setTransform(1, 0, 0, 1, 0, 0);
   const X = (lo) => (((lo + 180) / 360) - u0) * sc, Y = (la) => (latToV(la) - v0) * sc;
@@ -4702,10 +4725,10 @@ function drawLogMap() {
     g.strokeStyle = accent; g.globalAlpha = 0.25; g.lineWidth = 6 * dpr; g.stroke();
     g.globalAlpha = 1; g.lineWidth = 2 * dpr; g.stroke();
   }
-  g.fillStyle = C.dark ? "#fff" : "#111";
+  g.fillStyle = U.dark ? "#fff" : "#111";
   const seen = new Set();
   for (const [o, d] of routes) for (const ap of [o, d]) { if (seen.has(ap[0])) continue; seen.add(ap[0]); g.beginPath(); g.arc(X(ap[5]), Y(ap[4]), 3.2 * dpr, 0, Math.PI * 2); g.fill(); }
-  if (!routes.length) { g.fillStyle = C.dark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)"; g.font = `600 ${13 * dpr}px -apple-system, system-ui, sans-serif`; g.textAlign = "center"; g.fillText("Your routes will appear here", cv2.width / 2, cv2.height / 2); }
+  if (!routes.length) { g.fillStyle = U.dark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)"; g.font = `600 ${13 * dpr}px -apple-system, system-ui, sans-serif`; g.textAlign = "center"; g.fillText("Your routes will appear here", cv2.width / 2, cv2.height / 2); }
 }
 function fitLog() {
   const routes = logRoutes(); if (!routes.length) return;
@@ -5350,10 +5373,10 @@ function groundCanvas() {
 const GM = { map: null, key: "", busy: false, vecFail: false, fails: 0, at: 0, gen: 0 };
 const GM_CSS = 1024, GM_NEAR = 150;
 function groundStyle(keyOnly) {
-  const st = STYLES[S.style] || STYLES.outline;
-  if (st.vector && !vecBroken && !GM.vecFail) { const u = st[S.paper ? "light" : "dark"]; return { key: u, style: u }; }
+  const st = STYLES[mapTone()];
+  if (st.vector && !vecBroken && !GM.vecFail) { const u = st.url; return { key: u, style: u }; }
   if (S.style === "dark" && S.cartoKey && !tilesBroken) return { key: `carto:${S.paper}:${S.cartoKey}`, style: keyOnly ? null : cartoGlobeStyle() };
-  return { key: `builtin:${S.paper}`, style: keyOnly ? null : builtinGlobeStyle() };
+  return { key: `builtin:${mapTone()}`, style: keyOnly ? null : builtinGlobeStyle() };
 }
 function mlLib() {
   if (window.maplibregl) return Promise.resolve(true);
@@ -5860,11 +5883,11 @@ function cartoGlobeStyle() {
 }
 /* which MapLibre style to show: the vector styles as they are; on the globe, the built-in and CARTO maps too */
 function basemapStyle(keyOnly) {
-  const st = STYLES[S.style] || STYLES.outline;
-  if (st.vector && !vecBroken) { const u = st[S.paper ? "light" : "dark"]; return { key: u, style: u }; }
+  const st = STYLES[mapTone()];
+  if (st.vector && !vecBroken) { const u = st.url; return { key: u, style: u }; }
   if (!GB.on) return null;
   if (S.style === "dark" && S.cartoKey) return { key: `carto:${S.paper}:${S.cartoKey}`, style: keyOnly ? null : cartoGlobeStyle() };
-  return { key: `builtin:${S.paper}`, style: keyOnly ? null : builtinGlobeStyle() };
+  return { key: `builtin:${mapTone()}`, style: keyOnly ? null : builtinGlobeStyle() };
 }
 const ML_HANDLERS = ["scrollZoom", "dragPan", "doubleClickZoom", "touchZoomRotate", "keyboard"];
 function applyGlobe() {
