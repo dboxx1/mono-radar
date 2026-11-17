@@ -1392,6 +1392,19 @@ body.globe-on #altLegend { display: none; }
 .peek .xs.sv svg .f { fill: currentColor; }
 .peek .xs.sv[aria-pressed="true"] { color: var(--accent); background: var(--gl-img); border-color: transparent; }
 @media (min-width: 900px) { .pk-head { grid-template-columns: 1fr; } .pk-photo { height: 230px; } }
+/* plane card: the photo fills the whole top of the card, with the callsign and airline on it */
+.pk-head { display: block; position: relative; height: 168px; min-height: 0; overflow: hidden; background: #111; }
+.pk-photo { position: absolute; inset: 0; height: auto !important; }
+.pk-photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 45%, rgba(0,0,0,.78) 100%); }
+.pk-head .pk-main { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0 var(--gut) var(--gut); background: none; gap: 4px; }
+.pk-head .pk-top b { color: #00f0ff; text-shadow: 0 1px 10px rgba(0,0,0,.35); }
+.pk-head .pk-sub { color: rgba(255,255,255,.9); text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.pk-head .pk-top .tg:not(.t) { background: rgba(255,255,255,.22); color: #fff; }
+.pk-photo .cr { top: 12px; left: var(--gut); right: auto; bottom: auto; max-width: calc(100% - var(--gut) - 110px); padding: 3px 8px; border-radius: 8px; background: rgba(0,0,0,.45); z-index: 1; }
+.peek .xs { z-index: 3; }
+.pk-photo .art .pl { width: 74px; height: 74px; top: 40%; }
+.pk-photo .art .wm { font-size: 64px; }
+@media (min-width: 900px) { .pk-head { height: 230px; } }
 </style>
 </head>
 <body>
