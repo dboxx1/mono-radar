@@ -1407,6 +1407,9 @@ body.globe-on #altLegend { display: none; }
 @media (min-width: 900px) { .pk-head { height: 230px; } }
 /* save buttons: bookmark outline when not saved, filled when saved */
 [aria-pressed="true"] > svg .bm-o, :not([aria-pressed="true"]) > svg .bm-f { display: none; }
+/* plane card: the photo credit sits in the photo's bottom-right corner, beside the airline line */
+.pk-photo .cr { top: auto; left: auto; right: var(--gut); bottom: calc(var(--gut) + 1px); max-width: 40%; font-size: 10.5px; padding: 2px 7px; }
+.pk-head .pk-sub { max-width: 56%; }
 </style>
 </head>
 <body>
