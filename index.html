@@ -1410,6 +1410,12 @@ body.globe-on #altLegend { display: none; }
 /* plane card: the photo credit sits in the photo's bottom-right corner, beside the airline line */
 .pk-photo .cr { top: auto; left: auto; right: var(--gut); bottom: calc(var(--gut) + 1px); max-width: 40%; font-size: 10.5px; padding: 2px 7px; }
 .pk-head .pk-sub { max-width: 56%; }
+/* no borders at all on sheets and boxes: transparent 1px borders left a hairline frame of the panel colour
+   around edge-to-edge photos (plane card, flight and airport headers), so the border width goes too */
+.sheet, .peek, .explore, .sh-sheet, .card, .ncard, .sf, .amap, .res-hero, .acard, .alist, .live .stat, .pk-grid > div, .stats div.pri, .stats .srow, .board,
+.fq, .group, .toggles, .style, .empty-v, .fr-tip, .sh-row, .wxc, .wt, .chip, .ctrl-group, .btn, .seg2, .seg2 button, .qt, .x, .xs, .me, .searchbox, .attrib,
+.alt-legend, .h3-top, .h3-ctl button, .h3-cams, .dl-hold button, .fq-more, .liq, .oh-empty, .more-btn, .pcard, .metar, .sh-name input, .addf input { border-width: 0 !important; }
+:root { --pad: var(--gut); }
 </style>
 </head>
 <body>
