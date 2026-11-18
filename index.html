@@ -1426,7 +1426,7 @@ body.globe-on #altLegend { display: none; }
 .top-row > * { pointer-events: auto; }
 /* full width and fixed to the top edge, the bottom sheet turned upside down */
 .topbar { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) max(var(--gut), env(safe-area-inset-right)) 12px max(var(--gut), env(safe-area-inset-left)); border-radius: 0 0 28px 28px; border-width: 0 !important; box-shadow: 0 14px 44px rgba(0, 0, 0, 0.35); }
-.topbar .searchbox { flex: 1; min-width: 0; height: 42px; border-radius: 999px; padding-left: 15px; background: var(--tb-fill); border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.topbar .searchbox { flex: 1; min-width: 0; height: 42px; border-radius: 999px; padding-left: 18px; background: var(--tb-fill); border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .topbar .me { width: 42px; height: 42px; background: var(--tb-fill) !important; color: var(--ink) !important; box-shadow: none !important; border: 0; }
 .topbar .me.bell { position: relative; }
 .topbar .cancel { height: 42px; padding: 0 8px 0 4px; }
@@ -1488,7 +1488,6 @@ body.globe-on #altLegend { display: none; }
 <header class="top" id="top">
   <div class="topbar glass" id="topBar">
     <label class="searchbox" for="q">
-      <svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></g></svg>
       <input id="q" type="search" placeholder="Search flights & airports" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
       <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
     </label>
@@ -3366,8 +3365,8 @@ const routeCache = new Map();
 function setFollow(v) { follow = v; for (const b of [$("#btnFollow"), $("#pkFollow")]) { b.setAttribute("aria-pressed", String(v)); const sp = b.querySelector("span"); if (sp) sp.textContent = v ? "Following" : "Follow"; } }
 let followOff = 0;
 const peekOpen = () => !$("#peek").hidden;
-function followTarget() { if (threeD) return -Math.round(H * 0.2); if (!isWide() && openSheet === "detail") return H * 0.27; return peekOpen() ? (isWide() ? 0 : Math.round(($("#peek").offsetHeight || 0) / 2)) : 0; }
-function showPeek(on) { $("#peek").hidden = !on; document.body.classList.toggle("peeking", on); if (on) { renderPeek(); syncSaveBtns(); } syncExplore(); }
+function followTarget() { if (threeD) return -Math.round(H * 0.2); if (!isWide() && openSheet === "detail") return Math.round(Math.min(H * 0.27, visHt($("#sheet-detail")) / 2)); return peekOpen() ? (isWide() ? 0 : Math.round(visHt($("#peek")) / 2)) : 0; }
+function showPeek(on) { const pk0 = $("#peek"); if (on && pk0.hidden) { pk0.style.transition = "none"; pk0.style.transform = ""; pk0.dataset.det = "open"; } pk0.hidden = !on; document.body.classList.toggle("peeking", on); if (on) { renderPeek(); syncSaveBtns(); } syncExplore(); }
 function centreOn(a, z, ms) { setFollow(true); followOff = followTarget(); flyTo(a._lat ?? a.lat, a._lon ?? a.lon, z ?? V.z, ms ?? 450, followOff); }
 // First tap: centre the plane, keep following it, show the compact bar. The full card opens from "Learn more".
 function select(a, opts = {}) {
@@ -6179,7 +6178,7 @@ function syncExplore() {
   const hide = !!openSheet || peekOpen();
   ex.classList.toggle("hide", hide);
   // the plane card sits flush on the bottom edge, so the credit and keys sit the same distance above it as above the sheet
-  const v = hide ? (peekOpen() ? Math.round($("#peek").getBoundingClientRect().height) : 0) : exVisible();
+  const v = hide ? (peekOpen() ? Math.round(Math.min($("#peek").getBoundingClientRect().height, H - $("#peek").getBoundingClientRect().top)) : 0) : exVisible();
   document.documentElement.style.setProperty("--exv", (isWide() ? 0 : v) + "px");
 }
 // the card grows when its photo or route loads: keep the gap right
@@ -6214,46 +6213,82 @@ if (window.ResizeObserver) new ResizeObserver(() => { if (peekOpen()) syncExplor
   for (const el of [$("#exHandle"), $("#exTop")]) { el.addEventListener("pointerdown", start); el.addEventListener("pointermove", move); el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end); }
 })();
 
-/* Every bottom card slides like the main sheet.
-   Sheets: drag the handle, photo or title between half and full height, or pull down to close.
-   Plane card: pull up for the full details, pull down to close. Share sheet: pull down to close. */
+/* Every bottom card slides like the main sheet: drag the handle, photo or title between full, half and a
+   collapsed strip locked at the bottom (photo and name, or just the title). Close with the X. */
+function visHt(el) { return Math.max(0, H - el.getBoundingClientRect().top); }
 (() => {
   const HALF = () => Math.round(H * 0.5);
-  const hasHalf = (el) => el.offsetHeight > HALF() + 90;
-  const place = (el, det) => { el.dataset.det = det; el.style.setProperty("--ty", det === "half" && hasHalf(el) ? el.offsetHeight - HALF() + "px" : "0px"); };
-  const closeOf = (el) => { const x = el.querySelector("[data-close]"); if (x) x.click(); else showSheet(null); };
-  const blockClick = (el) => { const f = (e) => { e.stopPropagation(); e.preventDefault(); }; el.addEventListener("click", f, true); setTimeout(() => el.removeEventListener("click", f, true), 350); };
+  const peekVis = (el) => {
+    const hero = el.querySelector(":scope > .hero"), head = el.querySelector(":scope > .sheet-head");
+    const top = hero ? hero.offsetTop + hero.offsetHeight : head ? head.offsetTop + head.offsetHeight + 4 : 110;
+    return Math.min(el.offsetHeight, top + safeBottom());
+  };
+  const hasHalf = (el) => el.offsetHeight > HALF() + 90 && HALF() > peekVis(el) + 90;
+  const tyFor = (el, det) => det === "full" ? 0 : Math.max(0, el.offsetHeight - (det === "half" ? HALF() : peekVis(el)));
+  const place = (el, det) => { el.dataset.det = det; el.style.setProperty("--ty", tyFor(el, det) + "px"); };
   let d = null;
   const zone = "input, select, textarea, a, button, .seg2, .abar";
   const start = (e) => {
     if (isWide() || e.button > 0 || e.target.closest(zone)) return;
     const el = e.currentTarget.closest(".sheet"); if (!el || !el.classList.contains("open")) return;
-    d = { el, src: e.currentTarget, y0: e.clientY, ty0: parseFloat(el.style.getPropertyValue("--ty")) || 0, t: performance.now(), v: 0, moved: false, id: e.pointerId, grab: !!e.target.closest(".grab") };
+    d = { el, y0: e.clientY, ty0: parseFloat(el.style.getPropertyValue("--ty")) || 0, t: performance.now(), v: 0, moved: false, id: e.pointerId, max: tyFor(el, "peek") };
     d.ty = d.ty0;
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const move = (e) => {
     if (!d || e.pointerId !== d.id) return;
     const dy = e.clientY - d.y0; if (Math.abs(dy) > 6) d.moved = true; if (!d.moved) return;
-    const now = performance.now(); let ty = d.ty0 + dy; if (ty < 0) ty /= 4;
+    const now = performance.now(); let ty = d.ty0 + dy;
+    if (ty < 0) ty /= 4; else if (ty > d.max) ty = d.max + (ty - d.max) / 4;   // springy at both ends
     d.v = (ty - d.ty) / Math.max(1, now - d.t); d.ty = ty; d.t = now;
     d.el.classList.add("dragging"); d.el.style.setProperty("--ty", ty + "px");
   };
   const end = (e) => {
     if (!d || e.pointerId !== d.id) return;
     const { el } = d; el.classList.remove("dragging");
-    if (!d.moved) { if (d.grab && hasHalf(el)) place(el, el.dataset.det === "half" ? "full" : "half"); d = null; return; }
+    const det = el.dataset.det || "full";
+    if (!d.moved) { d = null; place(el, det === "peek" ? (hasHalf(el) ? "half" : "full") : det === "half" ? "full" : hasHalf(el) ? "half" : "peek"); return; }
     const full = el.offsetHeight, vis = full - d.ty - d.v * 220;
-    const opts = [["close", 0], ["full", full]]; if (hasHalf(el)) opts.push(["half", HALF()]);
+    const opts = [["peek", peekVis(el)], ["full", full]]; if (hasHalf(el)) opts.push(["half", HALF()]);
     let best = opts[0]; for (const o of opts) if (Math.abs(o[1] - vis) < Math.abs(best[1] - vis)) best = o;
-    d = null;
-    if (best[0] === "close") { el.dataset.det = "full"; closeOf(el); } else place(el, best[0]);
+    d = null; place(el, best[0]);
   };
   for (const sh of document.querySelectorAll(".sheet")) {
     for (const z of sh.querySelectorAll(":scope > .grab, :scope > .hero, :scope > .sheet-head")) {
       z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move); z.addEventListener("pointerup", end); z.addEventListener("pointercancel", end);
     }
-    if (window.ResizeObserver) new ResizeObserver(() => { if (sh.dataset.det === "half" && !sh.classList.contains("dragging")) place(sh, "half"); }).observe(sh);
+    if (window.ResizeObserver) new ResizeObserver(() => { if (sh.dataset.det && sh.dataset.det !== "full" && !sh.classList.contains("dragging")) place(sh, sh.dataset.det); }).observe(sh);
+  }
+  const blockClick = (el) => { const f = (e) => { e.stopPropagation(); e.preventDefault(); }; el.addEventListener("click", f, true); setTimeout(() => el.removeEventListener("click", f, true), 350); };
+
+  // plane card: pull up for the full details, pull down to tuck it away with just the photo and callsign showing
+  {
+    const pk = $("#peek"), ease = "transform .32s cubic-bezier(.2,.9,.25,1)";
+    const minOff = () => Math.max(0, pk.offsetHeight - ($("#peek .pk-head").offsetHeight + safeBottom()));
+    const pkPlace = (det) => { pk.dataset.det = det; pk.style.transition = ease; pk.style.transform = det === "min" ? `translateY(${minOff()}px)` : ""; setTimeout(syncExplore, 340); };
+    let s = null;
+    pk.addEventListener("pointerdown", (e) => { if (isWide() || e.button > 0 || pk.hidden || e.target.closest(".abar, .xs, input, a")) return; s = { y0: e.clientY, x0: e.clientX, id: e.pointerId, t: performance.now(), dy: 0, v: 0, on: false, base: pk.dataset.det === "min" ? minOff() : 0 }; });
+    pk.addEventListener("pointermove", (e) => {
+      if (!s || e.pointerId !== s.id) return;
+      const dy = e.clientY - s.y0;
+      if (!s.on) { if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(e.clientX - s.x0)) return; s.on = true; pk.setPointerCapture(e.pointerId); pk.style.transition = "none"; }
+      const now = performance.now(), mo = minOff(); let y = s.base + dy;
+      if (y < 0) y /= 2.5; else if (y > mo) y = mo + (y - mo) / 4;
+      s.v = (dy - s.dy) / Math.max(1, now - s.t); s.dy = dy; s.t = now;
+      pk.style.transform = `translateY(${y}px)`;
+    });
+    const fin = (e) => {
+      if (!s || e.pointerId !== s.id) return;
+      const was = s; s = null;
+      const min = pk.dataset.det === "min";
+      if (!was.on) { if (min && !e.target.closest("button")) { blockClick(pk); pkPlace("open"); } return; }
+      blockClick(pk);
+      const up = was.dy < -60 || was.v < -0.5, down = was.dy > 60 || was.v > 0.5;
+      if (min) pkPlace(up ? "open" : "min");
+      else if (up && was.base === 0) { pk.style.transition = ease; pk.style.transform = ""; pk.dataset.det = "open"; openDetail(); }
+      else pkPlace(down ? "min" : "open");
+    };
+    pk.addEventListener("pointerup", fin); pk.addEventListener("pointercancel", fin);
   }
 
   // plane card and share sheet: follow the finger, then open, close or spring back
@@ -6279,7 +6314,6 @@ if (window.ResizeObserver) new ResizeObserver(() => { if (peekOpen()) syncExplor
     };
     el.addEventListener("pointerup", fin); el.addEventListener("pointercancel", fin);
   }
-  swipe($("#peek"), { canStart: (e) => !e.target.closest(".abar, .xs, input, a"), up: () => openDetail(), down: () => deselect() });
   swipe($("#shSheet"), { canStart: (e) => !e.target.closest("input"), down: () => closeShare() });
 })();
 
