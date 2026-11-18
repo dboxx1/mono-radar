@@ -1421,17 +1421,18 @@ body.globe-on #altLegend { display: none; }
 /* top card: search, alerts and profile live at the top of the map, the status chip and map buttons sit under it */
 :root { --tb-fill: rgba(255, 255, 255, .09); }
 :root[data-ink="paper"] { --tb-fill: rgba(0, 0, 0, .055); }
-.top { flex-direction: column; align-items: stretch; gap: 10px; }
-.top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; }
+.top { flex-direction: column; align-items: stretch; gap: 10px; padding: 0; }
+.top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left)); }
 .top-row > * { pointer-events: auto; }
-.topbar { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 20px; border-width: 0 !important; box-shadow: var(--gl-sh); }
+/* full width and fixed to the top edge, the bottom sheet turned upside down */
+.topbar { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) max(var(--gut), env(safe-area-inset-right)) 12px max(var(--gut), env(safe-area-inset-left)); border-radius: 0 0 28px 28px; border-width: 0 !important; box-shadow: 0 14px 44px rgba(0, 0, 0, 0.35); }
 .topbar .searchbox { flex: 1; min-width: 0; height: 42px; border-radius: 14px; background: var(--tb-fill); border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .topbar .me { width: 42px; height: 42px; background: var(--tb-fill) !important; color: var(--ink) !important; box-shadow: none !important; border: 0; }
 .topbar .me.bell { position: relative; }
 .topbar .cancel { height: 42px; padding: 0 8px 0 4px; }
 .ex-top { display: none !important; }
-@media (max-width: 899px) { .explore { height: calc(100% - env(safe-area-inset-top) - 74px); } }
-@media (min-width: 900px) { .topbar { width: min(100%, 560px); } }
+@media (max-width: 899px) { .explore { height: calc(100% - env(safe-area-inset-top) - 70px); } }
+@media (min-width: 900px) { .topbar { border-radius: 0 0 24px 24px; } }
 </style>
 </head>
 <body>
