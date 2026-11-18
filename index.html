@@ -1443,7 +1443,7 @@ body.globe-on #altLegend { display: none; }
 
 /* Glass everywhere: every panel is see-through frosted glass like the map buttons,
    and the cards inside are a lighter pane of glass with a bright top edge */
-:root { --panel: rgba(20, 20, 23, 0.56); --card: rgba(255, 255, 255, 0.07); --card-2: rgba(255, 255, 255, 0.11); --glass-blur: blur(30px) saturate(1.8); --card-hi: inset 0 1px 0 rgba(255, 255, 255, 0.07); }
+:root { --panel: rgba(8, 8, 10, 0.74); --card: rgba(255, 255, 255, 0.06); --card-2: rgba(255, 255, 255, 0.1); --glass-blur: blur(30px) saturate(1.8); --card-hi: inset 0 1px 0 rgba(255, 255, 255, 0.07); }
 :root[data-ink="paper"] { --panel: rgba(250, 250, 248, 0.58); --card: rgba(255, 255, 255, 0.5); --card-2: rgba(118, 118, 128, 0.12); --card-hi: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 6px 18px -14px rgba(0, 0, 0, 0.25); }
 .glass, .sheet, .peek, .explore, .topbar, .sh-sheet, .alt-legend, .attrib { background: var(--panel); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
 .cardx, .stat, .group, .card, .opts, .toggles, .cat, .style, .sf, .pcard, .alist, .pk-grid > div, .oh-empty, .oh-card, .oh-acts, .sh-row, .fr-tip, .live .stat { box-shadow: var(--card-hi); }
@@ -1452,6 +1452,26 @@ body.globe-on #altLegend { display: none; }
 .board .br { border-top-color: rgba(255, 255, 255, 0.06); }
 .board .br:active { background: rgba(255, 255, 255, 0.06); }
 .board .bd-more { border-top-color: rgba(255, 255, 255, 0.08); }
+
+/* sliding bottom cards */
+.sheet.open { transform: translateY(var(--ty, 0px)); }
+.sheet.dragging { transition: none !important; }
+.sheet > .grab, .sheet > .hero, .sheet > .sheet-head { touch-action: none; }
+@media (max-width: 899px) { .sheet { max-height: calc(100% - env(safe-area-inset-top) - 70px); } }
+.peek, .sh-sheet { touch-action: none; }
+.peek img, .sheet img, .sh-sheet img { -webkit-user-drag: none; user-select: none; }
+.peek, .sheet > .hero, .sheet > .sheet-head { -webkit-user-select: none; user-select: none; }
+.pk-grab { position: absolute; z-index: 3; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.7); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+@media (min-width: 900px) { .pk-grab { display: none; } }
+
+/* menu bars float as a glass capsule above the bottom edge, like the map buttons */
+.abar { margin: 0 var(--gut) calc(env(safe-area-inset-bottom) + 10px); padding: 0 4px !important; border-radius: 24px; border: 0 !important; background: var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-hi), var(--gl-sh), 0 10px 30px -14px rgba(0, 0, 0, .55); }
+.abar > button { min-height: 58px; border-radius: 20px; }
+.peek .abar { margin-top: var(--gut); }
+/* small round buttons and tags use glass too */
+.xs { background: var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-hi), var(--gl-sh); color: var(--ink); }
+.pk-top .tg.t { background: rgba(255, 255, 255, .2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25); }
+.btn.accent { -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), var(--gl-sh); }
 </style>
 </head>
 <body>
@@ -1546,6 +1566,7 @@ body.globe-on #altLegend { display: none; }
 </div>
 <div class="peek" id="peek" hidden role="region" aria-label="Selected flight">
   <div class="pk-head">
+    <span class="grab pk-grab" aria-hidden="true"></span>
     <button class="pk-main" id="pkMain" aria-label="Centre on this flight">
       <span class="pk-top"><b id="pkCall">—</b><span class="tg" id="pkNo" hidden></span><span class="tg t" id="pkTy" hidden></span></span>
       <span class="pk-sub" id="pkSub"></span>
@@ -3297,7 +3318,7 @@ function tap(x, y) {
 
 /* ---------------- Sheets ---------------- */
 function showSheet(id) {
-  for (const el of document.querySelectorAll(".sheet")) el.classList.toggle("open", el.id === "sheet-" + id);
+  for (const el of document.querySelectorAll(".sheet")) { const on = el.id === "sheet-" + id; if (on && !el.classList.contains("open")) { el.style.removeProperty("--ty"); el.dataset.det = "full"; } el.classList.toggle("open", on); }
   const was = openSheet;
   openSheet = id;
   document.body.classList.toggle("docked", !!id && isWide());
@@ -6185,6 +6206,75 @@ if (window.ResizeObserver) new ResizeObserver(() => { if (peekOpen()) syncExplor
     setEx(best[0]); drag = null;
   };
   for (const el of [$("#exHandle"), $("#exTop")]) { el.addEventListener("pointerdown", start); el.addEventListener("pointermove", move); el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end); }
+})();
+
+/* Every bottom card slides like the main sheet.
+   Sheets: drag the handle, photo or title between half and full height, or pull down to close.
+   Plane card: pull up for the full details, pull down to close. Share sheet: pull down to close. */
+(() => {
+  const HALF = () => Math.round(H * 0.5);
+  const hasHalf = (el) => el.offsetHeight > HALF() + 90;
+  const place = (el, det) => { el.dataset.det = det; el.style.setProperty("--ty", det === "half" && hasHalf(el) ? el.offsetHeight - HALF() + "px" : "0px"); };
+  const closeOf = (el) => { const x = el.querySelector("[data-close]"); if (x) x.click(); else showSheet(null); };
+  const blockClick = (el) => { const f = (e) => { e.stopPropagation(); e.preventDefault(); }; el.addEventListener("click", f, true); setTimeout(() => el.removeEventListener("click", f, true), 350); };
+  let d = null;
+  const zone = "input, select, textarea, a, button, .seg2, .abar";
+  const start = (e) => {
+    if (isWide() || e.button > 0 || e.target.closest(zone)) return;
+    const el = e.currentTarget.closest(".sheet"); if (!el || !el.classList.contains("open")) return;
+    d = { el, src: e.currentTarget, y0: e.clientY, ty0: parseFloat(el.style.getPropertyValue("--ty")) || 0, t: performance.now(), v: 0, moved: false, id: e.pointerId, grab: !!e.target.closest(".grab") };
+    d.ty = d.ty0;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const move = (e) => {
+    if (!d || e.pointerId !== d.id) return;
+    const dy = e.clientY - d.y0; if (Math.abs(dy) > 6) d.moved = true; if (!d.moved) return;
+    const now = performance.now(); let ty = d.ty0 + dy; if (ty < 0) ty /= 4;
+    d.v = (ty - d.ty) / Math.max(1, now - d.t); d.ty = ty; d.t = now;
+    d.el.classList.add("dragging"); d.el.style.setProperty("--ty", ty + "px");
+  };
+  const end = (e) => {
+    if (!d || e.pointerId !== d.id) return;
+    const { el } = d; el.classList.remove("dragging");
+    if (!d.moved) { if (d.grab && hasHalf(el)) place(el, el.dataset.det === "half" ? "full" : "half"); d = null; return; }
+    const full = el.offsetHeight, vis = full - d.ty - d.v * 220;
+    const opts = [["close", 0], ["full", full]]; if (hasHalf(el)) opts.push(["half", HALF()]);
+    let best = opts[0]; for (const o of opts) if (Math.abs(o[1] - vis) < Math.abs(best[1] - vis)) best = o;
+    d = null;
+    if (best[0] === "close") { el.dataset.det = "full"; closeOf(el); } else place(el, best[0]);
+  };
+  for (const sh of document.querySelectorAll(".sheet")) {
+    for (const z of sh.querySelectorAll(":scope > .grab, :scope > .hero, :scope > .sheet-head")) {
+      z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move); z.addEventListener("pointerup", end); z.addEventListener("pointercancel", end);
+    }
+    if (window.ResizeObserver) new ResizeObserver(() => { if (sh.dataset.det === "half" && !sh.classList.contains("dragging")) place(sh, "half"); }).observe(sh);
+  }
+
+  // plane card and share sheet: follow the finger, then open, close or spring back
+  function swipe(el, { canStart, up, down, upAt = 70, downAt = 90 }) {
+    let s = null;
+    el.addEventListener("pointerdown", (e) => { if (isWide() || e.button > 0 || el.hidden || (canStart && !canStart(e))) return; s = { y0: e.clientY, x0: e.clientX, id: e.pointerId, t: performance.now(), dy: 0, v: 0, on: false }; });
+    el.addEventListener("pointermove", (e) => {
+      if (!s || e.pointerId !== s.id) return;
+      const dy = e.clientY - s.y0;
+      if (!s.on) { if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(e.clientX - s.x0)) return; s.on = true; el.setPointerCapture(e.pointerId); el.style.transition = "none"; }
+      const now = performance.now(), y = dy < 0 ? (up ? dy / 2.5 : dy / 6) : dy;
+      s.v = (dy - s.dy) / Math.max(1, now - s.t); s.dy = dy; s.t = now;
+      el.style.transform = `translateY(${y}px)`;
+    });
+    const fin = (e) => {
+      if (!s || e.pointerId !== s.id) return;
+      const was = s; s = null; if (!was.on) return;
+      blockClick(el);
+      el.style.transition = "transform .32s cubic-bezier(.2,.9,.25,1)";
+      if (up && (was.dy < -upAt || was.v < -0.55)) { el.style.transform = ""; up(); }
+      else if (down && (was.dy > downAt || was.v > 0.6)) { el.style.transform = "translateY(110%)"; setTimeout(() => { down(); el.style.transition = "none"; el.style.transform = ""; }, 260); }
+      else el.style.transform = "";
+    };
+    el.addEventListener("pointerup", fin); el.addEventListener("pointercancel", fin);
+  }
+  swipe($("#peek"), { canStart: (e) => !e.target.closest(".abar, .xs, input, a"), up: () => openDetail(), down: () => deselect() });
+  swipe($("#shSheet"), { canStart: (e) => !e.target.closest("input"), down: () => closeShare() });
 })();
 
 /* Artwork shown on cards when there's no photo (and underneath photos while they load) */
