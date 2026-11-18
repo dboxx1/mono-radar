@@ -1485,6 +1485,10 @@ body.globe-on #altLegend { display: none; }
 /* alerts: title on the left, close on the right */
 .vhead.vx { padding: 6px var(--gut) 14px; align-items: center; gap: 12px; }
 .vhead.vx .vtitle { margin: 0; }
+
+/* new alerts: the count sits on the Alerts chip, red when one matters */
+.chips-row .qt.unread .qn { color: var(--ink); }
+.chips-row .qt.imp .qn { color: var(--alert); }
 </style>
 </head>
 <body>
@@ -1499,7 +1503,6 @@ body.globe-on #altLegend { display: none; }
       <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
     </label>
     <button class="cancel" id="qCancel" hidden>Cancel</button>
-    <button class="me bell" id="btnBell" aria-label="Alerts"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z"/></g></svg><span class="badge" id="bellBadge" hidden>0</span></button>
     <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></g></svg></button>
   </div>
   <div class="top-row">
@@ -2603,7 +2606,7 @@ function passes(a) {
   if (F.type.length && !F.type.includes((a.type || "").toUpperCase())) return false;
   return true;
 }
-const milOnly = () => F.cats.size === 1 && F.cats.has("mil");
+const milOnly = () => !!F && F.cats.size === 1 && F.cats.has("mil");
 
 /* ---------------- Feeds ---------------- */
 const f4 = (v) => (+v).toFixed(4);
@@ -4176,7 +4179,7 @@ const ICON = {
   pin: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,75.3,80,132.17,83.41,134.55a8,8,0,0,0,9.18,0C136,236.17,216,179.3,216,104A88.1,88.1,0,0,0,128,16Zm0,56a32,32,0,1,1-32,32A32,32,0,0,1,128,72Z"/></g></svg>`,
   globe: `<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.62,87.62,0,0,1-6.4,32.94l-44.7-27.49a15.92,15.92,0,0,0-6.24-2.23l-22.82-3.08a16.11,16.11,0,0,0-16,7.86h-8.72l-3.8-7.86a15.91,15.91,0,0,0-11-8.67l-8-1.73L96.14,104h16.71a16.06,16.06,0,0,0,7.73-2l12.25-6.76a16.62,16.62,0,0,0,3-2.14l26.91-24.34A15.93,15.93,0,0,0,166,49.1l-.36-.65A88.11,88.11,0,0,1,216,128ZM40,128a87.53,87.53,0,0,1,8.54-37.8l11.34,30.27a16,16,0,0,0,11.62,10l21.43,4.61L96.74,143a16.09,16.09,0,0,0,14.4,9h1.48l-7.23,16.23a16,16,0,0,0,2.86,17.37l.14.14L128,205.94l-1.94,10A88.11,88.11,0,0,1,40,128Z"/></g></svg>`,
 };
-function searchMode(on) { $("#qCancel").hidden = !on; $("#btnMe").hidden = on; $("#btnBell").hidden = on; $("#exHome").hidden = on; resEl.hidden = !on; if (on) setEx("full"); }
+function searchMode(on) { $("#qCancel").hidden = !on; $("#btnMe").hidden = on; $("#exHome").hidden = on; resEl.hidden = !on; if (on) setEx("full"); }
 function openSearchUI() { if (exView !== "home") showView("home", true); searchMode(true); renderResults(qEl.value); }
 function closeSearch() { const was = !resEl.hidden; qEl.value = ""; $("#qClear").hidden = true; searchMode(false); qEl.blur(); if (was) setEx("peek"); }
 qEl.addEventListener("focus", openSearchUI);
@@ -6139,11 +6142,9 @@ function pushNote(k, title, sub, hex, important, key) {
 }
 function updateBell() {
   const unread = notes.filter((n) => n.t > S.notesSeen), imp = unread.some((n) => n.imp);
-  const b = $("#btnBell"), badge = $("#bellBadge");
-  badge.hidden = !unread.length; badge.textContent = unread.length > 9 ? "9+" : unread.length;
-  badge.classList.toggle("quiet", !imp);
-  b.classList.toggle("ring", imp);
-  b.setAttribute("aria-label", unread.length ? `Alerts, ${unread.length} new` : "Alerts");
+  const chip = $("#qEmerg"); try { updateChips(); } catch (e) {}
+  chip.classList.toggle("unread", !!unread.length); chip.classList.toggle("imp", imp);
+  chip.setAttribute("aria-label", unread.length ? `Alerts, ${unread.length} new` : "Alerts");
 }
 const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "now" : m < 60 ? m + " min" : Math.round(m / 60) + " h"; };
 let alertActs = [];
@@ -6162,7 +6163,6 @@ function renderAlerts(quiet) {
   $("#exAlerts").innerHTML = h;
   if (!quiet) { S.notesSeen = Date.now(); savePrefs(); updateBell(); }
 }
-$("#btnBell").addEventListener("click", () => showView("alerts"));
 $("#exAlerts").addEventListener("click", (e) => {
   const v = e.target.closest("[data-view]"); if (v) { showView(v.dataset.view); return; }
   if (e.target.closest("#alClear")) { notes = []; S.notes = []; savePrefs(); renderAlerts(); return; }
@@ -6184,8 +6184,9 @@ function updateChips() {
     b.classList.toggle("on", !!on); b.classList.toggle("hot", !!hot);
   };
   const em = emergList.length;
-  set("alerts", em ? (em > 1 ? "alerts" : "alert") : "Alerts", 0, false, em > 0);
-  if (em) document.querySelector('[data-chip="alerts"] .ql').textContent = `${em} ${em > 1 ? "alerts" : "alert"}`;
+  let unreadN = 0; try { unreadN = notes.filter((n) => n.t > S.notesSeen).length; } catch (e) {}
+  const alertN = unreadN || em;   // new alerts, or live emergencies once they've been seen
+  set("alerts", "Alerts", alertN > 9 ? "9+" : alertN, false, em > 0);
   set("weather", S.radar ? "Radar on" : "Weather", 0, S.radar, false);
   let mil = 0; for (const a of acMap.values()) if (a.mil) mil++;
   set("mil", "Military", mil, milOnly(), false);
