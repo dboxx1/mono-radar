@@ -1472,6 +1472,12 @@ body.globe-on #altLegend { display: none; }
 .xs { background: var(--gl); -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: var(--gl-hi), var(--gl-sh); color: var(--ink); }
 .pk-top .tg.t { background: rgba(255, 255, 255, .2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25); }
 .btn.accent { -webkit-backdrop-filter: var(--gl-blur); backdrop-filter: var(--gl-blur); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), var(--gl-sh); }
+
+/* iPhone browsers can't stack frosted glass: anything frosted inside a frosted panel renders as a dark
+   grey slab. So only the panels themselves are frosted; every button, tab, chip, menu bar and card inside
+   them is clear glass (a light translucent fill with a bright top edge), all the same material. */
+:is(.explore, .sheet, .peek, .topbar, .sh-sheet, .glass, .view3d, .h3-top) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+:is(.explore, .sheet, .peek, .sh-sheet) :is(.btn, .seg2, .chips-row .qt, .abar, .xs, .sh-row, .fq-more, .dl-hold button) { background-color: var(--gl); }
 </style>
 </head>
 <body>
