@@ -2205,7 +2205,16 @@ function tintMap(m, url) {
     for (const [k, v] of Object.entries(props)) { try { m.setPaintProperty(id, k, v); } catch (e) {} }
   }
 }
-function tintBasemap() { tintMap(ml, mlStyleUrl); applyRelief(ml); }
+function tintBasemap() { tintMap(ml, mlStyleUrl); englishLabels(ml); applyRelief(ml); }
+/* Place names in English everywhere (the map styles show local script alongside, e.g. Greek or Arabic) */
+const EN_NAME = ["coalesce", ["get", "name:en"], ["get", "name_en"], ["get", "name_int"], ["get", "name:latin"], ["get", "name"]];
+function englishLabels(m) {
+  if (!m || !m.getStyle || !m.getStyle()) return;
+  for (const l of m.getStyle().layers || []) {
+    if (l.type !== "symbol") continue;
+    try { const tf = m.getLayoutProperty(l.id, "text-field"); if (tf && /name/.test(JSON.stringify(tf))) m.setLayoutProperty(l.id, "text-field", EN_NAME); } catch (e) {}
+  }
+}
 /* Terrain texture: hillshading from free worldwide elevation tiles (Mapzen terrain on AWS Open Data),
    tinted to suit each map and laid under the water so seas stay clean */
 const RELIEF_DEM = { type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 13 };
@@ -5517,7 +5526,7 @@ async function gmEnsure() {
     GM.map = new maplibregl.Map({ container: div, style: gs.style, center: [0, 0], zoom: 2, interactive: false, attributionControl: false, pixelRatio: 2, fadeDuration: 0,
       renderWorldCopies: true, maxZoom: 20, canvasContextAttributes: { preserveDrawingBuffer: true, antialias: false }, preserveDrawingBuffer: true });
   } catch (e) { div.remove(); return null; }
-  GM.map.on("style.load", () => { tintMap(GM.map, GM.key); applyRelief(GM.map); });
+  GM.map.on("style.load", () => { tintMap(GM.map, GM.key); englishLabels(GM.map); applyRelief(GM.map); });
   GM.map.on("error", (e) => { if (!(e && (e.sourceId || e.tile))) GM.styleErr = true; });
   return GM.map;
 }
