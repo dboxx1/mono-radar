@@ -2161,7 +2161,6 @@ function ensureBasemap() {
     ml.once("styledata", () => { styleOk = true; });
     ml.on("style.load", () => { tintBasemap(); try { ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {} applyGlobe(); if (mlState === "loading") setTimeout(ready, 300); });
     ml.on("load", ready);
-    ml.on("styledata", () => { if (GB.on && S.night && ml.style && ml.style._loaded && !ml.getLayer("gb-night-w")) gbNight(true); });
     ml.on("error", (e) => { if (mlState === "loading" && !styleOk && !(e && (e.sourceId || e.tile))) { clearTimeout(timer); basemapFail(); } });
     return;
   }
@@ -3149,7 +3148,7 @@ function draw(now) {
     drawBase(g);
     drawTiles(g);
   }
-  if (!GB.on) { drawRadar(g); drawNight(g); }
+  if (!GB.on) { drawRadar(g); drawNight(g); } else drawNightGlobe(g);
   drawVignette(g);
   if (!GB.on) drawGeoLines(g);
   g.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -4373,7 +4372,7 @@ function renderMapStyle() {
 $("#btnKey").addEventListener("click", () => { S.cartoKey = $("#cartoKey").value.trim(); tiles.clear(); tileErrs = 0; tileLoads = 0; tilesBroken = false; savePrefs(); renderStyles(); updateAttrib(); BV.valid = false; dirty = true; toast(S.cartoKey ? "Key saved. Loading detailed tiles." : "Key removed"); });
 $("#styles").addEventListener("click", (e) => { const b = e.target.closest(".style"); if (!b) return; S.style = b.dataset.style; if (STYLES[S.style].vector && mlState === "broken") { mlState = ml ? "ready" : "off"; } savePrefs(); applyMapTone(); renderStyles(); updateAttrib(); });
 for (const [id, k] of TOGGLES) {
-  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "relief") setRelief(); if (k === "night") gbNight(true); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
+  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "relief") setRelief(); if (k === "night") dirty = true; if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
 }
 function applyTheme() { if (S.paper) document.documentElement.dataset.ink = "paper"; else delete document.documentElement.dataset.ink; readColors(); if (ml || mlScript) ensureBasemap(); sprites.clear(); TONE_CACHE.clear(); GRADS.clear(); BV.valid = false; dirty = true; }
 
@@ -6026,7 +6025,7 @@ function applyGlobe() {
   if (GB.on) { for (const h of ML_HANDLERS) { try { ml[h].enable(); } catch (e) {} } try { ml.touchZoomRotate.disableRotation(); } catch (e) {} }
   try { if (ml.style && ml.style._loaded !== false) ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {}
   if (GB.on) { try { ml.setSky({ "sky-color": "rgba(3,6,12,0)", "horizon-color": "#1d6fb8", "fog-color": "rgba(3,6,12,0)", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.5, "fog-ground-blend": 0.5, "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] }); } catch (e) {} }
-  gbRadar(true); gbNight(true); gbStars();
+  gbRadar(true); gbStars();
 }
 /* Earth view: a star field behind the globe that drifts as you turn it */
 let starsUrl = "";
@@ -6053,46 +6052,40 @@ function gbStarsMove() {
   const c = toLatLon(V.u, V.v);
   $("#basemap").style.backgroundPosition = `0 0, ${(-c.lon * 2.4).toFixed(1)}px ${(c.lat * 2.4).toFixed(1)}px`;
 }
-/* Earth view day and night: the night side of the globe is shaded (with twilight) when the switch is on */
-let gbNightAt = 0, gbNightOn = false;
-function nightImage(lonA, lonB) {
-  const w = 256, h = 256, c = document.createElement("canvas"); c.width = w; c.height = h;
-  const g = c.getContext("2d"), img = g.createImageData(w, h), sun = sunPos(Date.now()), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec);
-  const maxA = C.dark ? 170 : 95, tint = C.dark ? [0, 2, 10] : [10, 28, 70], vTop = latToV(85.0511), vBot = latToV(-85.0511);
-  for (let j = 0; j < h; j++) {
-    const lat = toLatLon(0, vTop + ((j + 0.5) / h) * (vBot - vTop)).lat * D2R, sl = Math.sin(lat), cl = Math.cos(lat);
-    for (let i = 0; i < w; i++) {
-      const lon = lonA + ((i + 0.5) / w) * (lonB - lonA);
-      const el = Math.asin(clamp(sl * sd + cl * cd * Math.cos((lon - sun.lon) * D2R), -1, 1)) * R2D;
-      const t = clamp((0.8 - el) / 12.8, 0, 1), o = (j * w + i) * 4;
-      img.data[o] = tint[0]; img.data[o + 1] = tint[1]; img.data[o + 2] = tint[2]; img.data[o + 3] = t * t * (3 - 2 * t) * maxA;
+/* Earth view day and night: the night side of the globe is shaded on screen, over the whole globe
+   including the poles (map layers stop at 85°, which left an unshaded disc over the pole) */
+const gn = document.createElement("canvas"), gnctx = gn.getContext("2d");
+let gnKey = "", gnAt = 0;
+function drawNightGlobe(g) {
+  if (!S.night || !gbLive()) return;
+  const cell = 20, nx = Math.ceil(W / cell) + 2, ny = Math.ceil(H / cell) + 2, nowMs = performance.now();
+  let key = "";
+  try { const c = ml.getCenter(); key = `${c.lng.toFixed(4)}|${c.lat.toFixed(4)}|${ml.getZoom().toFixed(3)}|${ml.getBearing().toFixed(2)}|${W}|${H}|${C.dark}`; } catch (e) { return; }
+  // while the globe spins, refresh at most ~30 times a second
+  if ((key !== gnKey && nowMs - gnAt > 33) || nowMs - gnAt > 30000) {
+    gnKey = key; gnAt = nowMs;
+    if (gn.width !== nx || gn.height !== ny) { gn.width = nx; gn.height = ny; }
+    // the globe is a disc on screen: find its centre and radius once, then each cell needs one lookup
+    const cp = ml.project(ml.getCenter()), ok = (x, y) => { try { const p = ml.project(ml.unproject([x, y])); return Math.abs(p.x - x) + Math.abs(p.y - y) < 1.5; } catch (e) { return false; } };
+    let lo = 0, hi = Math.hypot(W, H);
+    for (let it = 0; it < 16; it++) { const m = (lo + hi) / 2; if (ok(cp.x + m, cp.y)) lo = m; else hi = m; }
+    const R = lo - 0.5, img = gnctx.createImageData(nx, ny), d = img.data;
+    const sun = sunPos(Date.now()), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec), maxA = C.dark ? 170 : 120, tint = C.dark ? [0, 2, 10] : [10, 28, 70];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      let x = (i - 1) * cell, y = (j - 1) * cell;
+      const dx = x - cp.x, dy = y - cp.y, r = Math.hypot(dx, dy);
+      if (r > R + cell * 2) continue;
+      if (r > R) { x = cp.x + (dx / r) * R; y = cp.y + (dy / r) * R; }   // just off the edge: use the rim's shade
+      let ll; try { ll = ml.unproject([x, y]); } catch (e) { continue; }
+      const lat = ll.lat * D2R, el = Math.asin(clamp(Math.sin(lat) * sd + Math.cos(lat) * cd * Math.cos((ll.lng - sun.lon) * D2R), -1, 1)) * R2D;
+      const t = clamp((0.8 - el) / 12.8, 0, 1), k = (j * nx + i) * 4;
+      d[k] = tint[0]; d[k + 1] = tint[1]; d[k + 2] = tint[2]; d[k + 3] = t * t * (3 - 2 * t) * maxA;
     }
+    gnctx.putImageData(img, 0, 0);
   }
-  g.putImageData(img, 0, 0);
-  return c.toDataURL("image/png");
+  g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  g.drawImage(gn, 0, 0, nx, ny, -1.5 * cell * DPR, -1.5 * cell * DPR, nx * cell * DPR, ny * cell * DPR);
 }
-function gbNight(force) {
-  if (!ml) return;
-  const want = GB.on && S.night;
-  if (!force && want === gbNightOn && (!want || Date.now() - gbNightAt < 60000)) return;
-  gbNightOn = want; gbNightAt = Date.now();
-  try {
-    if (!(ml.style && ml.style._loaded)) { gbNightAt = 0; return; }
-    for (const k of ["w", "e"]) {
-      const id = "gb-night-" + k, lonA = k === "w" ? -180 : 0, lonB = k === "w" ? 0 : 180;
-      if (!want) { if (ml.getLayer(id)) ml.removeLayer(id); if (ml.getSource(id)) ml.removeSource(id); continue; }
-      const url = nightImage(lonA, lonB), coords = [[lonA, 85.0511], [lonB, 85.0511], [lonB, -85.0511], [lonA, -85.0511]];
-      const src = ml.getSource(id);
-      if (src) src.updateImage({ url, coordinates: coords });
-      else {
-        ml.addSource(id, { type: "image", url, coordinates: coords });
-        const firstSym = ((ml.getStyle().layers || []).find((l) => l.type === "symbol") || {}).id;
-        ml.addLayer({ id, type: "raster", source: id, paint: { "raster-fade-duration": 0, "raster-resampling": "linear" } }, firstSym);
-      }
-    }
-  } catch (e) {}
-}
-setInterval(() => { if (GB.on && S.night && !document.hidden) gbNight(); }, 60000);
 /* weather radar on the globe as a MapLibre layer */
 let gbRadarKey = "";
 function gbRadar(force) {
