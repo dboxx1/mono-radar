@@ -2145,7 +2145,7 @@ function ensureBasemap() {
       if (!GB.on) return;
       const cc = ml.getCenter();
       if (e && e.originalEvent) { anim = null; inertia = null; if (follow && (ml.dragPan.isActive() || e.originalEvent.type === "mousemove")) setFollow(false); }
-      setView(lonToU(cc.lng), latToV(clamp(cc.lat, -85, 85)), ml.getZoom() + 1);
+      setView(lonToU(cc.lng), latToV(clamp(cc.lat, -85, 85)), ml.getZoom() + 1); gbStarsMove();
       const c2 = toLatLon(V.u, V.v); mlSync = `${c2.lon.toFixed(7)},${c2.lat.toFixed(7)},${V.z.toFixed(4)}`; dirty = true;
     });
     ml.on("moveend", (e) => { if (GB.on && e && e.originalEvent) viewSettled(); });
@@ -2157,6 +2157,7 @@ function ensureBasemap() {
     ml.once("styledata", () => { styleOk = true; });
     ml.on("style.load", () => { tintBasemap(); try { ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {} applyGlobe(); if (mlState === "loading") setTimeout(ready, 300); });
     ml.on("load", ready);
+    ml.on("styledata", () => { if (GB.on && S.night && ml.style && ml.style._loaded && !ml.getLayer("gb-night-w")) gbNight(true); });
     ml.on("error", (e) => { if (mlState === "loading" && !styleOk && !(e && (e.sourceId || e.tile))) { clearTimeout(timer); basemapFail(); } });
     return;
   }
@@ -4368,7 +4369,7 @@ function renderMapStyle() {
 $("#btnKey").addEventListener("click", () => { S.cartoKey = $("#cartoKey").value.trim(); tiles.clear(); tileErrs = 0; tileLoads = 0; tilesBroken = false; savePrefs(); renderStyles(); updateAttrib(); BV.valid = false; dirty = true; toast(S.cartoKey ? "Key saved. Loading detailed tiles." : "Key removed"); });
 $("#styles").addEventListener("click", (e) => { const b = e.target.closest(".style"); if (!b) return; S.style = b.dataset.style; if (STYLES[S.style].vector && mlState === "broken") { mlState = ml ? "ready" : "off"; } savePrefs(); applyMapTone(); renderStyles(); updateAttrib(); });
 for (const [id, k] of TOGGLES) {
-  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "relief") setRelief(); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
+  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "relief") setRelief(); if (k === "night") gbNight(true); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
 }
 function applyTheme() { if (S.paper) document.documentElement.dataset.ink = "paper"; else delete document.documentElement.dataset.ink; readColors(); if (ml || mlScript) ensureBasemap(); sprites.clear(); TONE_CACHE.clear(); GRADS.clear(); BV.valid = false; dirty = true; }
 
@@ -6019,9 +6020,74 @@ function applyGlobe() {
   for (const h of [...ML_HANDLERS, "boxZoom", "dragRotate", "touchPitch"]) { try { ml[h].disable(); } catch (e) {} }
   if (GB.on) { for (const h of ML_HANDLERS) { try { ml[h].enable(); } catch (e) {} } try { ml.touchZoomRotate.disableRotation(); } catch (e) {} }
   try { if (ml.style && ml.style._loaded !== false) ml.setProjection({ type: GB.on ? "globe" : "mercator" }); } catch (e) {}
-  if (GB.on) { try { ml.setSky({ "sky-color": "#03060c", "horizon-color": "#1d6fb8", "fog-color": "#03060c", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.5, "fog-ground-blend": 0.5, "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] }); } catch (e) {} }
-  gbRadar(true);
+  if (GB.on) { try { ml.setSky({ "sky-color": "rgba(3,6,12,0)", "horizon-color": "#1d6fb8", "fog-color": "rgba(3,6,12,0)", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.5, "fog-ground-blend": 0.5, "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] }); } catch (e) {} }
+  gbRadar(true); gbNight(true); gbStars();
 }
+/* Earth view: a star field behind the globe that drifts as you turn it */
+let starsUrl = "";
+function gbStars() {
+  const bm = $("#basemap");
+  if (!GB.on) { bm.style.backgroundImage = ""; return; }
+  if (!starsUrl) {
+    const c = document.createElement("canvas"), n = 1024; c.width = c.height = n;
+    const g = c.getContext("2d"); let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 900; i++) {
+      const x = rnd() * n, y = rnd() * n, b = rnd(), r = b > 0.985 ? 1.6 : b > 0.9 ? 1.1 : 0.7, a = 0.25 + b * 0.75;
+      const hue = rnd(); g.fillStyle = hue > 0.9 ? `rgba(255,214,170,${a})` : hue > 0.8 ? `rgba(170,200,255,${a})` : `rgba(255,255,255,${a})`;
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      if (b > 0.985) { g.fillStyle = `rgba(255,255,255,${a * 0.12})`; g.beginPath(); g.arc(x, y, r * 3.2, 0, Math.PI * 2); g.fill(); }
+    }
+    starsUrl = c.toDataURL("image/png");
+  }
+  bm.style.backgroundImage = `radial-gradient(ellipse at 50% 45%, rgba(20,40,80,.35), rgba(3,6,12,0) 60%), url(${starsUrl})`;
+  bm.style.backgroundSize = "100% 100%, 512px 512px";
+  gbStarsMove();
+}
+function gbStarsMove() {
+  if (!GB.on) return;
+  const c = toLatLon(V.u, V.v);
+  $("#basemap").style.backgroundPosition = `0 0, ${(-c.lon * 2.4).toFixed(1)}px ${(c.lat * 2.4).toFixed(1)}px`;
+}
+/* Earth view day and night: the night side of the globe is shaded (with twilight) when the switch is on */
+let gbNightAt = 0, gbNightOn = false;
+function nightImage(lonA, lonB) {
+  const w = 256, h = 256, c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"), img = g.createImageData(w, h), sun = sunPos(Date.now()), sd = Math.sin(sun.dec), cd = Math.cos(sun.dec);
+  const maxA = C.dark ? 170 : 95, tint = C.dark ? [0, 2, 10] : [10, 28, 70], vTop = latToV(85.0511), vBot = latToV(-85.0511);
+  for (let j = 0; j < h; j++) {
+    const lat = toLatLon(0, vTop + ((j + 0.5) / h) * (vBot - vTop)).lat * D2R, sl = Math.sin(lat), cl = Math.cos(lat);
+    for (let i = 0; i < w; i++) {
+      const lon = lonA + ((i + 0.5) / w) * (lonB - lonA);
+      const el = Math.asin(clamp(sl * sd + cl * cd * Math.cos((lon - sun.lon) * D2R), -1, 1)) * R2D;
+      const t = clamp((0.8 - el) / 12.8, 0, 1), o = (j * w + i) * 4;
+      img.data[o] = tint[0]; img.data[o + 1] = tint[1]; img.data[o + 2] = tint[2]; img.data[o + 3] = t * t * (3 - 2 * t) * maxA;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  return c.toDataURL("image/png");
+}
+function gbNight(force) {
+  if (!ml) return;
+  const want = GB.on && S.night;
+  if (!force && want === gbNightOn && (!want || Date.now() - gbNightAt < 60000)) return;
+  gbNightOn = want; gbNightAt = Date.now();
+  try {
+    if (!(ml.style && ml.style._loaded)) { gbNightAt = 0; return; }
+    for (const k of ["w", "e"]) {
+      const id = "gb-night-" + k, lonA = k === "w" ? -180 : 0, lonB = k === "w" ? 0 : 180;
+      if (!want) { if (ml.getLayer(id)) ml.removeLayer(id); if (ml.getSource(id)) ml.removeSource(id); continue; }
+      const url = nightImage(lonA, lonB), coords = [[lonA, 85.0511], [lonB, 85.0511], [lonB, -85.0511], [lonA, -85.0511]];
+      const src = ml.getSource(id);
+      if (src) src.updateImage({ url, coordinates: coords });
+      else {
+        ml.addSource(id, { type: "image", url, coordinates: coords });
+        const firstSym = ((ml.getStyle().layers || []).find((l) => l.type === "symbol") || {}).id;
+        ml.addLayer({ id, type: "raster", source: id, paint: { "raster-fade-duration": 0, "raster-resampling": "linear" } }, firstSym);
+      }
+    }
+  } catch (e) {}
+}
+setInterval(() => { if (GB.on && S.night && !document.hidden) gbNight(); }, 60000);
 /* weather radar on the globe as a MapLibre layer */
 let gbRadarKey = "";
 function gbRadar(force) {
