@@ -1489,6 +1489,13 @@ body.globe-on #altLegend { display: none; }
 /* new alerts: the count sits on the Alerts chip, red when one matters */
 .chips-row .qt.unread .qn { color: var(--ink); }
 .chips-row .qt.imp .qn { color: var(--alert); }
+
+/* toast: the same dark (or light) glass as every other panel, with an accent dot, instead of a white pill */
+.toast { display: flex; align-items: center; gap: 10px; width: max-content; max-width: min(calc(100% - 32px), 420px); padding: 11px 16px 11px 14px; border-radius: 18px;
+  background: var(--panel); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); color: var(--ink);
+  font: 600 14px/1.3 var(--font-ui); text-align: left; box-shadow: 0 12px 32px -12px rgba(0, 0, 0, .6); }
+.toast::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(var(--accent-rgb, 80, 227, 240), .18); }
+.toast.act::after { content: ""; flex: none; width: 7px; height: 7px; margin-left: 4px; border-top: 2px solid var(--ink-2); border-right: 2px solid var(--ink-2); transform: rotate(45deg); }
 </style>
 </head>
 <body>
