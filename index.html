@@ -1417,6 +1417,21 @@ body.globe-on #altLegend { display: none; }
 .alt-legend, .h3-top, .h3-ctl button, .h3-cams, .dl-hold button, .fq-more, .liq, .oh-empty, .more-btn, .pcard, .metar, .sh-name input, .addf input { border-width: 0 !important; }
 :root { --pad: var(--gut); }
 .styles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* top card: search, alerts and profile live at the top of the map, the status chip and map buttons sit under it */
+:root { --tb-fill: rgba(255, 255, 255, .09); }
+:root[data-ink="paper"] { --tb-fill: rgba(0, 0, 0, .055); }
+.top { flex-direction: column; align-items: stretch; gap: 10px; }
+.top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; }
+.top-row > * { pointer-events: auto; }
+.topbar { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 20px; border-width: 0 !important; box-shadow: var(--gl-sh); }
+.topbar .searchbox { flex: 1; min-width: 0; height: 42px; border-radius: 14px; background: var(--tb-fill); border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.topbar .me { width: 42px; height: 42px; background: var(--tb-fill) !important; color: var(--ink) !important; box-shadow: none !important; border: 0; }
+.topbar .me.bell { position: relative; }
+.topbar .cancel { height: 42px; padding: 0 8px 0 4px; }
+.ex-top { display: none !important; }
+@media (max-width: 899px) { .explore { height: calc(100% - env(safe-area-inset-top) - 74px); } }
+@media (min-width: 900px) { .topbar { width: min(100%, 560px); } }
 </style>
 </head>
 <body>
@@ -1425,6 +1440,17 @@ body.globe-on #altLegend { display: none; }
 <div class="fog3d" aria-hidden="true"></div>
 
 <header class="top" id="top">
+  <div class="topbar glass" id="topBar">
+    <label class="searchbox" for="q">
+      <svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></g></svg>
+      <input id="q" type="search" placeholder="Search flights & airports" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
+      <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
+    </label>
+    <button class="cancel" id="qCancel" hidden>Cancel</button>
+    <button class="me bell" id="btnBell" aria-label="Alerts"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z"/></g></svg><span class="badge" id="bellBadge" hidden>0</span></button>
+    <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></g></svg></button>
+  </div>
+  <div class="top-row">
   <div class="chips" id="chips">
     <button class="chip" id="feedChip" data-mode="connecting" aria-label="Live feed status, opens settings"><span class="dot"></span><span id="feedText">Connecting</span></button>
     <button class="chip filter" id="filterChip" hidden aria-label="Clear filters"><span id="filterText">Filtered</span><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
@@ -1437,6 +1463,7 @@ body.globe-on #altLegend { display: none; }
     </div>
     <div class="ctrl-group glass zoom"><button class="ctrl" id="zIn" aria-label="Zoom in"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></g></svg></button><button class="ctrl" id="zOut" aria-label="Zoom out"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z"/></g></svg></button></div>
   </div>
+  </div>
 </header>
 
 <div class="notice glass" id="notice" hidden role="status">
@@ -1448,16 +1475,7 @@ body.globe-on #altLegend { display: none; }
 
 <section class="explore glass" id="explore" data-state="peek" aria-label="Explore">
   <div class="ex-handle" id="exHandle" role="button" aria-label="Expand or collapse"><span class="grab"></span></div>
-  <div class="ex-top" id="exTop">
-    <label class="searchbox" for="q">
-      <svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z"/></g></svg>
-      <input id="q" type="search" placeholder="Search flights & airports" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-label="Search flights, airports, airlines and registrations">
-      <button class="clear" id="qClear" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button>
-    </label>
-    <button class="cancel" id="qCancel" hidden>Cancel</button>
-    <button class="me bell" id="btnBell" aria-label="Alerts"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z"/></g></svg><span class="badge" id="bellBadge" hidden>0</span></button>
-    <button class="me" id="btnMe" aria-label="Profile, my flights and settings"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></g></svg></button>
-  </div>
+  <div class="ex-top" id="exTop" hidden></div>
   <div class="ex-body" id="exBody">
     <div id="exHome">
       <div class="quick chips-row ap-chips" id="apQuick" hidden aria-label="Airport menu"></div>
@@ -2446,14 +2464,14 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) saveS
 addEventListener("pagehide", () => saveSnap(true));
 function prune() {
   if (feed.mode === "cached") return;
-  const now = performance.now(), ttl = feed.mode === "sim" ? 15000 : 50000;
+  const now = performance.now(), ttl = feed.mode === "sim" ? 15000 : Math.max(50000, feed.keepMs || 0);
   for (const [k, a] of acMap) if (now - a.seen > ttl && a !== selected && !(S.saved.flights[k] && now - a.seen < 300000)) acMap.delete(k);
   if (selected && now - selected.seen > 90000) { acMap.delete(selected.hex); selectedLost = true; }
 }
 let selectedLost = false;
 function displayPos(a, now, o) {
   let lat = a.lat, lon = a.lon;
-  const dt = Math.min(60, Math.max(0, (now - a.t0) / 1000));
+  const dt = Math.min(feed.keepMs ? 300 : 60, Math.max(0, (now - a.t0) / 1000));
   if (!a.ground && a.gs && a.track != null && dt > 0) {
     const d = (a.gs * dt) / 3600, tr = a.track * D2R;
     lat += (d * Math.cos(tr)) / 60; lon += (d * Math.sin(tr)) / (60 * Math.cos(lat * D2R));
@@ -2620,46 +2638,50 @@ function makePlan() {
   if (S.source === "opensky") return { kind: "box", b: box };
   if (milOnly()) return { kind: "mil" };
   if (R <= 245 && b.e - b.w < 360) return { kind: "circles", circles: [{ lat: c.lat, lon: c.lon, r: Math.ceil(R * 1.03) + 2 }] };
-  const circles = gridCircles(b);
-  if (circles && circles.length <= 9) return { kind: "circles", circles };
-  return { kind: "wide", b: box, fallback: clusterCircles(c, b) };
+  const all = tilesIn(b);
+  const near = (t) => distNm(c.lat, c.lon, t.lat, t.lon);
+  if (all.length <= TILE_SWEEP) return { kind: "tiles", circles: all.sort((x, y) => near(x) - near(y)), total: all.length, full: true, b: box };
+  // more tiles than one sweep: oldest first, nearest first, so each pass fills in the next part of the map
+  const pick = all.sort((x, y) => (tileAt.get(x.k) || 0) - (tileAt.get(y.k) || 0) || near(x) - near(y)).slice(0, TILE_SWEEP);
+  return { kind: "tiles", circles: pick.sort((x, y) => near(x) - near(y)), total: all.length, full: false, b: box };
+}
+/* Zoomed out: a fixed worldwide grid of 250 nm circles, the largest area the free feeds answer in one call.
+   Every user asks for the same tiles, so the app's server can share answers between them. */
+const TILE_SWEEP = 60, tileAt = new Map();
+const TILES = (() => {
+  const out = [];
+  for (let la = -77.5; la <= 82.5; la += 5) {
+    const eq = la - 2.5 <= 0 && la + 2.5 >= 0 ? 0 : Math.min(Math.abs(la - 2.5), Math.abs(la + 2.5));
+    const n = Math.max(1, Math.ceil((360 * 60 * Math.cos(eq * D2R)) / 380)), step = 360 / n;
+    for (let j = 0; j < n; j++) out.push({ k: out.length, lat: la, lon: +(-180 + (j + 0.5) * step).toFixed(3), step, r: 250 });
+  }
+  return out;
+})();
+function tilesIn(b) {
+  const out = [], allLon = b.e - b.w >= 359, mid = (b.w + b.e) / 2;
+  for (const t of TILES) {
+    if (t.lat + 2.5 < b.s || t.lat - 2.5 > b.n) continue;
+    if (!allLon) { const lo = t.lon + 360 * Math.round((mid - t.lon) / 360); if (lo + t.step / 2 < b.w || lo - t.step / 2 > b.e) continue; }
+    out.push(t);
+  }
+  return out;
 }
 function clampBox(b) { return { n: clamp(b.n, -85, 85), s: clamp(b.s, -85, 85), w: Math.max(-180, b.w), e: Math.min(180, b.e) }; }
-function gridCircles(b) {
-  if (b.e - b.w > 120) return null;
-  const hNm = (b.n - b.s) * 60, rows = Math.max(1, Math.ceil(hNm / 340)), out = [];
-  for (let i = 0; i < rows; i++) {
-    const lat = b.n - ((i + 0.5) * (b.n - b.s)) / rows;
-    const wNm = (b.e - b.w) * 60 * Math.cos(lat * D2R), cols = Math.max(1, Math.ceil(wNm / 340));
-    const ch = hNm / rows, cw = wNm / cols, r = Math.min(250, Math.ceil(Math.hypot(ch, cw) / 2) + 4);
-    for (let j = 0; j < cols; j++) { let lon = b.w + ((j + 0.5) * (b.e - b.w)) / cols; lon = ((lon + 540) % 360) - 180; out.push({ lat, lon, r }); }
-    if (out.length > 9) return out;
-  }
-  return out;
-}
-function clusterCircles(c, b) {
-  const out = [{ lat: c.lat, lon: c.lon, r: 250 }];
-  for (let k = 0; k < 6; k++) {
-    const brg = k * 60 * D2R, d = 400;
-    const lat = c.lat + (d * Math.cos(brg)) / 60, lon = c.lon + (d * Math.sin(brg)) / (60 * Math.max(0.1, Math.cos(c.lat * D2R)));
-    if (lat < b.s - 3 || lat > b.n + 3 || lat > 84 || lat < -84) continue;
-    out.push({ lat, lon: ((lon + 540) % 360) - 180, r: 250 });
-  }
-  return out;
-}
-async function fetchCircles(circles) {
+let sweepAbort = false;
+async function fetchCircles(circles, onList) {
   const srcs = readsbOrder(), lists = [], done = [];
   let pending = circles.slice();
   for (let pass = 0; pass < 2 && pending.length; pass++) {
     const usable = pass === 0 ? srcs : srcs.filter((id) => status[id] && status[id].state === "ok");
     if (!usable.length) break;
     const queues = usable.map(() => []);
-    pending.forEach((c, i) => queues[i % usable.length].push(c));
+    pending.forEach((c, i) => queues[(c.k != null ? c.k : i) % usable.length].push(c));
     const failed = [];
     await Promise.all(queues.map(async (q, si) => {
       const id = usable[si];
       for (const c of q) {
-        try { lists.push({ id, list: await fetchFrom(id, SOURCES[id].point(c.lat, c.lon, c.r)) }); done.push(c); }
+        if (sweepAbort) break;
+        try { const list = await fetchFrom(id, SOURCES[id].point(c.lat, c.lon, c.r)); lists.push({ id, list }); done.push(c); if (c.k != null) tileAt.set(c.k, Date.now()); if (onList) onList(id, list); }
         catch (e) { failed.push(c); if (pass === 0 && status[id].state === "fail") { failed.push(...q.slice(q.indexOf(c) + 1)); break; } }
       }
     }));
@@ -2669,10 +2691,21 @@ async function fetchCircles(circles) {
 }
 let busy = false, again = false, pollTimer = null;
 async function refresh() {
-  if (busy) { again = true; return; }
-  busy = true; clearTimeout(pollTimer);
+  if (busy) { again = true; sweepAbort = true; return; }
+  busy = true; sweepAbort = false; clearTimeout(pollTimer);
   const plan = makePlan();
   let lists = [], coverage = null, hint = "", interval = S.interval * 1000;
+  const fromCache = feed.mode === "cached", tIn = performance.now();
+  let liveYet = false;
+  // planes go on the map as each part of the sweep arrives, not after the whole sweep
+  const onList = (id, list) => {
+    if (!liveYet) {
+      liveYet = true;
+      if (feed.mode === "sim") { stopSim(); acMap.clear(); if (selected) deselect(); toast("Live traffic connected"); }
+      feed.mode = "live"; feed.everLive = true; feed.lastOk = Date.now(); hud();
+    }
+    ingest(list, id); feed.lastOk = Date.now();
+  };
   try {
     if (plan.kind === "custom") {
       const url = customUrl(plan.c.lat, plan.c.lon, plan.r);
@@ -2688,28 +2721,34 @@ async function refresh() {
       lists = r.lists; if (r.done.length) coverage = { circles: r.done };
       if (r.done.length && r.done.length < plan.circles.length) hint = "Some of this area didn't load. Retrying.";
       interval = plan.circles.length > 1 ? Math.max(S.interval * 1000, 4000 + plan.circles.length * 1600) : S.interval * 1000;
-    } else {
+    } else if (plan.kind === "tiles") {
+      // very wide views try OpenSky's single worldwide call first, then sweep the tiles
       let osOk = false;
-      if (S.source === "auto" && !S.commercial && !(status.opensky && status.opensky.state === "fail" && Date.now() - status.opensky.at < 300000)) {
+      if (!plan.full && S.source === "auto" && !S.commercial && !(status.opensky && status.opensky.state === "fail" && Date.now() - status.opensky.at < 300000)) {
         try { lists.push({ id: "opensky", list: await fetchFrom("opensky", SOURCES.opensky.box(plan.b)) }); coverage = { box: plan.b }; osOk = true; interval = 45000; } catch (e) {}
       }
       if (!osOk) {
-        const r = await fetchCircles(plan.fallback);
-        lists = r.lists;
-        if (r.done.length) { coverage = { circles: r.done, partial: true }; hint = "Showing traffic around the centre of the map. Zoom in for full coverage."; }
-        interval = Math.max(12000, 4000 + plan.fallback.length * 1600);
+        const t0 = Date.now(), r = await fetchCircles(plan.circles, onList);
+        lists = r.lists.map((l) => ({ ...l, done: true }));
+        const took = Date.now() - t0, passes = Math.ceil(plan.total / TILE_SWEEP);
+        if (r.done.length) coverage = plan.full && r.done.length === plan.circles.length ? { circles: r.done } : { circles: r.done, partial: true };
+        if (!plan.full) hint = "Filling in the whole map. Zoom in for faster updates.";
+        else if (r.done.length < plan.circles.length && !sweepAbort) hint = "Some of this area didn't load. Retrying.";
+        interval = Math.max(S.interval * 1000, plan.full ? Math.min(15000, 2000 + plan.circles.length * 250) : 1500);
+        // keep planes from tiles that haven't come round again yet
+        feed.keepMs = Math.min(360000, Math.max(50000, passes * (took + interval) + 30000));
       }
     }
   } catch (e) { /* handled below */ }
   const ok = lists.length > 0;
   if (ok) {
     if (feed.mode === "sim") { stopSim(); acMap.clear(); if (selected) deselect(); toast("Live traffic connected"); }
-    const fromCache = feed.mode === "cached", tIn = performance.now();
+    if (plan.kind !== "tiles" || coverage && coverage.box) feed.keepMs = 0;
     feed.mode = "live"; feed.everLive = true; feed.lastOk = Date.now();
     feed.sources = [...new Set(lists.map((l) => l.id))];
     feed.coverage = coverage; feed.planKind = plan.kind; feed.hint = hint;
     const merged = new Map();
-    for (const { id, list } of lists) for (const a of list) { const m = merged.get(a.hex); if (!m || a.age < m.a.age) merged.set(a.hex, { a, id }); }
+    for (const { id, list, done } of lists) if (!done) for (const a of list) { const m = merged.get(a.hex); if (!m || a.age < m.a.age) merged.set(a.hex, { a, id }); }
     const byId = {};
     for (const { a, id } of merged.values()) (byId[id] = byId[id] || []).push(a);
     for (const id in byId) ingest(byId[id], id);
@@ -6076,7 +6115,7 @@ const safeBottom = (() => { const p = document.createElement("div"); p.style.css
 function exHeights() {
   const full = ex.getBoundingClientRect().height || H * 0.95;
   const q = $("#quick"), top = ex.getBoundingClientRect().top - (parseFloat(getComputedStyle(ex).getPropertyValue("--ty")) || 0);
-  const peek = q && !$("#exHome").hidden ? Math.max(100, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 8 + safeBottom()) : 180;
+  const peek = q && !$("#exHome").hidden ? Math.max(60, q.getBoundingClientRect().bottom - ex.getBoundingClientRect().top + 8 + safeBottom()) : 180;
   return { full, half: Math.min(full, Math.round(H * 0.58)), peek: Math.min(full, peek || 206) };
 }
 let exPeekH = 206;

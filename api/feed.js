@@ -23,7 +23,9 @@ module.exports = async (req, res) => {
     clearTimeout(timer);
     const body = await r.text();
     res.setHeader("Content-Type", r.headers.get("content-type") || "application/json");
-    res.setHeader("Cache-Control", r.ok ? `public, s-maxage=${src.ttl || 4}, stale-while-revalidate=10` : "no-store");
+    // zoomed-out map tiles (fixed worldwide grid: lat on .5, radius 250) are shared between users for longer
+    const tile = /\/-?\d+\.5000\/.*\/250$/.test(q);
+    res.setHeader("Cache-Control", r.ok ? `public, s-maxage=${src.ttl || (tile ? 12 : 4)}, stale-while-revalidate=${tile ? 20 : 10}` : "no-store");
     res.status(r.status).send(body);
   } catch (e) {
     res.status(502).json({ error: "Feed unavailable" });
