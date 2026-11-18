@@ -1478,6 +1478,9 @@ body.globe-on #altLegend { display: none; }
    them is clear glass (a light translucent fill with a bright top edge), all the same material. */
 :is(.explore, .sheet, .peek, .topbar, .sh-sheet, .glass, .view3d, .h3-top) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 :is(.explore, .sheet, .peek, .sh-sheet) :is(.btn, .seg2, .chips-row .qt, .abar, .xs, .sh-row, .fq-more, .dl-hold button) { background-color: var(--gl); }
+
+.tg > span { display: grid; gap: 2px; }
+.tg-sub { font-size: 12.5px; font-weight: 400; color: var(--ink-2); }
 </style>
 </head>
 <body>
@@ -1694,6 +1697,7 @@ body.globe-on #altLegend { display: none; }
       <h3>Base map</h3>
       <div class="styles" id="styles"></div>
       <p class="small muted" id="tileNote" style="margin:10px 0 0"></p>
+      <div class="toggles" style="margin-top:10px"><label class="tg" for="tRelief"><span>Terrain texture<small class="tg-sub">Shades mountains and valleys on any map</small></span> <input type="checkbox" id="tRelief"></label></div>
       <div class="field" id="keyField" style="margin-top:8px" hidden><input id="cartoKey" type="text" placeholder="CARTO basemaps API key" spellcheck="false" autocomplete="off" aria-label="CARTO basemaps API key"><button class="btn" id="btnKey">Save</button></div>
     </div>
     <div>
@@ -1777,7 +1781,7 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* ---------------- Preferences ---------------- */
 const PREF_KEY = "monoRadar.v2";
 const DEF_FILTERS = { cats: ["airliner", "turboprop", "biz", "light", "heli", "mil", "other"], ground: true, altMin: 0, altMax: 99999, airline: "", type: "" };
-const DEFAULTS = { lat: 51.47, lon: -0.46, zoom: 7, source: "auto", customUrl: "", interval: 5, style: "black", labels: true, airports: true, trail: true, paper: false, night: true, shadows: true, geo: true, cartoKey: "", commercial: false, radar: false, filters: DEF_FILTERS };
+const DEFAULTS = { lat: 51.47, lon: -0.46, zoom: 7, source: "auto", customUrl: "", interval: 5, style: "black", labels: true, airports: true, trail: true, paper: false, night: true, shadows: true, relief: false, geo: true, cartoKey: "", commercial: false, radar: false, filters: DEF_FILTERS };
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(PREF_KEY) || "{}") || {}; } catch (e) { saved = {}; }
 const S = Object.assign({}, DEFAULTS, saved);
@@ -2201,7 +2205,33 @@ function tintMap(m, url) {
     for (const [k, v] of Object.entries(props)) { try { m.setPaintProperty(id, k, v); } catch (e) {} }
   }
 }
-function tintBasemap() { tintMap(ml, mlStyleUrl); }
+function tintBasemap() { tintMap(ml, mlStyleUrl); applyRelief(ml); }
+/* Terrain texture: hillshading from free worldwide elevation tiles (Mapzen terrain on AWS Open Data),
+   tinted to suit each map and laid under the water so seas stay clean */
+const RELIEF_DEM = { type: "raster-dem", tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], encoding: "terrarium", tileSize: 256, maxzoom: 13 };
+const RELIEF_PAINT = {
+  black: { "hillshade-shadow-color": "#000000", "hillshade-highlight-color": "rgba(150,160,175,0.55)", "hillshade-accent-color": "#050506", "hillshade-exaggeration": 0.7, "hillshade-illumination-direction": 315 },
+  white: { "hillshade-shadow-color": "#5c6570", "hillshade-highlight-color": "#ffffff", "hillshade-accent-color": "#8b949e", "hillshade-exaggeration": 0.4, "hillshade-illumination-direction": 315 },
+  colour: { "hillshade-shadow-color": "#2f4a14", "hillshade-highlight-color": "rgba(250,255,225,0.7)", "hillshade-accent-color": "#4d6b25", "hillshade-exaggeration": 0.5, "hillshade-illumination-direction": 315 },
+};
+function applyRelief(m) {
+  if (!m || !m.getStyle || !m.getStyle()) return;
+  try {
+    if (!S.relief) { if (m.getLayer("relief")) m.removeLayer("relief"); return; }
+    if (!m.getSource("relief-dem")) m.addSource("relief-dem", RELIEF_DEM);
+    const paint = RELIEF_PAINT[mapTone()];
+    if (!m.getLayer("relief")) {
+      const layers = m.getStyle().layers || [];
+      const before = m.getLayer("water") ? "water" : (layers.find((l) => l.type === "symbol") || {}).id;
+      m.addLayer({ id: "relief", type: "hillshade", source: "relief-dem", paint }, before);
+    } else for (const [k, v] of Object.entries(paint)) m.setPaintProperty("relief", k, v);
+  } catch (e) {}
+}
+function setRelief() {
+  applyRelief(ml); if (GM.map) applyRelief(GM.map);
+  updateAttrib();
+  if (S.relief && !basemapReady() && !GB.on) toast("Terrain texture shows on the street maps. They can't load in this viewer.");
+}
 function syncBasemap() {
   const c = toLatLon(V.u, V.v), key = `${c.lon.toFixed(7)},${c.lat.toFixed(7)},${V.z.toFixed(4)}`;
   if (key === mlSync) return;
@@ -2245,7 +2275,7 @@ function drawTiles(g) {
     }
   }
 }
-function updateAttrib() { const bk = basemapReady() ? (basemapStyle(true) || {}).key || "" : ""; $("#attrib").textContent = (bk.startsWith("builtin") ? "Natural Earth" : bk.startsWith("carto") ? "© OpenStreetMap contributors © CARTO" : bk ? "OpenFreeMap © OpenMapTiles · Data © OpenStreetMap" : tileLayer() ? "© OpenStreetMap contributors © CARTO" : "Natural Earth") + (S.radar ? " · Radar: RainViewer" : ""); }
+function updateAttrib() { const bk = basemapReady() ? (basemapStyle(true) || {}).key || "" : ""; $("#attrib").textContent = (bk.startsWith("builtin") ? "Natural Earth" : bk.startsWith("carto") ? "© OpenStreetMap contributors © CARTO" : bk ? "OpenFreeMap © OpenMapTiles · Data © OpenStreetMap" : tileLayer() ? "© OpenStreetMap contributors © CARTO" : "Natural Earth") + (S.relief && basemapReady() ? " · Terrain: Mapzen" : "") + (S.radar ? " · Radar: RainViewer" : ""); }
 /* Weather radar (RainViewer, free tier: zoom 7 max, so tiles are stretched when zoomed in further) */
 const radar = { host: "", path: "", time: 0, loads: 0, errs: 0, broken: false, warned: false }, radarTiles = new Map();
 async function loadRadar() {
@@ -4321,7 +4351,7 @@ function renderStyles() {
 }
 /* switching map style re-colours the map, planes and labels without touching the app's appearance */
 function applyMapTone() { readColors(); if (ml || mlScript) ensureBasemap(); sprites.clear(); TONE_CACHE.clear(); GRADS.clear(); BV.valid = false; dirty = true; }
-const TOGGLES = [["tAltColor", "altColor"], ["tLabels", "labels"], ["tAirports", "airports"], ["tTrail", "trail"], ["tGeo", "geo"], ["tNight", "night"], ["tShadows", "shadows"]];
+const TOGGLES = [["tRelief", "relief"], ["tAltColor", "altColor"], ["tLabels", "labels"], ["tAirports", "airports"], ["tTrail", "trail"], ["tGeo", "geo"], ["tNight", "night"], ["tShadows", "shadows"]];
 function renderMapStyle() {
   renderStyles();
   for (const [id, k] of TOGGLES) $("#" + id).checked = !!S[k];
@@ -4329,7 +4359,7 @@ function renderMapStyle() {
 $("#btnKey").addEventListener("click", () => { S.cartoKey = $("#cartoKey").value.trim(); tiles.clear(); tileErrs = 0; tileLoads = 0; tilesBroken = false; savePrefs(); renderStyles(); updateAttrib(); BV.valid = false; dirty = true; toast(S.cartoKey ? "Key saved. Loading detailed tiles." : "Key removed"); });
 $("#styles").addEventListener("click", (e) => { const b = e.target.closest(".style"); if (!b) return; S.style = b.dataset.style; if (STYLES[S.style].vector && mlState === "broken") { mlState = ml ? "ready" : "off"; } savePrefs(); applyMapTone(); renderStyles(); updateAttrib(); });
 for (const [id, k] of TOGGLES) {
-  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
+  $("#" + id).addEventListener("change", (e) => { S[k] = e.target.checked; savePrefs(); if (k === "relief") setRelief(); if (k === "paper") { applyTheme(); renderStyles(); } if (k === "altColor") syncAltLegend(); dirty = true; });
 }
 function applyTheme() { if (S.paper) document.documentElement.dataset.ink = "paper"; else delete document.documentElement.dataset.ink; readColors(); if (ml || mlScript) ensureBasemap(); sprites.clear(); TONE_CACHE.clear(); GRADS.clear(); BV.valid = false; dirty = true; }
 
@@ -5487,7 +5517,7 @@ async function gmEnsure() {
     GM.map = new maplibregl.Map({ container: div, style: gs.style, center: [0, 0], zoom: 2, interactive: false, attributionControl: false, pixelRatio: 2, fadeDuration: 0,
       renderWorldCopies: true, maxZoom: 20, canvasContextAttributes: { preserveDrawingBuffer: true, antialias: false }, preserveDrawingBuffer: true });
   } catch (e) { div.remove(); return null; }
-  GM.map.on("style.load", () => tintMap(GM.map, GM.key));
+  GM.map.on("style.load", () => { tintMap(GM.map, GM.key); applyRelief(GM.map); });
   GM.map.on("error", (e) => { if (!(e && (e.sourceId || e.tile))) GM.styleErr = true; });
   return GM.map;
 }

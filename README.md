@@ -30,3 +30,4 @@ contributors, MapLibre. Airports, runways and ATC frequencies: OurAirports (publ
 US delays: FAA NAS Status (public domain). Live ATC audio links go to LiveATC.net. Free for personal use.
 
 Icons: [Phosphor Icons](https://phosphoricons.com) (MIT).
+- Terrain texture: elevation tiles from Mapzen Terrain Tiles on AWS Open Data (sources include SRTM, GMTED, ETOPO1 and others)
