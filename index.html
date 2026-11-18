@@ -1481,6 +1481,10 @@ body.globe-on #altLegend { display: none; }
 
 .tg > span { display: grid; gap: 2px; }
 .tg-sub { font-size: 12.5px; font-weight: 400; color: var(--ink-2); }
+
+/* alerts: title on the left, close on the right */
+.vhead.vx { padding: 6px var(--gut) 14px; align-items: center; gap: 12px; }
+.vhead.vx .vtitle { margin: 0; }
 </style>
 </head>
 <body>
@@ -4568,6 +4572,7 @@ function showView(v, quiet) {
   if (quiet) return;
   if (v === "home") { setEx("peek"); renderExplore(true); } else setEx("full");
 }
+const vheadX = (title) => `<div class="vhead vx"><h2 class="vtitle">${title}</h2><button class="x" data-view="home" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/></g></svg></button></div>`;
 const vhead = (title, sub) => `<div class="vhead"><button class="back" data-view="home"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M168.49,199.51a12,12,0,0,1-17,17l-80-80a12,12,0,0,1,0-17l80-80a12,12,0,0,1,17,17L97,128Z"/></g></svg>Explore</button>${sub || ""}</div><h2 class="vtitle">${title}</h2>`;
 let savedKey = "";
 function sfCard(f) {
@@ -6156,7 +6161,7 @@ function noteRow(n, live) {
 function renderAlerts(quiet) {
   alertActs = [];
   const live = emergList.map((e) => ({ k: "emerg", title: `${e.flight || e.reg || e.hex.toUpperCase()} · ${emergName(e.squawk)}`, sub: [`Squawk ${e.squawk}`, e.ground ? "On the ground" : e.alt != null ? fmtInt(e.alt) + " ft" : "", e.type].filter(Boolean).join(" · "), hex: e.hex, emerg: e, t: Date.now() }));
-  let h = vhead("Alerts") + `<div class="vpad al-list">`;
+  let h = vheadX("Alerts") + `<div class="vpad al-list">`;
   if (live.length) h += `<h4 class="al-h">Emergencies right now</h4><div class="al-g">${live.map((n) => noteRow(n, true)).join("")}</div>`;
   if (notes.length) h += `<div class="al-hr"><h4 class="al-h">Recent</h4><button class="al-clear" id="alClear">Clear</button></div><div class="al-g">${notes.map((n) => noteRow(n)).join("")}</div>`;
   if (!live.length && !notes.length) h += `<div class="empty-v"><b>All quiet</b>Emergency squawks, interesting planes near you, updates on your saved flights and feed messages show up here.</div>`;
