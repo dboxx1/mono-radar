@@ -1433,6 +1433,13 @@ body.globe-on #altLegend { display: none; }
 .ex-top { display: none !important; }
 @media (max-width: 899px) { .explore { height: calc(100% - env(safe-area-inset-top) - 70px); } }
 @media (min-width: 900px) { .topbar { border-radius: 0 0 24px 24px; } }
+
+/* peek: the sheet shows only the chip row, with nothing half-cut underneath it */
+#exHome > :not(.quick) { transition: opacity .25s; }
+.explore[data-state="peek"]:not(.dragging) #exHome > :not(.quick) { opacity: 0; pointer-events: none; }
+/* chip row fades out at the screen edges instead of slicing a chip in half */
+.quick.chips-row { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gut), #000 calc(100% - 30px), transparent); mask-image: linear-gradient(90deg, transparent 0, #000 var(--gut), #000 calc(100% - 30px), transparent); }
+.quick.chips-row::after { content: ""; flex: none; width: 10px; }
 </style>
 </head>
 <body>
