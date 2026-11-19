@@ -1570,6 +1570,7 @@ body.globe-on #altLegend { display: none; }
 .tk-tag.t-e { background: rgba(255, 69, 58, .18); color: var(--alert) !important; }
 .tk-tag.t-v { background: rgba(255, 196, 0, .16); color: #e8b400 !important; }
 .tk-tag.t-r { background: rgba(40, 200, 255, .14); color: var(--accent) !important; }
+.tk-tag.t-m { background: rgba(120, 170, 90, .18); color: #8fc46a !important; }
 </style>
 </head>
 <body>
@@ -6275,7 +6276,7 @@ updateBell();
 const TRACK_API = () => `${HOSTED ? "" : APP_HOST}/api/track`;
 const TK_NAME = { VC25: "Boeing VC-25 · Air Force One", E4B: "Boeing E-4B Nightwatch", C32: "Boeing C-32 · VIP 757", A124: "Antonov An-124 Ruslan", A3ST: "Airbus Beluga", A337: "Airbus BelugaXL", BLCF: "Boeing 747 Dreamlifter", AN22: "Antonov An-22", C5M: "Lockheed C-5M Galaxy", B52: "Boeing B-52", U2: "Lockheed U-2", E6: "Boeing E-6 Mercury" };
 const TK_TYPES = [["VC25", "vip"], ["E4B", "vip"], ["C32", "vip"], ["A124", "rare"], ["A3ST", "rare"], ["A337", "rare"], ["BLCF", "rare"], ["AN22", "rare"], ["C5M", "rare"], ["B52", "rare"], ["U2", "rare"], ["E6", "rare"]];
-const tk = { counts: [], enabled: false, byType: new Map(), at: 0, typeAt: 0, busy: false };
+const tk = { counts: [], enabled: false, byType: new Map(), mil: [], milSrc: "", at: 0, typeAt: 0, milAt: 0, busy: false };
 const tkSent = new Map();
 function trackView(a) {
   if (!a || !a.hex || a.src === "sim") return;
@@ -6288,6 +6289,14 @@ async function loadTracked(force) {
   tk.busy = true; tk.at = Date.now();
   try { const j = await getJSON(TRACK_API(), 8000); tk.enabled = !!j.enabled; tk.counts = Array.isArray(j.top) ? j.top : []; } catch (e) { tk.enabled = false; }
   if (exView === "tracked") renderTracked();
+  // military aircraft worldwide, so the list is never empty
+  if (Date.now() - tk.milAt > 120000) {
+    tk.milAt = Date.now();
+    for (const id of readsbOrder()) {
+      try { tk.mil = normalize(await getJSON(SOURCES[id].mil(), 9000)).filter((a) => a.lat != null && !a.ground); tk.milSrc = id; break; } catch (e) {}
+    }
+    if (exView === "tracked") renderTracked();
+  }
   // worldwide VIP and rare types, every 3 minutes at most, one gentle request at a time
   if (Date.now() - tk.typeAt > 180000) {
     tk.typeAt = Date.now();
@@ -6308,14 +6317,19 @@ function trackedItems() {
   for (const e of emergList) add(e.hex, { hex: e.hex, a: acMap.get(e.hex) || e, live: e, src: emergSrc, kind: "emerg" });
   for (const [, list] of tk.byType) for (const x of list) if (x.kind === "vip") add(x.a.hex, { hex: x.a.hex, a: acMap.get(x.a.hex) || x.a, live: x.a, src: x.src, kind: "vip" });
   for (const [, list] of tk.byType) for (const x of list) if (x.kind === "rare") add(x.a.hex, { hex: x.a.hex, a: acMap.get(x.a.hex) || x.a, live: x.a, src: x.src, kind: "rare" });
-  for (const a of acMap.values()) if (a.lat != null && RARE.has(a.type) && a.src !== "sim") add(a.hex, { hex: a.hex, a, kind: "near" });
+  // then military worldwide (big and unusual types first, highest first), and a few rare planes in view
+  const mil = tk.mil.slice().sort((p, q) => (RARE.has(q.type) - RARE.has(p.type)) || ((q.alt || 0) - (p.alt || 0)));
+  for (const m of mil) { if (out.size >= 17) break; add(m.hex, { hex: m.hex, a: acMap.get(m.hex) || m, live: m, src: tk.milSrc, kind: "mil" }); }
+  let near = 0;
+  for (const a of acMap.values()) { if (near >= 3 || out.size >= 20) break; if (a.lat != null && RARE.has(a.type) && a.src !== "sim" && !out.has(a.hex)) { add(a.hex, { hex: a.hex, a, kind: "near" }); near++; } }
   return [...out.values()].slice(0, 20);
 }
-const TK_TAG = { emerg: ["Emergency", "e"], vip: ["VIP", "v"], rare: ["Rare", "r"], near: ["Rare nearby", "r"] };
+const TK_TAG = { emerg: ["Emergency", "e"], vip: ["VIP", "v"], rare: ["Rare", "r"], near: ["Rare nearby", "r"], mil: ["Military", "m"] };
 function renderTracked() {
   const box = $("#railTracked"); if (!box) return;
   const items = trackedItems();
-  $("#tkSub").textContent = tk.enabled && tk.counts.length ? "Worldwide, most opened on X Flight Radar in the last hour." : "Worldwide: emergencies, VIP jets and rare aircraft people follow.";
+  const onlyMil = items.length && items.every((x) => x.kind === "mil");
+  $("#tkSub").textContent = tk.enabled && tk.counts.length ? "Worldwide, most opened on X Flight Radar in the last hour." : onlyMil ? "Nothing standing out right now, so here are military aircraft flying worldwide." : "Worldwide: emergencies, VIP jets, rare and military aircraft people follow.";
   $("#tkFoot").textContent = tk.enabled ? "Counts are how many people opened each flight on X Flight Radar recently." : "Live from the community feeds. Tap one to jump to it.";
   if (!items.length) { box.innerHTML = `<div class="empty-v"><b>Looking around the world…</b>Emergencies, VIP jets and rare giants show up here as they're found.</div>`; return; }
   box.innerHTML = items.map((it, i) => {
@@ -6338,6 +6352,7 @@ $("#railTracked").addEventListener("click", async (e) => {
   if (a) { showView("home", true); setEx("peek"); select(a, { fly: true }); } else toast("That aircraft isn't broadcasting right now.");
 });
 $("#qTracked").addEventListener("click", () => showView("tracked"));
+$("#exTracked").addEventListener("click", (e) => { const v = e.target.closest("[data-view]"); if (v) showView(v.dataset.view); });
 setInterval(() => { if (exView === "tracked" && !document.hidden) { loadTracked(); renderTracked(); } }, 30000);
 
 /* Smart chips: the quick buttons show what's going on, not just an icon */
