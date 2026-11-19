@@ -2,8 +2,8 @@
 // browser requests from other websites (CORS). Only known read-only paths are allowed.
 // GET /api/feed?src=adsblol&q=v2%2Fpoint%2F51.47%2F-0.46%2F25
 const SOURCES = {
-  adsblol: { base: "https://api.adsb.lol/", ok: /^v2\/(point|callsign|registration|hex|sqk)\/[\w\/.\-]+$|^v2\/mil$/ },
-  airplanes: { base: "https://api.airplanes.live/", ok: /^v2\/(point|callsign|reg|hex|squawk)\/[\w\/.\-]+$|^v2\/mil$/ },
+  adsblol: { base: "https://api.adsb.lol/", ok: /^v2\/(point|callsign|registration|hex|sqk|type)\/[\w\/.\-]+$|^v2\/mil$/ },
+  airplanes: { base: "https://api.airplanes.live/", ok: /^v2\/(point|callsign|reg|hex|squawk|type)\/[\w\/.\-]+$|^v2\/mil$/ },
   adsbfi: { base: "https://opendata.adsb.fi/api/", ok: /^v2\/(lat|callsign|registration|hex|sqk)\/[\w\/.\-]+$|^v2\/mil$/ },
   opensky: { base: "https://opensky-network.org/api/", ok: /^(states\/all|tracks\/all)\?[\w=&.\-]*$/ },
   // Full-day position history for one aircraft (readsb trace files), used to draw the real flown path
@@ -24,8 +24,9 @@ module.exports = async (req, res) => {
     const body = await r.text();
     res.setHeader("Content-Type", r.headers.get("content-type") || "application/json");
     // zoomed-out map tiles (fixed worldwide grid: lat on .5, radius 250) are shared between users for longer
-    const tile = /\/-?\d+\.5000\/.*\/250$/.test(q);
-    res.setHeader("Cache-Control", r.ok ? `public, s-maxage=${src.ttl || (tile ? 12 : 4)}, stale-while-revalidate=${tile ? 20 : 10}` : "no-store");
+    const tile = /\/-?\d+\.5000\/.*\/250$/.test(q), byType = /^v2\/type\//.test(q);
+    // worldwide lists by aircraft type (Most tracked tab) change slowly: share them for a minute
+    res.setHeader("Cache-Control", r.ok ? `public, s-maxage=${src.ttl || (byType ? 60 : tile ? 12 : 4)}, stale-while-revalidate=${byType ? 60 : tile ? 20 : 10}` : "no-store");
     res.status(r.status).send(body);
   } catch (e) {
     res.status(502).json({ error: "Feed unavailable" });
