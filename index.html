@@ -1525,6 +1525,36 @@ body.globe-on #altLegend { display: none; }
 #boot { grid-template-rows: auto auto; align-content: center; gap: 26px; }
 .boot-bar { --p: 8%; width: min(30vw, 140px); height: 4px; border-radius: 99px; background: rgba(60, 200, 255, 0.14); overflow: hidden; justify-self: center; box-shadow: inset 0 0 0 1px rgba(80, 220, 255, 0.08); }
 .boot-bar i { display: block; height: 100%; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, #0a6cff, #1fb8ff 55%, #8ff2ff); box-shadow: 0 0 12px rgba(40, 200, 255, 0.75); transition: width .4s cubic-bezier(.2, .8, .3, 1); }
+
+/* Profile, refined */
+.pf-hero { padding: 0; border: 0; box-shadow: var(--card-hi); }
+.pf-map { position: relative; }
+.pf-hero canvas { height: 176px; }
+.pf-tag { position: absolute; top: 12px; left: 12px; padding: 5px 11px; border-radius: 999px; font: 700 12.5px var(--font-ui); letter-spacing: .01em; color: #fff; background: rgba(0, 0, 0, .38); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.pf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 16px 4px 2px; }
+.pf-stats > div { position: relative; text-align: center; min-width: 0; }
+.pf-stats > div + div::before { content: ""; position: absolute; left: 0; top: 14%; bottom: 14%; width: 1px; background: var(--div); }
+.pf-stats b { display: block; font: 800 25px/1.05 var(--font-display); letter-spacing: -.015em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pf-stats span { display: block; margin-top: 3px; font: 600 10.5px var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.pf-hero .pa { padding: 14px var(--pad) var(--pad); }
+.pf-hero .pa .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.pf-hero .pa .btn .i { width: 16px; height: 16px; }
+.vnote { margin: -2px 4px 10px; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+.lf { grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 10px; padding: 12px 8px 12px 14px; }
+.lf-a b { display: flex; align-items: center; gap: 7px; font: 700 17px var(--font-ui); letter-spacing: .03em; }
+.lf-a .pl-i { width: 15px; height: 15px; fill: var(--accent); transform: rotate(90deg); flex: none; }
+.lf-a span, .lf-m span { display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lf-m { text-align: right; }
+.lf-m em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.lf .del { grid-row: auto; grid-column: auto; width: 32px; height: 32px; color: var(--ink-3); opacity: .7; }
+.empty-v { border-style: solid; border-color: transparent; background: var(--card); box-shadow: var(--card-hi); }
+.ev-i { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 10px; border-radius: 50%; background: rgba(40, 200, 255, .14); }
+.ev-i .pl-i { width: 22px; height: 22px; fill: var(--accent); transform: rotate(45deg); }
+.tg-act { width: 100%; text-align: left; color: var(--accent); font-weight: 600; }
+.tg-act > span { display: inline-flex; align-items: center; gap: 8px; }
+.tg-act .i { width: 18px; height: 18px; fill: currentColor; }
+.tg-act .chev { width: 16px; height: 16px; color: var(--ink-3); fill: none; }
+.about img { width: 76px; }
 </style>
 </head>
 <body>
@@ -4780,7 +4810,10 @@ function logStats() {
 const logDate = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return d; } };
 function lfRow(l) {
   const o = apFind(l.from), d = apFind(l.to), nm = o && d ? distNm(o[4], o[5], d[4], d[5]) : 0;
-  return `<div class="lf"><b>${esc(l.from)}<i>✈</i>${esc(l.to)}</b><button class="del" data-dellog="${esc(l.id)}" aria-label="Delete this flight">${ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"/></g>')}</button><span>${esc([logDate(l.date), l.flight, nm ? fmtMi(nm) : ""].filter(Boolean).join(" · "))}</span></div>`;
+  const code = (a, raw) => esc(a && a[1] ? a[1] : raw), city = (a) => (a ? esc(String(a[3] || a[2]).split(",")[0]) : "");
+  return `<div class="lf"><div class="lf-a"><b>${code(o, l.from)}<svg class="pl-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>${code(d, l.to)}</b><span>${o && d ? `${city(o)} → ${city(d)}` : esc(l.flight || "")}</span></div>`
+    + `<div class="lf-m"><em>${esc(logDate(l.date))}</em><span>${esc([l.flight && o && d ? l.flight : "", nm ? fmtMi(nm) : ""].filter(Boolean).join(" · "))}</span></div>`
+    + `<button class="del" data-dellog="${esc(l.id)}" aria-label="Delete this flight">${ico('<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"/></g>')}</button></div>`;
 }
 const BRAND_LOGO = (document.querySelector("#boot img") || {}).src || "";
 function renderProfile() {
@@ -4789,11 +4822,11 @@ function renderProfile() {
   const nSaved = Object.keys(S.saved.flights).length + S.saved.airports.length;
   const row = (attr, g1, g2, path, label, right) => `<button class="row" ${attr}><span class="ri" style="--g1:${g1};--g2:${g2}"><svg class="i" viewBox="0 0 24 24">${path}</svg></span>${label}<span class="rs">${right || ""}<svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z"/></g></svg></span></button>`;
   const log = S.log.slice().sort((p, q) => (q.date || "").localeCompare(p.date || "") || q.id - p.id);
-  $("#exProfile").innerHTML = vhead("Profile") + `<div class="vpad">
-    <div class="pcard"><h3>My flights</h3>
-      <div class="nums"><div><b>${s.n}</b><span>flights</span></div><div><b>${s.mi.toLocaleString("en-GB")}</b><span>miles</span></div><div><b>${s.hrs}</b><span>hours</span></div></div>
-      <canvas id="logMap" aria-label="Map of your flights"></canvas>
-      <div class="pa"><button class="btn" id="btnAddF">Add a flight</button><button class="btn" id="btnLogMap" aria-pressed="${!!S.showLog}"${S.log.length ? "" : " disabled"}>${S.showLog ? "Hide from map" : "Show on map"}</button></div>
+  $("#exProfile").innerHTML = vheadX("Profile") + `<div class="vpad pf">
+    <div class="pcard pf-hero">
+      <div class="pf-map"><canvas id="logMap" aria-label="Map of your flights"></canvas><span class="pf-tag">My flights</span></div>
+      <div class="pf-stats"><div><b>${s.n}</b><span>Flights</span></div><div><b>${s.mi.toLocaleString("en-GB")}</b><span>Miles</span></div><div><b>${s.hrs}</b><span>Hours</span></div><div><b>${s.aps}</b><span>Airports</span></div></div>
+      <div class="pa"><button class="btn accent" id="btnAddF"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Add a flight</button><button class="btn" id="btnLogMap" aria-pressed="${!!S.showLog}"${S.log.length ? "" : " disabled"}>${S.showLog ? "Hide from map" : "Show on map"}</button></div>
     </div>
     <div class="card" id="addForm" hidden><div class="addf">
       <label>From<input id="fFrom" placeholder="LHR" maxlength="4" autocomplete="off" autocapitalize="characters"></label>
@@ -4804,11 +4837,11 @@ function renderProfile() {
       <button class="btn accent full" id="fSave">Save flight</button>
     </div></div>
     <div class="vsub">Flight log</div>
-    ${log.length ? `<div class="card" style="padding:0">${log.map(lfRow).join("")}</div>` : `<div class="empty-v"><b>Start your flight log</b>Add trips you've taken, or tap "Add to my flights" on any plane you're on. Miles, hours and your route map build up here.</div>`}
+    ${log.length ? `<div class="card" style="padding:0">${log.map(lfRow).join("")}</div>` : `<div class="empty-v"><span class="ev-i"><svg class="pl-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></span><b>Start your flight log</b>Add trips you've taken, or tap "Add to my flights" on any plane you're on. Miles, hours and your route map build up here.</div>`}
     ${alertsHtml()}
     <div class="vsub">Appearance</div>
     <div class="seg2" role="tablist" aria-label="Appearance">${[["dark", "Dark"], ["light", "Light"], ["auto", "Auto"]].map(([k, l]) => `<button data-theme="${k}" aria-pressed="${S.theme === k}">${l}</button>`).join("")}</div>
-    <p class="note" style="margin-top:-4px">Auto follows your phone. The map has its own black, white or colour style in Map layers.</p>
+    <p class="vnote" style="margin:8px 4px 0">Auto follows your phone. The map has its own Black, White or Colour style in Map layers.</p>
     <div class="vsub">App</div>
     <div class="group" style="margin:0">
       ${row('data-view="saved"', "#ff7ab6", "#c81e63", '<g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Z"/></g>', "Saved", nSaved ? String(nSaved) : "")}
@@ -5132,9 +5165,9 @@ function checkAlerts() {
 }
 setInterval(checkAlerts, 15000);
 function alertsHtml() {
-  return `<div class="vsub">Overhead alerts</div><div class="card"><p class="small muted" style="margin:0 0 6px">${myLoc ? "A ping when something interesting flies within 30 miles of you, while the app is open." : "Turn on location to get pings for interesting planes near you."}</p>
-    <div class="toggles">${[["rare", "Rare and giant aircraft"], ["mil", "Military aircraft"], ["emerg", "Emergency squawks"]].map(([k, l]) => `<label class="tg">${l}<input type="checkbox" data-alert="${k}"${S.alerts[k] ? " checked" : ""}></label>`).join("")}</div>
-    ${myLoc ? "" : `<button class="btn" id="pfLoc" style="margin-top:10px">Use my location</button>`}</div>`;
+  return `<div class="vsub">Overhead alerts</div><p class="vnote">${myLoc ? "A ping when something interesting flies within 30 miles of you, while the app is open." : "Turn on location to get a ping when something interesting flies near you."}</p>
+    <div class="toggles">${[["rare", "Rare and giant aircraft"], ["mil", "Military aircraft"], ["emerg", "Emergency squawks"]].map(([k, l]) => `<label class="tg">${l}<input type="checkbox" data-alert="${k}"${S.alerts[k] ? " checked" : ""}></label>`).join("")}
+    ${myLoc ? "" : `<button class="tg tg-act" id="pfLoc"><span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>Use my location</span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`}</div>`;
 }
 $("#exProfile").addEventListener("change", (e) => { const t = e.target.closest("[data-alert]"); if (t) { S.alerts[t.dataset.alert] = t.checked; savePrefs(); } });
 $("#exProfile").addEventListener("click", (e) => { if (e.target.closest("#pfLoc")) getLoc(() => { if (exView === "profile") renderProfile(); }); });
