@@ -1,4 +1,4 @@
-# Mono Radar
+# X Flight Radar
 
 A free live flight tracker that runs in the browser and installs to your home screen.
 

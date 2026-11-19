@@ -1,6 +1,6 @@
 {
-  "name": "Mono Radar",
-  "short_name": "Mono Radar",
+  "name": "X Flight Radar",
+  "short_name": "X Flight Radar",
   "description": "Live flight tracker: planes, airports, flight boards and what's overhead.",
   "start_url": "./",
   "scope": "./",
