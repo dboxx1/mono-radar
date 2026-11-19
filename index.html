@@ -1557,9 +1557,6 @@ body.globe-on #altLegend { display: none; }
 .about img { width: 76px; }
 
 /* Most tracked */
-.htabs { grid-template-columns: auto auto 1.25fr auto; }
-.htabs > button { font-size: 13.5px; padding: 0 9px; white-space: nowrap; min-width: 0; }
-@media (max-width: 430px) { .htabs > button .i { display: none; } .htabs > button { font-size: 13px; padding: 0 7px; gap: 5px; } .htabs > button small { min-width: 20px; padding: 0 5px; font-size: 11px; } }
 .tk-list { display: grid; border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-hi); overflow: hidden; }
 .tk-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px 14px 12px 10px; text-align: left; color: var(--ink); }
 .tk-row + .tk-row { border-top: 1px solid var(--div); }
@@ -1620,6 +1617,7 @@ body.globe-on #altLegend { display: none; }
       <div class="quick chips-row ap-chips" id="apQuick" hidden aria-label="Airport menu"></div>
       <div class="quick chips-row" id="quick">
         <button class="qt" data-chip="alerts" id="qEmerg" style="--g1:#ff7a6b;--g2:#d4182b"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"/></g></svg><span class="badge" id="emergBadge" hidden>0</span></span><span class="ql">Alerts</span><span class="qn"></span></button>
+        <button class="qt" data-chip="tracked" id="qTracked" style="--g1:#ffb340;--g2:#e8590c"><span class="qi"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5s.9 3.2-1.3 5.6C10.4 10 9 11.5 9 14a3 3 0 0 0 6 0c0-1-.4-1.8-.9-2.5 2.3.6 4.4 3 4.4 5.5A6.5 6.5 0 0 1 12 23.5 6.5 6.5 0 0 1 5.5 17c0-4.6 3.5-6.6 5.3-9.4 1.4-2.2 1-4.4 2.7-5.1Z"/></svg></span><span class="ql">Most tracked</span><span class="qn"></span></button>
         <button class="qt" data-chip="weather" id="tabWeather" aria-pressed="false" style="--g1:#5ac8fa;--g2:#0a64d6"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M158.66,196.44l-32,48a8,8,0,1,1-13.32-8.88l32-48a8,8,0,0,1,13.32,8.88ZM231.87,87.55a76,76,0,0,0-151.78.73A8.18,8.18,0,0,1,72,96l-.6,0A8.14,8.14,0,0,1,64,87.39a92.48,92.48,0,0,1,2.33-16.51,4,4,0,0,0-5-4.78A52.09,52.09,0,0,0,24,116.36C24.2,145.07,48.12,168,76.84,168h36.21L89.34,203.56a8,8,0,0,0,13.32,8.88L132.28,168H156A76.08,76.08,0,0,0,231.87,87.55Z"/></g></svg></span><span class="ql">Weather</span><span class="qn"></span></button>
         <button class="qt" data-chip="mil" id="qMil" aria-pressed="false" style="--g1:#a3b34a;--g2:#4d5a16"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M215.52,197.26a8,8,0,0,1-1.86,8.39l-24,24A8,8,0,0,1,184,232a7.09,7.09,0,0,1-.79,0,8,8,0,0,1-5.87-3.52l-44.07-66.12L112,183.59V208a8,8,0,0,1-2.34,5.65s-14,14.06-15.88,15.88A7.91,7.91,0,0,1,91,231.41a8,8,0,0,1-10.41-4.35l-.06-.15-14.7-36.76L29,175.42a8,8,0,0,1-2.69-13.08l16-16A8,8,0,0,1,48,144H72.4l21.27-21.27L27.56,78.65a8,8,0,0,1-1.22-12.32l24-24a8,8,0,0,1,8.39-1.86l85.94,31.25L176.2,40.19a28,28,0,0,1,39.6,39.6l-31.53,31.53Z"/></g></svg></span><span class="ql">Military</span><span class="qn"></span></button>
         <button class="qt" data-chip="saved" id="qSaved" style="--g1:#ff7ab6;--g2:#c81e63"><span class="qi"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Z"/></g></svg><span class="badge ok" id="savedBadge" hidden>0</span></span><span class="ql">Saved</span><span class="qn"></span></button>
@@ -1635,12 +1633,10 @@ body.globe-on #altLegend { display: none; }
       <div class="seg2 htabs" role="tablist" id="homeTabs">
         <button data-htab="flights" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M240,136v32a8,8,0,0,1-8,8,7.61,7.61,0,0,1-1.57-.16L156,161v23.73l17.66,17.65A8,8,0,0,1,176,208v24a8,8,0,0,1-11,7.43l-37-14.81L91,239.43A8,8,0,0,1,80,232V208a8,8,0,0,1,2.34-5.66L100,184.69V161L25.57,175.84A7.61,7.61,0,0,1,24,176a8,8,0,0,1-8-8V136a8,8,0,0,1,4.42-7.16L100,89.06V44a28,28,0,0,1,56,0V89.06l79.58,39.78A8,8,0,0,1,240,136Z"/></g></svg>Flights <small id="cntF">0</small></button>
         <button data-htab="airports" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M176,216a8,8,0,0,1-8,8H24a8,8,0,0,1,0-16H168A8,8,0,0,1,176,216ZM246.31,86.76,227.67,62.87l-.12-.15a39.82,39.82,0,0,0-51.28-9.12L124.7,84.38,70.76,64.54a8,8,0,0,0-5.59,0L58,67.27l-.32.13a16,16,0,0,0-4.53,26.47L75,115.06l-20.17,12.2-28.26-9.54a8,8,0,0,0-6.08.4l-3,1.47A16,16,0,0,0,13,145.8l36,35.27.12.12a39.78,39.78,0,0,0,27.28,10.87,40.18,40.18,0,0,0,20.26-5.52l147.41-88a8,8,0,0,0,2.21-11.78Z"/></g></svg>Airports <small id="cntA">0</small></button>
-        <button data-htab="tracked" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5s.9 3.2-1.3 5.6C10.4 10 9 11.5 9 14a3 3 0 0 0 6 0c0-1-.4-1.8-.9-2.5 2.3.6 4.4 3 4.4 5.5A6.5 6.5 0 0 1 12 23.5 6.5 6.5 0 0 1 5.5 17c0-4.6 3.5-6.6 5.3-9.4 1.4-2.2 1-4.4 2.7-5.1Z"/></svg>Most tracked</button>
         <button data-htab="live" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><g class="f" transform="translate(.8 .8) scale(.0875)"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1,0-16h8V136a8,8,0,0,1,8-8H72a8,8,0,0,1,8,8v64H96V88a8,8,0,0,1,8-8h32a8,8,0,0,1,8,8V200h16V40a8,8,0,0,1,8-8h40a8,8,0,0,1,8,8V200h8A8,8,0,0,1,232,208Z"/></g></svg>Live</button>
       </div>
       <div class="hpane" id="paneFlights"><div class="ngrid" id="railFlights"></div><button class="more-btn" id="moreNear">Show more</button></div>
       <div class="hpane" id="paneAirports" hidden><div class="alist" id="railAirports"></div><p class="foot">Tap an airport for its live arrivals and departures board.</p></div>
-      <div class="hpane" id="paneTracked" hidden><div class="tk-list" id="railTracked"></div><p class="foot" id="tkFoot"></p></div>
       <div class="hpane" id="paneLive" hidden>
         <div class="live" id="liveStats"></div><span id="liveSub" hidden></span>
         <section class="sec"><header><h3>Fly somewhere</h3><span class="sub">Tap to jump there</span></header><div class="rail" id="railPlaces"></div></section>
@@ -1651,6 +1647,8 @@ body.globe-on #altLegend { display: none; }
     <div id="exSaved" hidden></div>
     <div id="exProfile" hidden></div>
     <div id="exAlerts" hidden></div>
+    <div id="exTracked" hidden><div class="vhead vx"><h2 class="vtitle">Most tracked</h2><button class="x" data-view="home" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
+      <div class="vpad"><p class="vnote" id="tkSub"></p><div class="tk-list" id="railTracked"></div><p class="foot" id="tkFoot"></p></div></div>
   </div>
 </section>
 <div class="attrib" id="attrib">Natural Earth</div>
@@ -4657,8 +4655,8 @@ function savedTick() {
 /* ---- Views inside the explore sheet ---- */
 function showView(v, quiet) {
   exView = v;
-  $("#exHome").hidden = v !== "home"; $("#exSaved").hidden = v !== "saved"; $("#exProfile").hidden = v !== "profile"; $("#exAlerts").hidden = v !== "alerts";
-  if (v === "saved") renderSaved(true); else if (v === "profile") renderProfile(); else if (v === "alerts") renderAlerts();
+  $("#exHome").hidden = v !== "home"; $("#exSaved").hidden = v !== "saved"; $("#exProfile").hidden = v !== "profile"; $("#exAlerts").hidden = v !== "alerts"; $("#exTracked").hidden = v !== "tracked";
+  if (v === "saved") renderSaved(true); else if (v === "profile") renderProfile(); else if (v === "alerts") renderAlerts(); else if (v === "tracked") { renderTracked(); loadTracked(); }
   $("#exBody").scrollTop = 0;
   if (quiet) return;
   if (v === "home") { setEx("peek"); renderExplore(true); } else setEx("full");
@@ -5013,9 +5011,7 @@ let homeTab = "flights";
 function setHomeTab(t) {
   homeTab = t;
   for (const b of document.querySelectorAll("[data-htab]")) b.setAttribute("aria-pressed", String(b.dataset.htab === t));
-  $("#paneFlights").hidden = t !== "flights"; $("#paneAirports").hidden = t !== "airports"; $("#paneLive").hidden = t !== "live"; $("#paneTracked").hidden = t !== "tracked";
-  document.querySelector(".near-h .more").hidden = t === "tracked";
-  if (t === "tracked") { $("#nearTitle").textContent = "Most tracked"; renderTracked(); loadTracked(); }
+  $("#paneFlights").hidden = t !== "flights"; $("#paneAirports").hidden = t !== "airports"; $("#paneLive").hidden = t !== "live";
   if (exState === "peek") setEx("half");
   railKeyF = ""; railKeyA = ""; renderExplore(true);
 }
@@ -6291,7 +6287,7 @@ async function loadTracked(force) {
   if (tk.busy || (!force && Date.now() - tk.at < 60000)) return;
   tk.busy = true; tk.at = Date.now();
   try { const j = await getJSON(TRACK_API(), 8000); tk.enabled = !!j.enabled; tk.counts = Array.isArray(j.top) ? j.top : []; } catch (e) { tk.enabled = false; }
-  if (homeTab === "tracked") renderTracked();
+  if (exView === "tracked") renderTracked();
   // worldwide VIP and rare types, every 3 minutes at most, one gentle request at a time
   if (Date.now() - tk.typeAt > 180000) {
     tk.typeAt = Date.now();
@@ -6300,7 +6296,7 @@ async function loadTracked(force) {
       for (const id of srcs) {
         try { const list = normalize(await getJSON(SOURCES[id].type(t), 8000)).filter((a) => a.lat != null); tk.byType.set(t, list.map((a) => ({ a, kind, src: id }))); break; } catch (e) {}
       }
-      if (homeTab === "tracked") renderTracked();
+      if (exView === "tracked") renderTracked();
       await sleep(1200);
     }
   }
@@ -6319,7 +6315,7 @@ const TK_TAG = { emerg: ["Emergency", "e"], vip: ["VIP", "v"], rare: ["Rare", "r
 function renderTracked() {
   const box = $("#railTracked"); if (!box) return;
   const items = trackedItems();
-  $("#nearSub").textContent = tk.enabled && tk.counts.length ? "Worldwide · most opened in the last hour" : "Worldwide · emergencies, VIP and rare aircraft";
+  $("#tkSub").textContent = tk.enabled && tk.counts.length ? "Worldwide, most opened on X Flight Radar in the last hour." : "Worldwide: emergencies, VIP jets and rare aircraft people follow.";
   $("#tkFoot").textContent = tk.enabled ? "Counts are how many people opened each flight on X Flight Radar recently." : "Live from the community feeds. Tap one to jump to it.";
   if (!items.length) { box.innerHTML = `<div class="empty-v"><b>Looking around the world…</b>Emergencies, VIP jets and rare giants show up here as they're found.</div>`; return; }
   box.innerHTML = items.map((it, i) => {
@@ -6339,9 +6335,10 @@ $("#railTracked").addEventListener("click", async (e) => {
   if (!a) {
     for (const id of readsbOrder()) { try { const list = normalize(await getJSON(SOURCES[id].hex(hex), 8000)).filter((x) => x.lat != null); if (list.length) { ingest(list, id); a = acMap.get(hex); break; } } catch (err) {} }
   }
-  if (a) { setEx("peek"); select(a, { fly: true }); } else toast("That aircraft isn't broadcasting right now.");
+  if (a) { showView("home", true); setEx("peek"); select(a, { fly: true }); } else toast("That aircraft isn't broadcasting right now.");
 });
-setInterval(() => { if (homeTab === "tracked" && !document.hidden && exState !== "peek") { loadTracked(); renderTracked(); } }, 30000);
+$("#qTracked").addEventListener("click", () => showView("tracked"));
+setInterval(() => { if (exView === "tracked" && !document.hidden) { loadTracked(); renderTracked(); } }, 30000);
 
 /* Smart chips: the quick buttons show what's going on, not just an icon */
 function updateChips() {
@@ -6717,7 +6714,6 @@ function renderExplore(force) {
   }
   $("#cntA").textContent = ar.length;
   $("#cntF").textContent = visible.filter((a) => !a.ground).length.toLocaleString("en-GB");
-  if (homeTab === "tracked") { $("#nearTitle").textContent = "Most tracked"; renderTracked(); renderLive(); return; }
   $("#nearTitle").textContent = nearName();
   $("#nearSub").textContent = feed.mode === "live" ? `Around the map centre · live from ${feed.sources.map((x) => SOURCES[x].label).join(" + ")}` : feed.mode === "sim" ? "Around the map centre · simulated traffic" : "Around the map centre · connecting…";
   if (!placesDone) { placesDone = true; $("#railPlaces").innerHTML = PLACES_X.map(cardPlace).join(""); PLACES_X.forEach((p) => wikiThumb("city:" + p[0], p[5])); }
